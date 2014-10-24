@@ -1,5 +1,7 @@
 package net.stoerr.stocklearning;
 
+import java.util.Arrays;
+
 /**
  * <p>A simple two layer neural network with SigmoidNeuron and back propagation learning algorithm.</p>
  * <p>The network must be used in a two step process. First one calls #output to get the output, then one calls #adapt
@@ -12,7 +14,6 @@ public class BackpropagatedNeuralNetwork {
     public final SigmoidNeuron firstLayer[];
     public final SigmoidNeuron secondLayer[];
 
-    // one larger than firstLayer for bias
     private final double firstLayerResults[];
 
     public BackpropagatedNeuralNetwork(int inputSize, int firstLayerSize, int secondLayerSize) {
@@ -21,12 +22,11 @@ public class BackpropagatedNeuralNetwork {
         for (int i = 0; i < firstLayer.length; ++i) firstLayer[i] = new SigmoidNeuron(inputSize);
         secondLayer = new SigmoidNeuron[secondLayerSize];
         for (int i = 0; i < secondLayer.length; ++i) {
-            SigmoidNeuron n = new SigmoidNeuron(firstLayerSize + 1);
+            SigmoidNeuron n = new SigmoidNeuron(firstLayerSize);
             secondLayer[i] = n;
             for (int j = 0; j < firstLayer.length; ++j) n.inputNeurons[j] = firstLayer[j];
         }
-        firstLayerResults = new double[firstLayerSize + 1];
-        firstLayerResults[firstLayerResults.length] = 1.0; // constant bias
+        firstLayerResults = new double[firstLayerSize];
     }
 
     /**
@@ -46,4 +46,11 @@ public class BackpropagatedNeuralNetwork {
         for (int i = 0; i < secondLayer.length; ++i) secondLayer[i].adapt(reinforcement);
     }
 
+    @Override
+    public String toString() {
+        return "BackpropagatedNeuralNetwork{" + "inputSize=" + inputSize +
+                ", firstLayer=\n" + Arrays.toString(firstLayer) +
+                ", secondLayer=\n" + Arrays.toString(secondLayer) +
+                '}';
+    }
 }
