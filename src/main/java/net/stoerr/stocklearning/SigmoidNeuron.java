@@ -32,6 +32,7 @@ public class SigmoidNeuron {
     public SigmoidNeuron(int n) {
         this.n = n;
         weight = new double[n];
+        for (int i=0; i<n; ++i) weight[i] = 2*Math.random() - 1;
         inputNeurons = new SigmoidNeuron[n];
     }
 

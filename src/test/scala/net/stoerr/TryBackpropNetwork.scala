@@ -12,4 +12,9 @@ object TryBackpropNetwork extends App {
 
   println(network)
 
+  val in1 : Array[Double] = Array(1)
+
+  val out : Array[Double] = network.output(in1)
+  println(out)
+  println(in1)
 }
