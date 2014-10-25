@@ -13,6 +13,7 @@ public class BackpropagatedNeuralNetwork {
 
     public final SigmoidNeuron firstLayer[];
     public final SigmoidNeuron secondLayer[];
+    public final double outputs[];
 
     private final double firstLayerResults[];
 
@@ -27,16 +28,16 @@ public class BackpropagatedNeuralNetwork {
             for (int j = 0; j < firstLayer.length; ++j) n.inputNeurons[j] = firstLayer[j];
         }
         firstLayerResults = new double[firstLayerSize];
+        outputs = new double[secondLayerSize];
     }
 
     /**
      * Calculates the activation for input values i and saves intermediate values for following call to #adapt .
      */
-    public double[] output(double[] inputs) {
+    public void calculate(double[] inputs) {
         for (int i = 0; i < firstLayer.length; ++i) firstLayerResults[i] = firstLayer[i].output(inputs);
         double[] res = new double[secondLayer.length];
-        for (int i = 0; i < secondLayer.length; ++i) res[i] = secondLayer[i].output(firstLayerResults);
-        return res;
+        for (int i = 0; i < secondLayer.length; ++i) outputs[i] = secondLayer[i].output(firstLayerResults);
     }
 
     /**

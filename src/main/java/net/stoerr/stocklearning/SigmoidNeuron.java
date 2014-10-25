@@ -40,6 +40,7 @@ public class SigmoidNeuron {
      * Calculates the activation for input values i and saves intermediate values for following call to #adapt .
      */
     public double output(double input[]) {
+        lastInput = input;
         double sum = offset;
         for (int i = 0; i < n; ++i) sum += weight[i] * input[i];
         lastOutput = Math.tanh(sum);

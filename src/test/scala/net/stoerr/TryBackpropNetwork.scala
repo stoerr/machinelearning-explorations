@@ -8,13 +8,28 @@ import net.stoerr.stocklearning.BackpropagatedNeuralNetwork
  */
 object TryBackpropNetwork extends App {
 
-  val network : BackpropagatedNeuralNetwork = new BackpropagatedNeuralNetwork(1, 1, 1)
+  val network: BackpropagatedNeuralNetwork = new BackpropagatedNeuralNetwork(2, 4, 1)
+
+  val examples: List[(Array[Double], Double)] = List(
+    Array(0.0, 0.0) -> 0.8,
+    Array(0.0, 1.0) -> 0.2,
+    Array(1.0, 0.0) -> 0.2,
+    Array(1.0, 1.0) -> 0.8
+  )
+
+  val eps = 0.2
+
+  for (i <- 0 to 1000) {
+    for ((in, out) <- examples) {
+      network.calculate(in)
+      network.adapt(eps * (out - network.outputs(0)))
+    }
+  }
+
+  for ((in, out) <- examples) {
+    network.calculate(in)
+    println( in.toList + " : " + network.outputs(0) + " - " + out )
+  }
 
   println(network)
-
-  val in1 : Array[Double] = Array(1)
-
-  val out : Array[Double] = network.output(in1)
-  println(out)
-  println(in1)
 }
