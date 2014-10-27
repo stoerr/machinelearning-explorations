@@ -12,8 +12,7 @@ public class BackpropagatedNeuralNetwork {
     public final int inputSize;
 
     public final SigmoidNeuron firstLayer[];
-    public final SigmoidNeuron secondLayer[];
-    public final double outputs[];
+    public final SigmoidNeuron lastLayer[];
 
     private final double firstLayerResults[];
 
@@ -21,14 +20,13 @@ public class BackpropagatedNeuralNetwork {
         this.inputSize = inputSize;
         firstLayer = new SigmoidNeuron[firstLayerSize];
         for (int i = 0; i < firstLayer.length; ++i) firstLayer[i] = new SigmoidNeuron(inputSize);
-        secondLayer = new SigmoidNeuron[secondLayerSize];
-        for (int i = 0; i < secondLayer.length; ++i) {
+        lastLayer = new SigmoidNeuron[secondLayerSize];
+        for (int i = 0; i < lastLayer.length; ++i) {
             SigmoidNeuron n = new SigmoidNeuron(firstLayerSize);
-            secondLayer[i] = n;
+            lastLayer[i] = n;
             for (int j = 0; j < firstLayer.length; ++j) n.inputNeurons[j] = firstLayer[j];
         }
         firstLayerResults = new double[firstLayerSize];
-        outputs = new double[secondLayerSize];
     }
 
     /**
@@ -36,22 +34,22 @@ public class BackpropagatedNeuralNetwork {
      */
     public void calculate(double[] inputs) {
         for (int i = 0; i < firstLayer.length; ++i) firstLayerResults[i] = firstLayer[i].output(inputs);
-        double[] res = new double[secondLayer.length];
-        for (int i = 0; i < secondLayer.length; ++i) outputs[i] = secondLayer[i].output(firstLayerResults);
+        double[] res = new double[lastLayer.length];
+        for (int i = 0; i < lastLayer.length; ++i) lastLayer[i].output(firstLayerResults);
     }
 
     /**
      * Adapts the weigths with backpropagation algorithm by strength reinforcement for inputs in last step
      */
     public void adapt(double reinforcement) {
-        for (int i = 0; i < secondLayer.length; ++i) secondLayer[i].adapt(reinforcement);
+        for (int i = 0; i < lastLayer.length; ++i) lastLayer[i].adapt(reinforcement);
     }
 
     @Override
     public String toString() {
         return "BackpropagatedNeuralNetwork{" + "inputSize=" + inputSize +
                 ", firstLayer=\n" + Arrays.toString(firstLayer) +
-                ", secondLayer=\n" + Arrays.toString(secondLayer) +
+                ", lastLayer=\n" + Arrays.toString(lastLayer) +
                 '}';
     }
 }

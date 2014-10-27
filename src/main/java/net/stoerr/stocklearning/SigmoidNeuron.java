@@ -7,7 +7,7 @@ import java.util.Arrays;
  * since this is the innermost loop, we don't want any boxing / unboxing of double.</p>
  * <p>The neuron must be used in a two step process. First one calls #output to get the output, then one calls #adapt
  * to learn. </p>
- * <p>We use tanh as activation function. Thus, its derivation is 1-lastOutput*lastOutput.</p>
+ * <p>We use tanh as activation function. Thus, its derivation is 1-output*output.</p>
  */
 public class SigmoidNeuron {
 
@@ -25,7 +25,8 @@ public class SigmoidNeuron {
      */
     public double offset;
 
-    public double lastOutput;
+    /** Always in (-1,1) */
+    public double output;
 
     private double lastInput[];
 
@@ -43,15 +44,15 @@ public class SigmoidNeuron {
         lastInput = input;
         double sum = offset;
         for (int i = 0; i < n; ++i) sum += weight[i] * input[i];
-        lastOutput = Math.tanh(sum);
-        return lastOutput;
+        output = Math.tanh(sum);
+        return output;
     }
 
     /**
      * Adapts the weigths with backpropagation algorithm by strength reinforcement for inputs in last step
      */
     public void adapt(double reinforcement) {
-        double factor = (1 - lastOutput * lastOutput) * reinforcement;
+        double factor = (1 - output * output) * reinforcement;
         offset += factor;
         for (int i = 0; i < n; ++i) {
             weight[i] += factor * lastInput[i];

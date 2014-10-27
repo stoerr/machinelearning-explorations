@@ -20,13 +20,13 @@ object TryBackpropNetwork extends App {
   for (i <- 0 to 1000) {
     for ((in, out) <- examples) {
       network.calculate(in)
-      network.adapt(eps * (out - network.outputs(0)))
+      network.adapt(eps * (out - network.lastLayer(0).output))
     }
   }
 
   for ((in, out) <- examples) {
     network.calculate(in)
-    println( in.toList + " : " + network.outputs(0) + " - " + out )
+    println( in.toList + " : " + network.lastLayer(0).output + " - " + out )
   }
 
   println(network)

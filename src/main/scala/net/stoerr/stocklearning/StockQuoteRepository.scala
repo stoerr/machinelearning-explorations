@@ -19,6 +19,7 @@ object StockQuoteRepository {
   val dateFormat = DateFormat.getDateInstance(DateFormat.SHORT, Locale.GERMANY)
   val numberFormat = NumberFormat.getNumberInstance(Locale.GERMANY)
 
+  /** Reads files saved like http://www.onvista.de/index/quote_history.html?ID_NOTATION=20735&RANGE=120M */
   def readOnVistaFile(file: String) : SortedMap[Date, Double] = {
     val stream = StockQuoteRepository.getClass.getClassLoader.getResourceAsStream(file)
     val entries = Source.fromInputStream(stream, "windows-1252").getLines().flatMap(priceRegex.findAllMatchIn(_)).map { m =>
