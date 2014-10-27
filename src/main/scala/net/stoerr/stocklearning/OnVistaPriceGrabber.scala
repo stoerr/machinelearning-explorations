@@ -7,10 +7,11 @@ import scala.io.Source
 
 /**
  * Grabs stock prices from OnVista, e.g. for dax: http://www.onvista.de/index/quote_history.html?ID_NOTATION=20735&RANGE=24M .
- * Does not work yet.
+ * @deprecated Does not work yet.
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
  * @since 27.10.2014
  */
+@deprecated
 object OnVistaPriceGrabber {
 
   // Datum	Eröffnung	Tief	Hoch	Schluss
