@@ -1,8 +1,7 @@
-package net.stoerr
+package net.stoerr.stocklearning
 
-import java.net.{SocketAddress, URL, Proxy, InetSocketAddress}
 import java.net.Proxy.Type
-import java.net.InetSocketAddress
+import java.net.{InetSocketAddress, Proxy, URL}
 
 import scala.io.Source
 

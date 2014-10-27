@@ -1,6 +1,4 @@
-package net.stoerr
-
-import net.stoerr.stocklearning.BackpropagatedNeuralNetwork
+package net.stoerr.stocklearning
 
 /**
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>

@@ -1,10 +1,9 @@
-package net.stoerr
+package net.stoerr.stocklearning
 
-import java.io.File
 import java.text.{DateFormat, NumberFormat}
 import java.util.{Date, Locale}
 
-import scala.collection.immutable.{TreeMap, SortedMap}
+import scala.collection.immutable.SortedMap
 import scala.io.Source
 
 /**
