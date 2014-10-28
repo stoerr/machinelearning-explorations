@@ -1,5 +1,6 @@
 package net.stoerr.stocklearning;
 
+import java.io.*;
 import java.util.Arrays;
 
 /**
@@ -7,13 +8,14 @@ import java.util.Arrays;
  * <p>The network must be used in a two step process. First one calls #output to get the output, then one calls #adapt
  * to learn. </p>
  */
-public class BackpropagatedNeuralNetwork {
+public class BackpropagatedNeuralNetwork implements Serializable {
 
     public final int inputSize;
 
     public final SigmoidNeuron firstLayer[];
     public final SigmoidNeuron lastLayer[];
 
+    // kept to avoid garbage collection; not transient since it probably wouldn't get initialized otherwise
     private final double firstLayerResults[];
 
     public BackpropagatedNeuralNetwork(int inputSize, int firstLayerSize, int secondLayerSize) {
@@ -43,6 +45,20 @@ public class BackpropagatedNeuralNetwork {
      */
     public void adapt(double reinforcement) {
         for (int i = 0; i < lastLayer.length; ++i) lastLayer[i].adapt(reinforcement);
+    }
+
+    /** Copies the whole network using serialization. */
+    public BackpropagatedNeuralNetwork deepCopy() {
+        try {
+            ByteArrayOutputStream bout = new ByteArrayOutputStream();
+            ObjectOutputStream oout = new ObjectOutputStream(bout);
+            oout.writeObject(this);
+            oout.close();
+            ObjectInputStream oin = new ObjectInputStream(new ByteArrayInputStream(bout.toByteArray()));
+            return (BackpropagatedNeuralNetwork) oin.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

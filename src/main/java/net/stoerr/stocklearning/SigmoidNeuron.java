@@ -1,5 +1,6 @@
 package net.stoerr.stocklearning;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
 /**
@@ -9,7 +10,7 @@ import java.util.Arrays;
  * to learn. </p>
  * <p>We use tanh as activation function. Thus, its derivation is 1-output*output.</p>
  */
-public class SigmoidNeuron {
+public class SigmoidNeuron implements Serializable {
 
     public final int n;
 
@@ -26,9 +27,9 @@ public class SigmoidNeuron {
     public double offset;
 
     /** Always in (-1,1) */
-    public double output;
+    public transient double output;
 
-    private double lastInput[];
+    private transient double lastInput[];
 
     public SigmoidNeuron(int n) {
         this.n = n;
