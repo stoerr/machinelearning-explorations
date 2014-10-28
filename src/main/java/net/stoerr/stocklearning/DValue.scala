@@ -4,7 +4,7 @@ import scala.collection.immutable.{TreeMap, SortedMap}
 
 /** Constructors for DValue - see there. */
 object DValue {
-  implicit def apply(value: Double) = new DValue(value, SortedMap.empty)
+  def apply(value: Double) = new DValue(value, SortedMap.empty)
   def apply(value: Double, name: String) = new DValue(value, TreeMap(name -> 1.0))
 }
 
@@ -25,5 +25,17 @@ case class DValue(value: Double, derivations: SortedMap[String, Double]) {
   }
 
   def +(other: DValue) : DValue = DValue(value + other.value, combineDerivations(other, _ + _))
+
+  def -(other: DValue) : DValue = DValue(value - other.value, combineDerivations(other, _ - _))
+
+  def *(other: DValue) : DValue = DValue(value * other.value, combineDerivations(other,
+    (dthis , dother) => dthis * other.value + value * dother ))
+
+  def /(other: DValue) : DValue = DValue(value / other.value, combineDerivations(other,
+    (dthis , dother) => (dthis * other.value - value * dother) / (other.value * other.value) ))
+
+  def abs : DValue = if (value < 0) (this * DValue(-1)) else this
+
+  def log : DValue = if (value == 0) DValue(0) else DValue( math.log(value) , derivations.mapValues(1/_) )
 
 }
