@@ -2,6 +2,8 @@ package net.stoerr.stocklearning
 
 import org.scalatest.FunSuite
 
+import math._
+
 /**
  * Tests for {@link DValue}
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
@@ -21,25 +23,57 @@ class TestDValue extends FunSuite {
   }
 
   val eps = 1e-7
-  def deriv(f: Double => Double, x : Double) = (f(x+eps)-f(x-eps))/(2*eps)
+
+  def deriv(f: Double => Double, x: Double) = (f(x + eps) - f(x - eps)) / (2 * eps)
 
   test("Try to estimate value") {
     def complicated(xr: Double, yr: Double) = {
-      val x = DValue(xr, "x"); val y = DValue(yr, "y")
+      val x = DValue(xr, "x");
+      val y = DValue(yr, "y")
       (x * DValue(-3)).abs + y / (x.abs * y.log - y)
     }
     val x = 1.5
     val y = 2.7
-    val res = math.abs(x * -3) + y / (math.abs(x) * math.log(y) - y)
+    val res = abs(x * -3) + y / (abs(x) * log(y) - y)
     val dres: DValue = complicated(x, y)
     println(dres)
     assert(res == dres.value)
     assert(0 == dres.deriv("z"))
     assert(2 == dres.derivations.size)
-    println(deriv(complicated(_,y).value, x))
-    println(deriv(complicated(x,_).value, y))
-    assert( (deriv(complicated(_,y).value, x) - dres.deriv("x")) < 100*eps)
-    assert( (deriv(complicated(x,_).value, y) - dres.deriv("y")) < 100*eps)
+    println(deriv(complicated(_, y).value, x))
+    println(deriv(complicated(x, _).value, y))
+    assert(abs(deriv(complicated(_, y).value, x) - dres.deriv("x")) < eps)
+    assert(abs(deriv(complicated(x, _).value, y) - dres.deriv("y")) < eps)
+  }
+
+  test("Thorough test") {
+    checkFunction(_ + _, _ + _)
+    checkFunction(DValue(1) + _ + _, 1 + _ + _)
+    checkFunction(_ - _, _ - _)
+    checkFunction(_ * _, _ * _)
+    checkFunction(_ / _, _ / _)
+    checkFunction(_.abs + _, abs(_) + _)
+    checkFunction((x: DValue, y: DValue) => x.abs.log, (x: Double, y: Double) => log(abs(x)))
+  }
+
+  def checkFunction(fd: (DValue, DValue) => DValue, f: (Double, Double) => Double): Unit = {
+    checkFunctionSingle(fd, f)
+    checkFunctionSingle((x: DValue, y: DValue) => fd(y, x), (x: Double, y: Double) => f(y, x))
+  }
+
+  def checkFunctionSingle(fd: (DValue, DValue) => DValue, f: (Double, Double) => Double) {
+    for (xr <- Array(-1.23, -0.618, 0.834, 1.879);
+         yr <- Array(-2.423, -0.917, 0.4843, 4.2343)) {
+      val x = DValue(xr, "x")
+      val y = DValue(yr, "y")
+      val resr: Double = f(xr, yr)
+      val resd: DValue = fd(x, y)
+      assert(resd.value == resr)
+      assert(0 == resd.deriv("z"))
+      assert(2 >= resd.derivations.size)
+      assert( abs(deriv(f(_, yr), xr) - resd.deriv("x")) < 100 * eps )
+      assert( abs(deriv(f(xr, _), yr) - resd.deriv("y")) < 100 * eps )
+    }
   }
 
 }
