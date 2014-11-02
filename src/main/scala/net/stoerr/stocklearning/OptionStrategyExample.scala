@@ -16,18 +16,20 @@ object OptionStrategyExample {
  */
 class OptionStrategyExample(length: Int, offset: Int) {
 
+  import OptionStrategyExample._
+
   // filled from dax etc.; the length is taken for the neural networks input size.
   val inputs: Array[Double] = ((offset - length) until (offset)).map(StockQuoteRepository.dax).toArray;
 
   // current prices
-  val p: Array[DValue] = options.map(DValue(_(offset)))
+  val p: Array[DValue] = options.map(_(offset)).map(DValue(_))
 
   // tomorrows prices, for evaluation
-  val pp: Array[DValue] = options.map(DValue(_(offset + 1)))
+  val pp: Array[DValue] = options.map(_(offset + 1)).map(DValue(_))
 
   def evaluate(network: BackpropagatedNeuralNetwork) = {
     network.calculate(inputs)
-    val o = network.lastLayer.zip(onames).map(DValue(_.output, _))
+    val o = network.lastLayer.zip(onames).map{ case (v, n) => DValue(v.output, n) }
 
   }
 

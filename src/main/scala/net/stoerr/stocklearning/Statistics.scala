@@ -7,13 +7,13 @@ package net.stoerr.stocklearning
  */
 class Statistics(name: String) {
 
-  var count: Int
-  private var sum: Double
-  private var sumsquares: Double
+  var count: Int = 0
+  private var sum: Double = 0.0
+  private var sumsquares: Double = 0.0
   var min: Double = Double.PositiveInfinity
   var max: Double = Double.NegativeInfinity
 
-  def add(x: Double): Unit = {
+  def +=(x: Double): Unit = {
     count += 1
     sum += x
     sumsquares += x * x
@@ -25,6 +25,6 @@ class Statistics(name: String) {
 
   def stddev = math.sqrt((sumsquares - sum * sum / count) / (count - 1))
 
-  def toString() = name + " = " + count + " :[ " + min + " , " mean +" +- " + stddev + " , " + max + " ]"
+  override def toString() = name + " = " + count + " :[ " + min + " , " + mean + " +- " + stddev + " , " + max + " ]"
 
 }
