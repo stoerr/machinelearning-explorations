@@ -30,7 +30,7 @@ class OptionStrategyExample(length: Int, offset: Int) {
   def evaluate(network: BackpropagatedNeuralNetwork) = {
     network.calculate(inputs)
     val o = network.lastLayer.zip(onames).map{ case (v, n) => DValue(v.output, n) }
-
+    println(o)
   }
 
 }

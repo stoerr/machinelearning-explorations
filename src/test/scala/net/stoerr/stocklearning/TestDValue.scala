@@ -2,7 +2,7 @@ package net.stoerr.stocklearning
 
 import org.scalatest.FunSuite
 
-import math._
+import scala.math._
 
 /**
  * Tests for {@link DValue}
@@ -54,6 +54,8 @@ class TestDValue extends FunSuite {
     checkFunction(_ / _, _ / _)
     checkFunction(_.abs + _, abs(_) + _)
     checkFunction((x: DValue, y: DValue) => x.abs.log, (x: Double, y: Double) => log(abs(x)))
+    checkFunction((x: DValue, y: DValue) => x / x, (x: Double, y: Double) => 1)
+    checkFunction((x: DValue, y: DValue) => (x + DValue(2)).abs.log / y * (x - y), (x: Double, y: Double) => log(abs(x + 2)) / y * (x - y))
   }
 
   def checkFunction(fd: (DValue, DValue) => DValue, f: (Double, Double) => Double): Unit = {
@@ -71,8 +73,8 @@ class TestDValue extends FunSuite {
       assert(resd.value == resr)
       assert(0 == resd.deriv("z"))
       assert(2 >= resd.derivations.size)
-      assert( abs(deriv(f(_, yr), xr) - resd.deriv("x")) < 100 * eps )
-      assert( abs(deriv(f(xr, _), yr) - resd.deriv("y")) < 100 * eps )
+      assert(abs(deriv(f(_, yr), xr) - resd.deriv("x")) < 100 * eps)
+      assert(abs(deriv(f(xr, _), yr) - resd.deriv("y")) < 100 * eps)
     }
   }
 

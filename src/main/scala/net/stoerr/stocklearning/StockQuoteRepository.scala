@@ -1,11 +1,11 @@
 package net.stoerr.stocklearning
 
 import java.text.{DateFormat, NumberFormat}
+import java.util.concurrent.TimeUnit
 import java.util.{Date, Locale}
 
 import scala.collection.immutable.SortedMap
 import scala.io.Source
-import java.util.concurrent.TimeUnit
 
 /**
  * Some stock quote histories as learning examples
@@ -24,14 +24,26 @@ object StockQuoteRepository {
   /** start date for the options - the indices go farther back. */
   val startDate = dateFormat.parse("28.7.11")
 
+  val normalizationDate = dateFormat.parse("18.10.04") // a monday
+
+  /** number of weekdays after normalizationDate */
+  def weekdayNumber(date: Date): Int = {
+    val daycount = TimeUnit.DAYS.convert(date.getTime - normalizationDate.getTime, TimeUnit.MILLISECONDS)
+    assert(daycount % 7 < 5, daycount + " - " + date + " : " + daycount % 7)
+    (daycount % 7 + 5 * (daycount / 7)).asInstanceOf[Int]
+  }
+
   /** Reads files saved like http://www.onvista.de/index/quote_history.html?ID_NOTATION=20735&RANGE=120M */
-  def readOnVistaFile(file: String) : SortedMap[Int, Double] = {
+  def readOnVistaFile(file: String): SortedMap[Int, Double] = {
     val stream = StockQuoteRepository.getClass.getClassLoader.getResourceAsStream(file)
-    val entries = Source.fromInputStream(stream, "windows-1252").getLines().flatMap(priceRegex.findAllMatchIn(_)).map { m =>
-      val key = TimeUnit.DAYS.convert(dateFormat.parse(m.group(1)).getTime - endDate.getTime, TimeUnit.MILLISECONDS).toInt
-      key -> (numberFormat.parse(m.group(2)).doubleValue() + numberFormat.parse(m.group(3)).doubleValue()
-        + numberFormat.parse(m.group(4)).doubleValue() + numberFormat.parse(m.group(5)).doubleValue()) / 4
+    val entries: Iterator[(Int, Double)] = Source.fromInputStream(stream, "windows-1252").getLines()
+      .flatMap(priceRegex.findAllMatchIn(_)).map { m =>
+      val key = weekdayNumber(dateFormat.parse(m.group(1)))
+      key ->
+        (numberFormat.parse(m.group(2)).doubleValue() + numberFormat.parse(m.group(3)).doubleValue()
+          + numberFormat.parse(m.group(4)).doubleValue() + numberFormat.parse(m.group(5)).doubleValue()) / 4
     }
+    assert(entries.map(_._1).toSeq.groupBy(x => x).filter(_._2.size > 1).isEmpty)
     SortedMap[Int, Double]() ++ entries.toMap
   }
 
