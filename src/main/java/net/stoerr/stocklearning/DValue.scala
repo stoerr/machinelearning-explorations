@@ -6,6 +6,7 @@ import scala.collection.immutable.{TreeMap, SortedMap}
 object DValue {
   def apply(value: Double) = new DValue(value, SortedMap.empty)
   def apply(value: Double, name: String) = new DValue(value, TreeMap(name -> 1.0))
+  val ONE = DValue(1)
 }
 
 /**

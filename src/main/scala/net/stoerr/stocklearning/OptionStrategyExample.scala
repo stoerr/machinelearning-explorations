@@ -1,11 +1,14 @@
 package net.stoerr.stocklearning
 
 import StockQuoteRepository._
+import DValue.ONE
 
 object OptionStrategyExample {
 
   lazy val options = Array(daxCall5000, daxPut5000, daxCall11000, daxPut11000)
   val onames = Array("c5", "p5", "c11", "p11")
+  // learning speed factor
+  val eps = 0.1
 }
 
 /**
@@ -27,10 +30,21 @@ class OptionStrategyExample(length: Int, offset: Int) {
   // tomorrows prices, for evaluation
   val pp: Array[DValue] = options.map(_(offset + 1)).map(DValue(_))
 
-  def evaluate(network: BackpropagatedNeuralNetwork) = {
+  /** n'_i = (1+o_i)/(p_i sum( (1+o_i) )) , evaluation ln(sum(n'_i p'_i)) */
+  def evaluateAndLearn(network: BackpropagatedNeuralNetwork): Double = {
     network.calculate(inputs)
-    val o = network.lastLayer.zip(onames).map{ case (v, n) => DValue(v.output, n) }
-
+    val o = network.lastLayer.zip(onames).map {
+      case (v, n) => DValue(v.output, n)
+    }
+    // n'_i = (1+o_i)/(p_i sum( (1+o_i) ))
+    val sum1poi = o.map(_ + ONE).reduce(_ + _)
+    val np = (o, p).zipped map ((oi, pi) => (oi + ONE) / (pi * sum1poi))
+    // evaluation ln(sum(n'_i p'_i))
+    val valuation : DValue = (np, pp).zipped.map(_ * _).reduce(_ + _).log
+    network.lastLayer.zip(onames).map {
+      case (v, n) => v.adapt(eps * valuation.deriv(n))
+    }
+    valuation.value
   }
 
 }
