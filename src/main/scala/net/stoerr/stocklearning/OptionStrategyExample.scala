@@ -13,8 +13,6 @@ class OptionStrategyExample(length: Int, offset: Int) {
   // filled from dax etc.; the length is taken for the neural networks input size.
   val inputs: Array[Double] = ((offset - length) until offset).map(StockQuoteRepository.dax).toArray
 
-  println(StockQuoteRepository.options.toList)
-
   // current prices
   val p: Array[DValue] = StockQuoteRepository.options.map(_(offset)).map(DValue(_))
 

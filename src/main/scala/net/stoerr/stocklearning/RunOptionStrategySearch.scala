@@ -1,5 +1,7 @@
 package net.stoerr.stocklearning
 
+import scala.collection.immutable.TreeMap
+
 /**
  * Main program for search for option trade strategies.
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
@@ -9,7 +11,6 @@ object RunOptionStrategySearch {
 
   def main(args: Array[String]) {
     val ex = new OptionStrategyExample(5, -1)
-
   }
 
 }
