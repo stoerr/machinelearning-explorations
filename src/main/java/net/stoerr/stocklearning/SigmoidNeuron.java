@@ -6,9 +6,9 @@ import java.util.Arrays;
 /**
  * <p>Simple artificial neuron with sigmoid activation function. Done in low level Java for performance reasons:
  * since this is the innermost loop, we don't want any boxing / unboxing of double.</p>
- * <p>The neuron must be used in a two step process. First one calls #output to get the output, then one calls #adapt
+ * <p>The neuron must be used in a two step process. First one calls #lastOutput to get the lastOutput, then one calls #adapt
  * to learn. </p>
- * <p>We use tanh as activation function. Thus, its derivation is 1-output*output.</p>
+ * <p>We use tanh as activation function. Thus, its derivation is 1-lastOutput*lastOutput.</p>
  */
 public class SigmoidNeuron implements Serializable {
 
@@ -27,7 +27,7 @@ public class SigmoidNeuron implements Serializable {
     public double offset;
 
     /** Always in (-1,1) */
-    public transient double output;
+    public transient double lastOutput;
 
     private transient double lastInput[];
 
@@ -45,15 +45,15 @@ public class SigmoidNeuron implements Serializable {
         lastInput = input;
         double sum = offset;
         for (int i = 0; i < n; ++i) sum += weight[i] * input[i];
-        output = Math.tanh(sum);
-        return output;
+        lastOutput = Math.tanh(sum);
+        return lastOutput;
     }
 
     /**
      * Adapts the weigths with backpropagation algorithm by strength reinforcement for inputs in last step
      */
     public void adapt(double reinforcement) {
-        double factor = (1 - output * output) * reinforcement;
+        double factor = (1 - lastOutput * lastOutput) * reinforcement;
         offset += factor;
         for (int i = 0; i < n; ++i) {
             weight[i] += factor * lastInput[i];

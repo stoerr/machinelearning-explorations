@@ -5,7 +5,7 @@ import java.util.Arrays;
 
 /**
  * <p>A simple two layer neural network with SigmoidNeuron and back propagation learning algorithm.</p>
- * <p>The network must be used in a two step process. First one calls #output to get the output, then one calls #adapt
+ * <p>The network must be used in a two step process. First one calls #lastOutput to get the lastOutput, then one calls #adapt
  * to learn. </p>
  */
 public class BackpropagatedNeuralNetwork implements Serializable {
@@ -47,7 +47,9 @@ public class BackpropagatedNeuralNetwork implements Serializable {
         for (int i = 0; i < lastLayer.length; ++i) lastLayer[i].adapt(reinforcement);
     }
 
-    /** Copies the whole network using serialization. */
+    /**
+     * Copies the whole network using serialization.
+     */
     public BackpropagatedNeuralNetwork deepCopy() {
         try {
             ByteArrayOutputStream bout = new ByteArrayOutputStream();

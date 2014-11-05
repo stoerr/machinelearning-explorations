@@ -23,7 +23,7 @@ class OptionStrategyExample(length: Int, offset: Int) {
   def evaluateAndLearn(network: BackpropagatedNeuralNetwork, eps: Double): Double = {
     network.calculate(inputs)
     val o = network.lastLayer.zip(StockQuoteRepository.onames).map {
-      case (v, n) => DValue(v.output, n)
+      case (v, n) => DValue(v.lastOutput, n)
     }
     // n'_i = (1+o_i)/(p_i sum( (1+o_i) ))
     val sum1poi = o.map(_ + ONE).reduce(_ + _)
