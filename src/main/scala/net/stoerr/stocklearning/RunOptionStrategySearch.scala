@@ -1,5 +1,7 @@
 package net.stoerr.stocklearning
 
+import scala.util.Random
+
 /**
  * Main program for search for option trade strategies.
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
@@ -17,11 +19,24 @@ object RunOptionStrategySearch extends App {
   val modelExample = new OptionStrategyExample(historyLength, StockQuoteRepository.maxIndex)
   val nn = new BackpropagatedNeuralNetwork(modelExample.inputs.length, intermediateLayerSize, modelExample.p.length)
 
+  println(maxRange)
+  println(minRange)
+  println(rangeSplit)
 
-  for (i <- 0 until 100) {
-    println("Gewinn: " + modelExample.evaluateAndLearn(nn, 1))
-    println("Outputs: " + nn.lastLayer.toList.map(_.lastOutput))
-    println()
+  val learnExamples = Random.shuffle(minRange until rangeSplit map (new OptionStrategyExample(historyLength, _)))
+  val evalExamples = rangeSplit until maxRange map (new OptionStrategyExample(historyLength, _))
+
+  for (round <- 0 until 100) {
+    val learnStats = new Statistics("learn" + round)
+    for (example <- learnExamples) {
+      learnStats += example.evaluateAndLearn(nn, eps)
+    }
+    println(learnStats)
+    val evalStats = new Statistics("eval" + round)
+    for (example <- evalExamples) {
+      evalStats += example.evaluateAndLearn(nn, eps)
+    }
+    println(evalStats)
   }
 
 }
