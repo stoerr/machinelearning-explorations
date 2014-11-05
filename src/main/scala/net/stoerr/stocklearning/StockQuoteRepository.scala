@@ -49,7 +49,7 @@ object StockQuoteRepository {
           (numberFormat.parse(m.group(2)).doubleValue() + numberFormat.parse(m.group(3)).doubleValue()
             + numberFormat.parse(m.group(4)).doubleValue() + numberFormat.parse(m.group(5)).doubleValue()) / 4
     }.toList
-    assert(!entries.isEmpty, file)
+    assert(entries.nonEmpty, file)
     assert(entries.map(_._1).toSeq.groupBy(x => x).filter(_._2.size > 1).isEmpty)
     interpolate(immutable.SortedMap[Int, Double]() ++ entries.toMap)
   }
@@ -86,6 +86,9 @@ object StockQuoteRepository {
 
   val options = Array(daxCall5000, daxPut5000, daxCall11000, daxPut11000)
   val onames = Array("c5", "p5", "c11", "p11")
+
+  val maxIndex = daxCall5000.keys.reduce(math.max) - 1
+  val minIndex = daxCall5000.keys.reduce(math.min)
 
   def main(args: Array[String]): Unit = {
     dax.foreach {
