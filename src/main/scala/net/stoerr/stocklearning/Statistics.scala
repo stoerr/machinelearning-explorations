@@ -25,6 +25,6 @@ class Statistics(name: String) {
 
   def stddev = math.sqrt((sumsquares - sum * sum / count) / (count - 1))
 
-  override def toString() = name + " = " + count + " :[ " + min + " , " + mean + " +- " + stddev + " , " + max + " ]"
+  override def toString() = name + " = " + mean + " +- " + stddev + " [ " + min + " , " + max + " ] : " + count
 
 }
