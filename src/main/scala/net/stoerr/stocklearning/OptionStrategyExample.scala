@@ -38,4 +38,9 @@ class OptionStrategyExample(length: Int, offset: Int) {
     valuation.value
   }
 
+  def theoreticalMaximumGain = {
+    val res: Array[Double] = (pp, p).zipped map ((x: DValue, y: DValue) => (x / y).log.value)
+    res.reduce((x, y) => math.max(x, y))
+  }
+
 }

@@ -26,7 +26,7 @@ public class BackpropagatedNeuralNetwork implements Serializable {
         for (int i = 0; i < lastLayer.length; ++i) {
             SigmoidNeuron n = new SigmoidNeuron(firstLayerSize);
             lastLayer[i] = n;
-            for (int j = 0; j < firstLayer.length; ++j) n.inputNeurons[j] = firstLayer[j];
+            System.arraycopy(firstLayer, 0, n.inputNeurons, 0, firstLayer.length);
         }
         firstLayerResults = new double[firstLayerSize];
     }
@@ -36,15 +36,14 @@ public class BackpropagatedNeuralNetwork implements Serializable {
      */
     public void calculate(double[] inputs) {
         for (int i = 0; i < firstLayer.length; ++i) firstLayerResults[i] = firstLayer[i].output(inputs);
-        double[] res = new double[lastLayer.length];
-        for (int i = 0; i < lastLayer.length; ++i) lastLayer[i].output(firstLayerResults);
+        for (SigmoidNeuron aLastLayer : lastLayer) aLastLayer.output(firstLayerResults);
     }
 
     /**
      * Adapts the weigths with backpropagation algorithm by strength reinforcement for inputs in last step
      */
     public void adapt(double reinforcement) {
-        for (int i = 0; i < lastLayer.length; ++i) lastLayer[i].adapt(reinforcement);
+        for (SigmoidNeuron aLastLayer : lastLayer) aLastLayer.adapt(reinforcement);
     }
 
     /**
@@ -66,8 +65,8 @@ public class BackpropagatedNeuralNetwork implements Serializable {
     @Override
     public String toString() {
         return "BackpropagatedNeuralNetwork{" + "inputSize=" + inputSize +
-                ", firstLayer=\n" + Arrays.toString(firstLayer) +
-                ", lastLayer=\n" + Arrays.toString(lastLayer) +
+                ", firstLayer=" + Arrays.toString(firstLayer).replaceAll("SigmoidNeuron", "\nSigmoidNeuron") +
+                ", lastLayer=\n" + Arrays.toString(lastLayer).replaceAll("SigmoidNeuron", "\nSigmoidNeuron") +
                 '}';
     }
 }

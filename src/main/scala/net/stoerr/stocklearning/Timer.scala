@@ -11,6 +11,19 @@ class Timer(name: String = "timer") {
 
   def time(): Float = 0.001f * (System.currentTimeMillis() - begin)
 
-  override def toString() = name + ": " + time() + "s"
+  override def toString = name + ": " + time() + "s"
+
+}
+
+object Timer {
+
+  def timing[T](name: String)(block: => T) = {
+    val timer = new Timer(name)
+    val res = block
+    println(timer)
+    res
+  }
+
+  def apply(name: String) = new Timer(name)
 
 }

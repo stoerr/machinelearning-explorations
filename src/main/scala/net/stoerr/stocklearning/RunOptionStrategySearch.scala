@@ -1,5 +1,7 @@
 package net.stoerr.stocklearning
 
+import net.stoerr.stocklearning.Timer._
+
 import scala.util.Random
 
 /**
@@ -21,21 +23,29 @@ object RunOptionStrategySearch extends App {
   val nn = new BackpropagatedNeuralNetwork(modelExample.inputs.length, intermediateLayerSize, modelExample.p.length)
 
   val learnExamples = Random.shuffle(minRange until rangeSplit map (new OptionStrategyExample(historyLength, _)))
+  // val learnExamples = Array(modelExample)
   val evalExamples = rangeSplit until maxRange map (new OptionStrategyExample(historyLength, _))
 
-  val timer = new Timer("learn")
-  for (round <- 0 until 100) {
+  timing("learning")(for (round <- 0 until 1000) {
     val learnStats = new Statistics("learn" + round)
+    val learnMaxgain = new Statistics("learnMaxGain" + round)
     for (example <- learnExamples) {
       learnStats += example.evaluateAndLearn(nn, eps)
+      learnMaxgain += example.theoreticalMaximumGain
     }
     println(learnStats)
-    val evalStats = new Statistics("eval" + round)
-    for (example <- evalExamples) {
-      evalStats += example.evaluateAndLearn(nn, eps)
-    }
-    println(evalStats)
-  }
-  println(timer)
+    println(learnMaxgain)
+
+    //    val evalMaxgain = new Statistics("evalMaxGain" + round)
+    //    val evalStats = new Statistics("eval" + round)
+    //    for (example <- evalExamples) {
+    //      evalStats += example.evaluateAndLearn(nn, eps)
+    //      evalMaxgain += example.theoreticalMaximumGain
+    //    }
+    //    println(evalStats)
+    //    println(evalMaxgain)
+  })
+
+  println(nn)
 
 }
