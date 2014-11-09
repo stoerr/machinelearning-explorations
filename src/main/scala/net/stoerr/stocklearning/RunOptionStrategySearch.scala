@@ -13,7 +13,7 @@ object RunOptionStrategySearch extends App {
 
   val eps = 1
   val historyLength = 14
-  val intermediateLayerSize = 10
+  val intermediateLayerSize = 100
   val maxRange = StockQuoteRepository.maxIndex
   val minRange = StockQuoteRepository.minIndex + historyLength
   val controlQuotaPercent = 10
@@ -26,7 +26,7 @@ object RunOptionStrategySearch extends App {
   // val learnExamples = Array(modelExample)
   val evalExamples = rangeSplit until maxRange map (new OptionStrategyExample(historyLength, _))
 
-  timing("learning")(for (round <- 0 until 1000) {
+  timing("learning")(for (round <- 0 until 100) {
     val learnStats = new Statistics("learn" + round)
     val learnMaxgain = new Statistics("learnMaxGain" + round)
     for (example <- learnExamples) {

@@ -15,6 +15,8 @@ import scala.io.Source
  */
 object StockQuoteRepository {
 
+  type StockData = immutable.SortedMap[Int, Double]
+
   def rtag(name: String, content: String) = "(?i)<" + name + """[^>]*>\s*+""" + content + """(?:&nbsp;)*\s*+</\s*+""" + name + """\s*+>\s*+"""
 
   val rnum = """((?:[0-9]+\.)*[0-9]+(?:,[0-9]+(?:,[0-9]+)*))"""
@@ -40,7 +42,7 @@ object StockQuoteRepository {
   }
 
   /** Reads files saved like http://www.onvista.de/index/quote_history.html?ID_NOTATION=20735&RANGE=120M */
-  def readOnVistaFile(file: String): immutable.SortedMap[Int, Double] = {
+  def readOnVistaFile(file: String): StockData = {
     val stream = StockQuoteRepository.getClass.getClassLoader.getResourceAsStream(file)
     val entries = Source.fromInputStream(stream, "windows-1252").getLines()
       .flatMap(priceRegex.findAllMatchIn(_)).map {
@@ -78,19 +80,19 @@ object StockQuoteRepository {
   // Indizes 19.10.04 - 24.10.14
   // Options: ca. 28.07.11 - 24.10.14
   /** 3.1422824099766394E-4 +- 0.011006386716428129 [ -0.09471475078445749 , 0.07082838671829854 ] : 2613 */
-  val dax: SortedMap[Int, Double] = readOnVistaFile("OnVista/Dax10Jahre.htm")
+  val dax: StockData = readOnVistaFile("OnVista/Dax10Jahre.htm")
   /** 2.303681448495171E-4 +- 0.02429727213749672 [ -0.14016940101838293 , 0.12239977552894699 ] : 848 */
-  val daxCall5000 = readOnVistaFile("OnVista/DaxCall5000.htm")
+  val daxCall5000: StockData = readOnVistaFile("OnVista/DaxCall5000.htm")
   /** -0.0017788975653484837 +- 0.05082902522246617 [ -0.2237230934921227 , 0.20139480845541347 ] : 846 */
-  val daxCall11000 = readOnVistaFile("OnVista/DaxCall11000.htm")
+  val daxCall11000: StockData = readOnVistaFile("OnVista/DaxCall11000.htm")
   /** -0.0033625339433343802 +- 0.04660592152180133 [ -0.19782574332991978 , 0.24659521234925932 ] : 848 */
-  val daxPut5000 = readOnVistaFile("OnVista/DaxPut5000.htm")
+  val daxPut5000: StockData = readOnVistaFile("OnVista/DaxPut5000.htm")
   /** -7.414818557628482E-4 +- 0.024712814029127107 [ -0.10024261013472781 , 0.09831428225436685 ] : 846 */
-  val daxPut11000 = readOnVistaFile("OnVista/DaxPut11000.htm")
+  val daxPut11000: StockData = readOnVistaFile("OnVista/DaxPut11000.htm")
   /** 1.992750056243933E-4 +- 0.007856292270844598 [ -0.05668684733102446 , 0.06285033570920469 ] : 2613 */
-  val dowJones = readOnVistaFile("OnVista/DowJones10J.htm")
+  val dowJones: StockData = readOnVistaFile("OnVista/DowJones10J.htm")
   /** 2.1706690482904415E-4 +- 0.008663687702549536 [ -0.06493104182489337 , 0.0696554632171355 ] : 2613 */
-  val sp500 = readOnVistaFile("OnVista/SP500-10J.htm")
+  val sp500: StockData = readOnVistaFile("OnVista/SP500-10J.htm")
 
   val options = Array(daxCall5000, daxPut5000, daxCall11000, daxPut11000)
   val onames = Array("c5", "p5", "c11", "p11")

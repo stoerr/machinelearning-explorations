@@ -1,6 +1,7 @@
 package net.stoerr.stocklearning
 
 import net.stoerr.stocklearning.DValue.ONE
+import net.stoerr.stocklearning.StockQuoteRepository.StockData
 
 /**
  * Example to train a neural network to make gains by bying / selling stock options.
@@ -11,7 +12,11 @@ import net.stoerr.stocklearning.DValue.ONE
 class OptionStrategyExample(length: Int, offset: Int) {
 
   // filled from dax etc.; the length is taken for the neural networks input size.
-  val inputs: Array[Double] = ((offset - length) until offset).map(StockQuoteRepository.dax).toArray
+  val inputs: Array[Double] = extractOfStock(StockQuoteRepository.dax) ++
+    StockQuoteRepository.options.map(extractOfStock).reduce(_ ++ _) ++ Array(offset.asInstanceOf[Double])
+
+  def extractOfStock(stock: StockData): Array[Double] =
+    ((offset - length) until offset).map(stock).toArray
 
   // current prices
   val p: Array[DValue] = StockQuoteRepository.options.map(_(offset)).map(DValue(_))
@@ -19,7 +24,7 @@ class OptionStrategyExample(length: Int, offset: Int) {
   // tomorrows prices, for evaluation
   val pp: Array[DValue] = StockQuoteRepository.options.map(_(offset + 1)).map(DValue(_))
 
-  def evaluate(network: BackpropagatedNeuralNetwork) : Double = evaluateAndLearn(network, 0)
+  def evaluate(network: BackpropagatedNeuralNetwork): Double = evaluateAndLearn(network, 0)
 
   /** n'_i = (1+o_i)/(p_i sum( (1+o_i) )) , evaluation ln(sum(n'_i p'_i)) */
   def evaluateAndLearn(network: BackpropagatedNeuralNetwork, eps: Double): Double = {
