@@ -24,6 +24,8 @@ class OptionStrategyExample(length: Int, offset: Int) {
   // tomorrows prices, for evaluation
   val pp: Array[DValue] = StockQuoteRepository.options.map(_(offset + 1)).map(DValue(_))
 
+  // val inputs: Array[Double] = p.map(_.value) ++ pp.map(_.value)
+
   def evaluate(network: BackpropagatedNeuralNetwork): Double = evaluateAndLearn(network, 0)
 
   /** n'_i = (1+o_i)/(p_i sum( (1+o_i) )) , evaluation ln(sum(n'_i p'_i)) */

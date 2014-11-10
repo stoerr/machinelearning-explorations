@@ -12,10 +12,10 @@ import scala.util.Random
 object RunOptionStrategySearch extends App {
 
   val eps = 1
-  val historyLength = 14
-  val intermediateLayerSize = 100
-  val maxRange = StockQuoteRepository.maxIndex
-  val minRange = StockQuoteRepository.minIndex + historyLength
+  val historyLength = 30
+  val intermediateLayerSize = 500
+  val maxRange = StockQuoteRepository.maxIndex - 1
+  val minRange = StockQuoteRepository.minIndex + historyLength + 10
   val controlQuotaPercent = 10
 
   val rangeSplit: Int = (maxRange - minRange) * controlQuotaPercent / 100 + minRange
@@ -26,7 +26,7 @@ object RunOptionStrategySearch extends App {
   // val learnExamples = Array(modelExample)
   val evalExamples = rangeSplit until maxRange map (new OptionStrategyExample(historyLength, _))
 
-  timing("learning")(for (round <- 0 until 100) {
+  timing("learning")(for (round <- 0 until 10000) {
     val learnStats = new Statistics("learn" + round)
     val learnMaxgain = new Statistics("learnMaxGain" + round)
     for (example <- learnExamples) {
@@ -46,6 +46,6 @@ object RunOptionStrategySearch extends App {
     //    println(evalMaxgain)
   })
 
-  println(nn)
+  // println(nn)
 
 }
