@@ -1,4 +1,6 @@
-package net.stoerr.stocklearning
+package net.stoerr.stocklearning.directnn
+
+import net.stoerr.stocklearning.java.BackpropagatedNeuralNetwork
 
 /**
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>

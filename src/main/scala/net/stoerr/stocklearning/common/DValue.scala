@@ -1,6 +1,6 @@
-package net.stoerr.stocklearning
+package net.stoerr.stocklearning.common
 
-import scala.collection.immutable.{TreeMap, SortedMap}
+import scala.collection.immutable.{SortedMap, TreeMap}
 
 /** Constructors for DValue - see there. */
 object DValue {

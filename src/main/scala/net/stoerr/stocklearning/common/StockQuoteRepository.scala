@@ -1,4 +1,4 @@
-package net.stoerr.stocklearning
+package net.stoerr.stocklearning.common
 
 import java.text.{DateFormat, NumberFormat}
 import java.util.concurrent.TimeUnit

@@ -1,4 +1,4 @@
-package net.stoerr.stocklearning
+package net.stoerr.stocklearning.common
 
 /**
  * Utility for timing stuff.

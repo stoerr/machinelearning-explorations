@@ -1,4 +1,4 @@
-package net.stoerr.stocklearning
+package net.stoerr.stocklearning.common
 
 /**
  * Collects statistics for a single parameter.
@@ -25,6 +25,6 @@ class Statistics(name: String) {
 
   def stddev = math.sqrt((sumsquares - sum * sum / count) / (count - 1))
 
-  override def toString() = name + " = " + mean + " +- " + stddev + " [ " + min + " , " + max + " ] : " + count
+  override def toString = name + " = " + mean + " +- " + stddev + " [ " + min + " , " + max + " ] : " + count
 
 }

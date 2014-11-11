@@ -1,4 +1,4 @@
-package net.stoerr.stocklearning;
+package net.stoerr.stocklearning.java;
 
 import java.io.Serializable;
 import java.util.Arrays;

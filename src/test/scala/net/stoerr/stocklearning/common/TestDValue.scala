@@ -1,4 +1,4 @@
-package net.stoerr.stocklearning
+package net.stoerr.stocklearning.common
 
 import org.scalatest.FunSuite
 
@@ -28,7 +28,7 @@ class TestDValue extends FunSuite {
 
   test("Try to estimate value") {
     def complicated(xr: Double, yr: Double) = {
-      val x = DValue(xr, "x");
+      val x = DValue(xr, "x")
       val y = DValue(yr, "y")
       (x * DValue(-3)).abs + y / (x.abs * y.log - y)
     }

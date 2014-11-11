@@ -1,6 +1,8 @@
-package net.stoerr.stocklearning
+package net.stoerr.stocklearning.directnn
 
-import net.stoerr.stocklearning.Timer._
+import net.stoerr.stocklearning.common.Timer._
+import net.stoerr.stocklearning.common.{Statistics, StockQuoteRepository, Timer}
+import net.stoerr.stocklearning.java.BackpropagatedNeuralNetwork
 
 import scala.util.Random
 
@@ -13,7 +15,7 @@ object RunOptionStrategySearch extends App {
 
   val eps = 1
   val historyLength = 30
-  val intermediateLayerSize = 500
+  val intermediateLayerSize = 100
   val maxRange = StockQuoteRepository.maxIndex - 1
   val minRange = StockQuoteRepository.minIndex + historyLength + 10
   val controlQuotaPercent = 10
@@ -36,14 +38,14 @@ object RunOptionStrategySearch extends App {
     println(learnStats)
     println(learnMaxgain)
 
-    //    val evalMaxgain = new Statistics("evalMaxGain" + round)
-    //    val evalStats = new Statistics("eval" + round)
-    //    for (example <- evalExamples) {
-    //      evalStats += example.evaluateAndLearn(nn, eps)
-    //      evalMaxgain += example.theoreticalMaximumGain
-    //    }
-    //    println(evalStats)
-    //    println(evalMaxgain)
+    val evalMaxgain = new Statistics("evalMaxGain" + round)
+    val evalStats = new Statistics("eval" + round)
+    for (example <- evalExamples) {
+      evalStats += example.evaluateAndLearn(nn, eps)
+      evalMaxgain += example.theoreticalMaximumGain
+    }
+    println(evalStats)
+    println(evalMaxgain)
   })
 
   // println(nn)
