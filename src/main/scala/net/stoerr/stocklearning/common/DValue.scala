@@ -39,6 +39,6 @@ case class DValue(value: Double, derivations: SortedMap[String, Double]) {
 
   def abs: DValue = if (value < 0) this * DValue(-1) else this
 
-  def log: DValue = if (value == 0) DValue(0) else DValue(math.log(value), derivations.mapValues(_ * 1 / value))
+  def log: DValue = DValue(math.log(value), derivations.mapValues(_ * 1 / value))
 
 }
