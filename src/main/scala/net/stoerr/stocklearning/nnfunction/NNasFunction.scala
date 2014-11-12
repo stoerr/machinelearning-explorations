@@ -27,13 +27,14 @@ class NNasFunction(inputSize: Int, hiddenSize: Int, outputSize: Int) {
   /** Dimension of the weight vector */
   val dimension = hiddenSize * inputSize + outputSize * hiddenSize
 
-  def evaluateNN(inputs: Array[Double], weights: Array[Double]): Array[Double] = {
+  private class Calculation(inputs: Array[Double], weights: Array[Double]) {
     val hiddenOut: Array[Double] = Array.ofDim(hiddenSize)
     for (i <- 0.until(hiddenSize)) hiddenOut(i) = dotProductAndTanh(inputSize, inputs, 0, weights, inputSize * i)
     val out: Array[Double] = Array.ofDim(outputSize)
     for (i <- 0.until(outputSize)) out(i) = dotProductAndTanh(hiddenSize, hiddenOut, 0, weights, inputSize * hiddenSize + hiddenSize * i)
-    out
   }
+
+  def evaluateNN(inputs: Array[Double], weights: Array[Double]): Array[Double] = new Calculation(inputs, weights).out
 
   def weightFunction(example: Example): (Array[Double] => Double) = weights => example.gain(evaluateNN(example.inputs, weights))
 
