@@ -1,5 +1,7 @@
 package net.stoerr.stocklearning.common
 
+import scala.language.implicitConversions
+
 object DoubleArrayVector {
   implicit def doubleArrayVector(v: Array[Double]) = new DoubleArrayVector(v)
 }
