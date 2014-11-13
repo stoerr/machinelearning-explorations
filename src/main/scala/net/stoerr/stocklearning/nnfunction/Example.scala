@@ -1,5 +1,6 @@
 package net.stoerr.stocklearning.nnfunction
 
+import net.stoerr.stocklearning.common.DValue
 import net.stoerr.stocklearning.nnfunction.Example.ValueWithGradient
 
 object Example {
@@ -17,4 +18,21 @@ trait Example {
   def gain(outputValues: Array[Double]): Double
 
   def gainWithGradient(outputValues: Array[Double]): ValueWithGradient
+}
+
+class ExampleWithDValueFunction(val inputs: Array[Double], func: Array[DValue] => DValue) extends Example {
+
+  import scala.language.postfixOps
+
+  private val varnames = (0 until inputs.length) map ("v" + _) toArray
+
+  override def gain(outputValues: Array[Double]): Double = func(outputValues.map(DValue(_))).value
+
+  override def gainWithGradient(outputValues: Array[Double]): (Double, Array[Double]) = {
+    val args = (outputValues, varnames).zipped.map(DValue(_, _))
+    val fval = func(args)
+    (fval.value, varnames.map(fval.deriv(_)))
+  }
+
+
 }
