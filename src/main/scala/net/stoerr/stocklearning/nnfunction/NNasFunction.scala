@@ -1,17 +1,12 @@
 package net.stoerr.stocklearning.nnfunction
 
 import net.stoerr.stocklearning.java.DoubleArrayOps._
-
-trait Example {
-  val inputs: Array[Double]
-
-  def gain(outputValues: Array[Double]): Double
-}
+import net.stoerr.stocklearning.nnfunction.Example.ValueWithGradient
 
 trait DoubleFunctionWithGradient extends (Array[Double] => Double) {
   def gradient(arg: Array[Double]): Array[Double]
 
-  def applyWithGradient(arg: Array[Double]): (Double, Array[Double]) = (apply(arg), gradient(arg))
+  def applyWithGradient(arg: Array[Double]): ValueWithGradient = (apply(arg), gradient(arg))
 }
 
 /**
@@ -27,18 +22,29 @@ class NNasFunction(inputSize: Int, hiddenSize: Int, outputSize: Int) {
   /** Dimension of the weight vector */
   val dimension = hiddenSize * inputSize + outputSize * hiddenSize
 
-  private class Calculation(inputs: Array[Double], weights: Array[Double]) {
+  private class Calculation(example: Example, weights: Array[Double]) {
     val hiddenOut: Array[Double] = Array.ofDim(hiddenSize)
-    for (i <- 0.until(hiddenSize)) hiddenOut(i) = dotProductAndTanh(inputSize, inputs, 0, weights, inputSize * i)
+    for (i <- 0.until(hiddenSize)) hiddenOut(i) = dotProductAndTanh(inputSize, example.inputs, 0, weights, inputSize * i)
     val out: Array[Double] = Array.ofDim(outputSize)
     for (i <- 0.until(outputSize)) out(i) = dotProductAndTanh(hiddenSize, hiddenOut, 0, weights, inputSize * hiddenSize + hiddenSize * i)
   }
 
-  def evaluateNN(inputs: Array[Double], weights: Array[Double]): Array[Double] = new Calculation(inputs, weights).out
+  private class DerivCalculation(example: Example, weights: Array[Double]) extends Calculation(example, weights) {
+    val (gain, gainOut2Gradient) = example.gainWithGradient(out)
+    val gradient: Array[Double] = Array.ofDim(dimension)
+  }
+
+  private def evaluateNN(inputs: Array[Double], weights: Array[Double]): Array[Double] = new Calculation(inputs, weights).out
 
   def weightFunction(example: Example): (Array[Double] => Double) = weights => example.gain(evaluateNN(example.inputs, weights))
 
   def joinedWeightFunction(examples: Seq[Example]): (Array[Double] => Double) =
     examples.map(weightFunction).reduceLeft((f1, f2) => (weights => f1(weights) + f2(weights)))
+
+  def weightFunctionWithGradient(example: Example): (Array[Double] => Double) = weights => example.gain(evaluateNN(example.inputs, weights))
+
+  def joinedWeightFunctionWithGradient(examples: Seq[Example]): (Array[Double] => Double) =
+    examples.map(weightFunction).reduceLeft((f1, f2) => (weights => f1(weights) + f2(weights)))
+
 
 }

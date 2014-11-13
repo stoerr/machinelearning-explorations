@@ -9,11 +9,19 @@ package net.stoerr.stocklearning.java;
 public class DoubleArrayOps {
 
     public static double dotProductAndTanh(int n, double[] in1, int offset1, double[] in2, int offset2) {
-        double res=0;
+        double res = 0;
         for (int i = 0; i < n; ++i) {
             res = Math.tanh(in1[offset1 + i] * in2[offset2 + i]);
         }
         return res;
+    }
+
+    /**
+     * First derivation of used activation function tanh
+     */
+    public static double dtanh(double x) {
+        double tanh = Math.tanh(x);
+        return 1 - tanh * tanh;
     }
 
 }
