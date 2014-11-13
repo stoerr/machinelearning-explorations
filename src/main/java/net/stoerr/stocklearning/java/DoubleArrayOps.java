@@ -8,12 +8,12 @@ package net.stoerr.stocklearning.java;
  */
 public class DoubleArrayOps {
 
-    public static double dotProductAndTanh(int n, double[] in1, int offset1, double[] in2, int offset2) {
+    public static double dotProductAndTanh(int n, double[] inputs, int offset1, double[] weights, int offset2) {
         double res = 0;
         for (int i = 0; i < n; ++i) {
-            res = Math.tanh(in1[offset1 + i] * in2[offset2 + i]);
+            res = inputs[offset1 + i] * weights[offset2 + i];
         }
-        return res;
+        return Math.tanh(res + weights[offset2 + n]);
     }
 
     /**
