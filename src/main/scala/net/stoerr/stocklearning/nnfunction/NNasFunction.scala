@@ -2,6 +2,7 @@ package net.stoerr.stocklearning.nnfunction
 
 import net.stoerr.stocklearning.java.DoubleArrayOps._
 import net.stoerr.stocklearning.nnfunction.Example.ValueWithGradient
+import net.stoerr.stocklearning.common.DoubleArrayVector._
 
 trait DoubleFunctionWithGradient extends (Array[Double] => Double) {
   def gradient(arg: Array[Double]): Array[Double]
@@ -34,17 +35,21 @@ class NNasFunction(inputSize: Int, hiddenSize: Int, outputSize: Int) {
     val gradient: Array[Double] = Array.ofDim(dimension)
   }
 
-  private def evaluateNN(inputs: Array[Double], weights: Array[Double]): Array[Double] = new Calculation(inputs, weights).out
-
-  def weightFunction(example: Example): (Array[Double] => Double) = weights => example.gain(evaluateNN(example.inputs, weights))
+  def weightFunction(example: Example): (Array[Double] => Double) = weights => example.gain(new Calculation(example, weights).out)
 
   def joinedWeightFunction(examples: Seq[Example]): (Array[Double] => Double) =
     examples.map(weightFunction).reduceLeft((f1, f2) => (weights => f1(weights) + f2(weights)))
 
-  def weightFunctionWithGradient(example: Example): (Array[Double] => Double) = weights => example.gain(evaluateNN(example.inputs, weights))
+  def weightFunctionWithGradient(example: Example): (Array[Double] => ValueWithGradient) = weights => example.gainWithGradient(new Calculation(example, weights).out)
 
-  def joinedWeightFunctionWithGradient(examples: Seq[Example]): (Array[Double] => Double) =
-    examples.map(weightFunction).reduceLeft((f1, f2) => (weights => f1(weights) + f2(weights)))
+  def joinedWeightFunctionWithGradient(examples: Seq[Example]): (Array[Double] => ValueWithGradient) =
+    examples.map(weightFunctionWithGradient).reduceLeft { (f1, f2) =>
+      weights => {
+        val (f1g, f1d) = f1(weights)
+        val (f2g, f2d) = f2(weights)
+        (f1g + f2g, f1d + f2d)
+      }
+    }
 
 
 }
