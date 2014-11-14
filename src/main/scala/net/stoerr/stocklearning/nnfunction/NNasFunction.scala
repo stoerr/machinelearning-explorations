@@ -21,7 +21,7 @@ trait DoubleFunctionWithGradient extends (Array[Double] => Double) {
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
  * @since 11.11.2014
  */
-class NNasFunction(inputSize: Int, hiddenSize: Int, outputSize: Int) {
+class NNasFunction(val inputSize: Int, val hiddenSize: Int, val outputSize: Int) {
 
   /** Dimension of the weight vector.
     * w1_jk (in_k -> o1_j) : (inputSize + 1)*j + k
@@ -47,13 +47,32 @@ class NNasFunction(inputSize: Int, hiddenSize: Int, outputSize: Int) {
   }
 
   private class DerivCalculation(example: Example, weights: Array[Double]) extends Calculation(example, weights) {
+    private def sqr(x:Double) = x*x
     val (gain, gainOut2Gradient) = example.gainWithGradient(out)
     val gradient: Array[Double] = Array.ofDim(dimension)
+    val hiddenDivSum: Array[Double] = Array.ofDim(hiddenSize) // d(gain)/d(hiddenOut(_))
     for ((o2i, i) <- out.zipWithIndex) {
       val o2id = (1 - o2i * o2i) * gainOut2Gradient(i) // d(gain)/d(o2_i)
-      for ((o1, j) <- hiddenOut.zipWithIndex) {
-        // gradient((inputSize + 1) * hiddenSize + (hiddenSize + 1) * i))
+      for (j <- 0 until hiddenSize) {
+        val ind_w2_ij: Int = ind_w2(i, j)
+        assert(0 == gradient(ind_w2_ij))
+        gradient(ind_w2_ij) = o2id * hiddenOut(j)
+        hiddenDivSum(j) += o2id * weights(ind_w2_ij)
       }
+      val ind_offset2_i: Int = ind_offset2(i)
+      assert(0 == gradient(ind_offset2_i))
+      gradient(ind_offset2_i) = o2id
+    }
+    for ((o1j, j) <- hiddenOut.zipWithIndex) {
+      val o1jd = hiddenDivSum(j) * (1- sqr(hiddenOut(j)))
+      for (k <- 0 until inputSize) {
+        val ind_w2_lk = ind_w1(j,k)
+        assert (0 == gradient(ind_w2_lk))
+        gradient(ind_w2_lk) = o1jd * example.inputs(k)
+      }
+      val ind_offset1_j = ind_offset1(j)
+      assert (0 == gradient(ind_offset1_j))
+      gradient(ind_offset1_j) = o1jd
     }
     val result = (gain, gradient)
   }
@@ -61,7 +80,7 @@ class NNasFunction(inputSize: Int, hiddenSize: Int, outputSize: Int) {
   def weightFunction(example: Example): (Array[Double] => Double) = weights => example.gain(new Calculation(example, weights).out)
 
   def joinedWeightFunction(examples: Seq[Example]): (Array[Double] => Double) =
-    examples.map(weightFunction).reduceLeft((f1, f2) => (weights => f1(weights) + f2(weights)))
+    examples.map(weightFunction).reduceLeft((f1, f2) => weights => f1(weights) + f2(weights))
 
   def weightFunctionWithGradient(example: Example): (Array[Double] => ValueWithGradient) = weights => new DerivCalculation(example, weights).result
 
