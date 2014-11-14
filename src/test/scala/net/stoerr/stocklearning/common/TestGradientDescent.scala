@@ -23,12 +23,12 @@ class TestGradientDescent extends FunSuite {
   test("approximateMinimum") {
     def f(x: Double) = -math.sin(x) + 0.3743
     for (eps <- Array(0.01, 1, 1.5, 2, 4)) {
-      val minimum: Double = GradientDescent.approximateMinimum(f, eps, f(0))
+      val minimum: Double = GradientDescent.approximateMinimum(f(0), f, eps)
       assert(math.abs(minimum - math.Pi / 2) < 0.2)
     }
 
-    def g(x:Double) = math.cosh(x-1)
-    val minimum = GradientDescent.approximateMinimum(g, 10, g(0))
+    def g(x: Double) = math.cosh(x - 1)
+    val minimum = GradientDescent.approximateMinimum(g(0), g, 10)
     assert(math.abs(minimum - 1) < 0.1)
   }
 

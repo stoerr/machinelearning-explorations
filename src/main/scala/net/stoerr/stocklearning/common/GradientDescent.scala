@@ -14,10 +14,11 @@ object GradientDescent {
     (x0 * x0 * (y1 - y2) + x1 * x1 * (y2 - y0) + x2 * x2 * (y0 - y1)) / 2 / (x0 * y1 - x0 * y2 - x1 * y0 + x1 * y2 + x2 * y0 - x2 * y1)
 
   /** Numerically finds a rough approximation of the minimum of f near 0 with first step length eps. <br/>
-    * We assume the sign of eps is into the direction of the minimum and f goes downward into that direction.
-    * Optimized for what we need in gradient descent. f0 is f(0); given to save calculations of f
+    * Optimized for what we need in gradient descent: We assume the sign of eps is into the direction of the minimum
+    * and f goes downward into that direction. If this doesn't nold, the algorithm might not terminate.
+    * f0 is f(0); given to save calculations of f
     */
-  def approximateMinimum(f: Double => Double, eps: Double, f0: Double): Double = {
+  def approximateMinimum(f0: Double, f: Double => Double, eps: Double): Double = {
     var (x0, y0) = (0.0, f0)
     var (x1, y1) = (eps, f(eps))
     var (x2, y2) = (0.0, 0.0)
