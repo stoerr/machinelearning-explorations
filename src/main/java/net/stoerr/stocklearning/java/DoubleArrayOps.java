@@ -6,7 +6,7 @@ package net.stoerr.stocklearning.java;
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
  * @since 11.11.2014
  */
-public class DoubleArrayOps {
+public final class DoubleArrayOps {
 
     public static double dotProductAndTanh(int n, double[] inputs, int offset1, double[] weights, int offset2) {
         double res = 0;
@@ -16,12 +16,16 @@ public class DoubleArrayOps {
         return Math.tanh(res + weights[offset2 + n]);
     }
 
-    /**
-     * First derivation of used activation function tanh
-     */
-    public static double dtanh(double x) {
-        double tanh = Math.tanh(x);
-        return 1 - tanh * tanh;
+    public static void assignMultiplied(int n, double src[], int srcOffset, double dst[], int dstOffset, double factor) {
+        for (int i = 0; i < n; ++i) {
+            dst[dstOffset + i] = factor * src[srcOffset + i];
+        }
+    }
+
+    public static void addMultiplied(int n, double src[], int srcOffset, double dst[], int dstOffset, double factor) {
+        for (int i = 0; i < n; ++i) {
+            dst[dstOffset + i] += factor * src[srcOffset + i];
+        }
     }
 
 }

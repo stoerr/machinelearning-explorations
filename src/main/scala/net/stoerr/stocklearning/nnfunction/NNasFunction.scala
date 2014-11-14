@@ -1,14 +1,8 @@
 package net.stoerr.stocklearning.nnfunction
 
 import net.stoerr.stocklearning.common.DoubleArrayVector._
-import net.stoerr.stocklearning.java.DoubleArrayOps._
+import net.stoerr.stocklearning.java.DoubleArrayOps
 import net.stoerr.stocklearning.nnfunction.Example.ValueWithGradient
-
-trait DoubleFunctionWithGradient extends (Array[Double] => Double) {
-  def gradient(arg: Array[Double]): Array[Double]
-
-  def applyWithGradient(arg: Array[Double]): ValueWithGradient = (apply(arg), gradient(arg))
-}
 
 /**
  * Makes a function R to the n -> R from a neural network with examples,
@@ -41,31 +35,34 @@ class NNasFunction(val inputSize: Int, val hiddenSize: Int, val outputSize: Int)
 
   private class Calculation(example: Example, weights: Array[Double]) {
     val hiddenOut: Array[Double] = Array.ofDim(hiddenSize)
-    for (i <- 0.until(hiddenSize)) hiddenOut(i) = dotProductAndTanh(inputSize, example.inputs, 0, weights, ind_w1(i, 0))
+    for (i <- 0.until(hiddenSize)) hiddenOut(i) = DoubleArrayOps.dotProductAndTanh(inputSize, example.inputs, 0, weights, ind_w1(i, 0))
     val out: Array[Double] = Array.ofDim(outputSize)
-    for (i <- 0.until(outputSize)) out(i) = dotProductAndTanh(hiddenSize, hiddenOut, 0, weights, ind_w2(i, 0))
+    for (i <- 0.until(outputSize)) out(i) = DoubleArrayOps.dotProductAndTanh(hiddenSize, hiddenOut, 0, weights, ind_w2(i, 0))
   }
 
   private class DerivCalculation(example: Example, weights: Array[Double]) extends Calculation(example, weights) {
-    private def sqr(x:Double) = x*x
+    private def sqr(x: Double) = x * x
+
     val (gain, gainOut2Gradient) = example.gainWithGradient(out)
     val gradient: Array[Double] = Array.ofDim(dimension)
     val hiddenDivSum: Array[Double] = Array.ofDim(hiddenSize) // d(gain)/d(hiddenOut(_))
     for ((o2i, i) <- out.zipWithIndex) {
       val o2id = (1 - o2i * o2i) * gainOut2Gradient(i) // d(gain)/d(o2_i)
-      for (j <- 0 until hiddenSize) {
-        val ind_w2_ij: Int = ind_w2(i, j)
-        gradient(ind_w2_ij) = o2id * hiddenOut(j)
-        hiddenDivSum(j) += o2id * weights(ind_w2_ij)
-      }
-      val ind_offset2_i: Int = ind_offset2(i)
-      gradient(ind_offset2_i) = o2id
+      //      for (j <- 0 until hiddenSize) {
+      //        val ind_w2_ij: Int = ind_w2(i, j)
+      //        gradient(ind_w2_ij) = o2id * hiddenOut(j)
+      //        hiddenDivSum(j) += o2id * weights(ind_w2_ij)
+      //      }
+      DoubleArrayOps.assignMultiplied(hiddenSize, hiddenOut, 0, gradient, ind_w2(i, 0), o2id)
+      DoubleArrayOps.addMultiplied(hiddenSize, weights, ind_w2(i, 0), hiddenDivSum, 0, o2id)
+      gradient(ind_offset2(i)) = o2id
     }
     for ((o1j, j) <- hiddenOut.zipWithIndex) {
-      val o1jd = hiddenDivSum(j) * (1- sqr(hiddenOut(j)))
-      for (k <- 0 until inputSize) {
-        gradient(ind_w1(j, k)) = o1jd * example.inputs(k)
-      }
+      val o1jd = hiddenDivSum(j) * (1 - sqr(hiddenOut(j)))
+      //      for (k <- 0 until inputSize) {
+      //        gradient(ind_w1(j, k)) = o1jd * example.inputs(k)
+      //      }
+      DoubleArrayOps.assignMultiplied(inputSize, example.inputs, 0, gradient, ind_w1(j, 0), o1jd)
       gradient(ind_offset1(j)) = o1jd
     }
     val result = (gain, gradient)
