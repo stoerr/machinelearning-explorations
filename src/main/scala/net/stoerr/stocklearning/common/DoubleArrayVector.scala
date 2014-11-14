@@ -23,4 +23,11 @@ final class DoubleArrayVector(val self: Array[Double]) {
 
   def *(other: Double): Array[Double] = self.map(_ * other)
 
+  /** func(self + Array(0,...,arg, ...,0)) - func(self) , arg is put in n-th place. */
+  def projectFunction(func: Array[Double] => Double, n: Int) = { arg: Double =>
+    val basePlusArg = self.clone()
+    basePlusArg(n) += arg
+    func(basePlusArg)
+  }
+
 }

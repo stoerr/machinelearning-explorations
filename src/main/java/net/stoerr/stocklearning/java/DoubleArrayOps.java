@@ -11,7 +11,7 @@ public class DoubleArrayOps {
     public static double dotProductAndTanh(int n, double[] inputs, int offset1, double[] weights, int offset2) {
         double res = 0;
         for (int i = 0; i < n; ++i) {
-            res = inputs[offset1 + i] * weights[offset2 + i];
+            res += inputs[offset1 + i] * weights[offset2 + i];
         }
         return Math.tanh(res + weights[offset2 + n]);
     }

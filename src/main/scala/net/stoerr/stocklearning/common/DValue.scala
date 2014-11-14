@@ -9,6 +9,18 @@ object DValue {
   def apply(value: Double, name: String) = new DValue(value, TreeMap(name -> 1.0))
 
   val ONE = DValue(1)
+
+  def asDoubleFunction(func: Array[DValue] => DValue)(args: Array[Double]): Double =
+    func(args.map(DValue(_))).value
+
+  def asDoubleFunctionWithGradient(func: Array[DValue] => DValue)(args: Array[Double]): (Double, Array[Double]) = {
+    val varnames = (0 until args.length).map("v" + _).toArray
+    val dargs = (args, varnames).zipped.map(DValue(_, _))
+    val fval = func(dargs)
+    (fval.value, varnames.map(fval.deriv(_)))
+  }
+
+
 }
 
 /**

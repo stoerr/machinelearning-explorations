@@ -22,17 +22,10 @@ trait Example {
 
 class ExampleWithDValueFunction(val inputs: Array[Double], func: Array[DValue] => DValue) extends Example {
 
-  import scala.language.postfixOps
+  override def gain(outputValues: Array[Double]): Double =
+    DValue.asDoubleFunction(func)(outputValues)
 
-  private val varnames = (0 until inputs.length) map ("v" + _) toArray
-
-  override def gain(outputValues: Array[Double]): Double = func(outputValues.map(DValue(_))).value
-
-  override def gainWithGradient(outputValues: Array[Double]): (Double, Array[Double]) = {
-    val args = (outputValues, varnames).zipped.map(DValue(_, _))
-    val fval = func(args)
-    (fval.value, varnames.map(fval.deriv(_)))
-  }
-
+  override def gainWithGradient(outputValues: Array[Double]): (Double, Array[Double]) =
+    DValue.asDoubleFunctionWithGradient(func)(outputValues)
 
 }
