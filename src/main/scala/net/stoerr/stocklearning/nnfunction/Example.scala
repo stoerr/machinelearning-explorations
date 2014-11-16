@@ -29,3 +29,7 @@ class ExampleWithDValueFunction(val inputs: Array[Double], func: Array[DValue] =
     DValue.asDoubleFunctionWithGradient(func)(outputValues)
 
 }
+
+class ExampleForStinoNN(inputs: Array[Double], val expectedOutputs: Array[Double])
+  extends ExampleWithDValueFunction(inputs, outputs =>
+    (outputs, expectedOutputs.map(DValue(_))).zipped.map(_ - _).map(x => x * x).reduce(_ + _))

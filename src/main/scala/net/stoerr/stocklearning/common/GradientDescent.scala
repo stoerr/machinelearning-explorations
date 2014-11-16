@@ -31,7 +31,7 @@ object GradientDescent {
       x2 = x1 * 2
       y2 = f(x2)
     }
-    // println(((x0, x1, x2),(y0,y1,y2)))
+    // println(((x0, x1, x2), (y0, y1, y2)))
     while (y1 > math.min(y0, y2)) {
       if (y2 < y0) {
         // y0 >= y1 >= y2
@@ -48,11 +48,10 @@ object GradientDescent {
         x1 = (x0 + x2) / 2
         y1 = f(x1)
       }
-      // println(((x0, x1, x2),(y0,y1,y2)))
+      // println(((x0, x1, x2), (y0, y1, y2)))
     }
     val min = interpolatedMinimum(x0, y0, x1, y1, x2, y2)
-    assert(min > x0)
-    assert(min < x2)
+    assert( (min > x0) && (min < x2) || (min < x0) && (min > x2) , x0 + "\t" + min + "\t" + x2)
     min
   }
 

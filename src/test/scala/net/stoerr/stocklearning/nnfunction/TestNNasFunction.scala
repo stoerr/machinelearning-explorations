@@ -1,6 +1,6 @@
 package net.stoerr.stocklearning.nnfunction
 
-import net.stoerr.stocklearning.common.DValue
+import net.stoerr.stocklearning.common.{GradientDescent, DValue}
 import net.stoerr.stocklearning.common.DoubleArrayVector._
 import org.scalatest.FunSuite
 
@@ -47,7 +47,33 @@ class TestNNasFunction extends FunSuite {
     }
     val (value, gradient) = nn.weightFunctionWithGradient(ex)(base)
     val quotients: IndexedSeq[Double] = (realgradient, gradient).zipped.map(_ / _)
-    val maxdifference = quotients.map(math.log).map(math.abs).reduce(math.max(_,_))
+    val maxdifference = quotients.map(math.log).map(math.abs).reduce(math.max(_, _))
     assert(maxdifference < eps)
   }
+
+
+  test("learning") {
+    val examples = Array(
+      new ExampleForStinoNN(Array(0, 0.0), Array(1, 0.0) / 2),
+      new ExampleForStinoNN(Array(0, 1.0), Array(1, 1.0) / 2),
+      new ExampleForStinoNN(Array(1, 0.0), Array(1, 1.0) / 2),
+      new ExampleForStinoNN(Array(1, 1.0), Array(0, 0.0) / 2)
+    )
+    val nn = new NNasFunction(2, 3, 2)
+    val f = nn.joinedWeightFunction(examples)
+    val fgrad = nn.joinedWeightFunctionWithGradient(examples)
+    var x = (0 until nn.dimension).map(_ => math.random - 0.5).toArray
+    var eps = -1.0
+    for (i <- 0 until 100) {
+      val (y,grad) = fgrad(x)
+      val directedFunc = x.directionalFunction(f, x, grad)_
+      eps = GradientDescent.approximateMinimum(y, directedFunc, eps)
+      println(y + "\t" + eps)
+      x = x + grad*eps
+    }
+    println(f(x))
+    println(x.mkString(","))
+    println(nn.toString(x))
+  }
+
 }

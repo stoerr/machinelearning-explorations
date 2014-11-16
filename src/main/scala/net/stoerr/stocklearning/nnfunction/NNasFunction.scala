@@ -33,6 +33,12 @@ class NNasFunction(val inputSize: Int, val hiddenSize: Int, val outputSize: Int)
 
   private def ind_offset2(i: Int) = ind_w2(i, hiddenSize)
 
+  def toString(w: Array[Double]): String =
+    (0 until hiddenSize).map(i =>
+      (0 until inputSize).map(j => w(ind_w1(i, j))).mkString(" ") + " + " + w(ind_offset1(i))
+        + " => " + (0 until outputSize).map(k => w(ind_w2(k, i))).mkString(" ")
+    ).mkString("\n") + "\n++ " + (0 until outputSize).map(k => w(ind_offset2(k))).mkString(" ")
+
   private class Calculation(example: Example, weights: Array[Double]) {
     val hiddenOut: Array[Double] = Array.ofDim(hiddenSize)
     for (i <- 0.until(hiddenSize)) hiddenOut(i) = DoubleArrayOps.dotProductAndTanh(inputSize, example.inputs, 0, weights, ind_w1(i, 0))

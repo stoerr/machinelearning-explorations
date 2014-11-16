@@ -1,5 +1,6 @@
 package net.stoerr.stocklearning.common
 
+import net.stoerr.stocklearning.nnfunction.ExampleForStinoNN
 import org.scalatest.FunSuite
 
 /**
@@ -31,6 +32,5 @@ class TestGradientDescent extends FunSuite {
     val minimum = GradientDescent.approximateMinimum(g(0), g, 10)
     assert(math.abs(minimum - 1) < 0.1)
   }
-
 
 }
