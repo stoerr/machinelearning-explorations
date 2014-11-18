@@ -8,14 +8,21 @@ import org.scalatest.FunSuite
  */
 class TestAbstractTermEnumerator extends FunSuite {
 
-  class SimpleTermEnumerator extends AbstractTermEnumerator {
+  object SimpleTermEnumerator extends AbstractTermEnumerator {
 
     type TwoVars = TermFunctionWithComplexity[(Double, Double), Double]
 
-    val constants: Stream[TwoVars] = Stream(constant("0.5", 0.5), constant("2", 2))
+    val basic: Stream[TwoVars] = Stream(nullary("0.5", _ => 0.5), nullary("2", _ => 2),
+      nullary("x", x => x._1), nullary("y", x => x._2))
 
-    // val terms: Stream[TwoVars] = mergeStreams()
+    val terms: Stream[TwoVars] = basic #::: mergeStreams(
+      terms map unary("-", -_),
+      terms map unary("2 *", 2 * _)
+      // OUCH how to do binary correctly sorted?
+    )
 
   }
+
+  SimpleTermEnumerator.terms.take(20).foreach(println(_))
 
 }
