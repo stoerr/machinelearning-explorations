@@ -1,6 +1,7 @@
 package net.stoerr.stocklearning.common
 
-import net.stoerr.stocklearning.nnfunction.ExampleForStinoNN
+import net.stoerr.stocklearning.common.DValue._
+import net.stoerr.stocklearning.common.GradientDescent._
 import org.scalatest.FunSuite
 
 /**
@@ -10,6 +11,17 @@ import org.scalatest.FunSuite
 class TestGradientDescent extends FunSuite {
 
   val eps = 1e-7
+
+  test("descentWithMinimumApproximation") {
+    def fd(args: Array[DValue]) = {
+      val dif = args(0) - args(1)
+      DValue(100) * dif * dif + (args(0) * args(0) + args(1) * args(1))
+    }
+    val f: (Array[Double]) => Double = asDoubleFunction(fd)
+    val fgrad: (Array[Double]) => (Double, Array[Double]) = asDoubleFunctionWithGradient(fd)
+    val (x, y, dy) = descentWithMinimumApproximation(f, fgrad, 25, Array(1001.0, 1000.0))
+    println(x.toList, y, dy)
+  }
 
   test("Find Minimum") {
     for (m <- Array(0.3, 1.2, 4.7)) {

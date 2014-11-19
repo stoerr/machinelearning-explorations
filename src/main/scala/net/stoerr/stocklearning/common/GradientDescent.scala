@@ -1,5 +1,7 @@
 package net.stoerr.stocklearning.common
 
+import net.stoerr.stocklearning.common.DoubleArrayVector._
+
 /**
  * Implements gradient descent
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
@@ -11,7 +13,9 @@ object GradientDescent {
     * {{x->x02y1-x02y2-x12y0+x12y2+x22y0-x22y12(x0y1-x0y2-x1y0+x1y2+x2y0-x2y1)}}
     */
   def interpolatedMinimum(x0: Double, y0: Double, x1: Double, y1: Double, x2: Double, y2: Double): Double =
-    (x0 * x0 * (y1 - y2) + x1 * x1 * (y2 - y0) + x2 * x2 * (y0 - y1)) / 2 / (x0 * y1 - x0 * y2 - x1 * y0 + x1 * y2 + x2 * y0 - x2 * y1)
+    if (x0 == x1 && x1 == x2) x1
+    else (x0 * x0 * (y1 - y2) + x1 * x1 * (y2 - y0) + x2 * x2 * (y0 - y1)) / 2 /
+      (x0 * y1 - x0 * y2 - x1 * y0 + x1 * y2 + x2 * y0 - x2 * y1)
 
   /** Numerically finds a rough approximation of the minimum of f near 0 with first step length eps. <br/>
     * Optimized for what we need in gradient descent: We assume the sign of eps is into the direction of the minimum
@@ -21,6 +25,7 @@ object GradientDescent {
   def approximateMinimum(f0: Double, f: Double => Double, eps: Double): Double = {
     var (x0, y0) = (0.0, f0)
     var (x1, y1) = (eps, f(eps))
+    if (y0 == y1) return 0
     var (x2, y2) = (0.0, 0.0)
     if (y1 >= y0) {
       x2 = x1
@@ -51,8 +56,28 @@ object GradientDescent {
       // println(((x0, x1, x2), (y0, y1, y2)))
     }
     val min = interpolatedMinimum(x0, y0, x1, y1, x2, y2)
-    assert( (min > x0) && (min < x2) || (min < x0) && (min > x2) , x0 + "\t" + min + "\t" + x2)
+    assert((min >= x0) && (min <= x2) || (min <= x0) && (min >= x2), x0 + "\t" + min + "\t" + x2)
     min
+  }
+
+  def descentWithMinimumApproximation(f: Array[Double] => Double, fgrad: Array[Double] => (Double, Array[Double]),
+                                      maxSteps: Int, x0: Array[Double], eps0: Double = -1.0) = {
+    var x = x0
+    var lastY = Double.NaN
+    var lastchange = Double.MaxValue
+    var eps = eps0
+    for (i <- 0 until maxSteps if math.abs(eps) > 1e-8) {
+      val (y, grad) = fgrad(x)
+      val directedFunc = x.directionalFunction(f, grad)
+      eps = GradientDescent.approximateMinimum(y, directedFunc, eps)
+      println(y + "\t" + eps)
+      x = x + grad * eps
+      lastchange = math.abs(lastY-y)
+      lastY = y
+      if (lastchange < 1e-8) eps = 0 // stop.
+    }
+    val y = f(x)
+    (x, y, math.abs(y - lastY))
   }
 
 }

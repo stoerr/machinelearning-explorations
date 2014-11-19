@@ -34,7 +34,6 @@ final class DoubleArrayVector(val self: Array[Double]) {
     func(basePlusArg)
   }
 
-  def directionalFunction(func: Array[Double] => Double, x: Array[Double], dx: Array[Double])(v: Double): Double
-  = func(x + dx * v)
+  def directionalFunction(func: Array[Double] => Double, dx: Array[Double]) = (v: Double) => func(self + dx * v)
 
 }

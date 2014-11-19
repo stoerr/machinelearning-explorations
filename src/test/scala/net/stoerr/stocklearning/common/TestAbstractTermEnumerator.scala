@@ -17,7 +17,6 @@ class TestAbstractTermEnumerator extends FunSuite {
 
     val terms: Stream[TwoVars] = basic #::: mergeStreams(
       terms map unary("-", -_),
-      terms map unary("2 *", 2 * _),
       binaryOpStream[Double, Double, Double](terms, terms, "+", _ + _),
       binaryOpStream[Double, Double, Double](terms, terms, "*", _ * _),
       binaryOpStream[Double, Double, Double](terms, terms, "/", _ / _)

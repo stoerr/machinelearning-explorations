@@ -66,7 +66,7 @@ class TestNNasFunction extends FunSuite {
     var eps = -1.0
     for (i <- 0 until 100) {
       val (y,grad) = fgrad(x)
-      val directedFunc = x.directionalFunction(f, x, grad)_
+      val directedFunc = x.directionalFunction(f, grad)
       eps = GradientDescent.approximateMinimum(y, directedFunc, eps)
       println(y + "\t" + eps)
       x = x + grad*eps
