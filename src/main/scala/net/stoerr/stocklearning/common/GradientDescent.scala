@@ -60,24 +60,39 @@ object GradientDescent {
     min
   }
 
-  def descentWithMinimumApproximation(f: Array[Double] => Double, fgrad: Array[Double] => (Double, Array[Double]),
-                                      maxSteps: Int, x0: Array[Double], eps0: Double = -1.0) = {
-    var x = x0
-    var lastY = Double.NaN
-    var lastchange = Double.MaxValue
-    var eps = eps0
+}
+
+abstract class AbstractGradientDescent(val f: Array[Double] => Double, val fgrad: Array[Double] => (Double, Array[Double]),
+                              val maxSteps: Int, x0: Array[Double], eps0: Double = -1.0) {
+  var lastY = Double.MaxValue
+  var eps = eps0
+  var x = x0
+  var ygrad: (Double, Array[Double]) = fgrad(x)
+
+  def descent() = {
     for (i <- 0 until maxSteps if math.abs(eps) > 1e-8) {
-      val (y, grad) = fgrad(x)
-      val directedFunc = x.directionalFunction(f, grad)
-      eps = GradientDescent.approximateMinimum(y, directedFunc, eps)
+      val (y, grad) = ygrad
+      calculateStep(y, grad)
       println(y + "\t" + eps)
       x = x + grad * eps
-      lastchange = math.abs(lastY-y)
+      ygrad = fgrad(x)
+      if (math.abs(lastY - y) < 1e-8) eps = 0 // stop.
       lastY = y
-      if (lastchange < 1e-8) eps = 0 // stop.
     }
     val y = f(x)
     (x, y, math.abs(y - lastY))
   }
 
+  protected def calculateStep(y: Double, grad: Array[Double]): Unit
+}
+
+class GradientDescentWithWithMinimumApproximation
+(f: Array[Double] => Double, fgrad: Array[Double] => (Double, Array[Double]),
+ maxSteps: Int, x0: Array[Double], eps0: Double = -1.0)
+  extends AbstractGradientDescent(f, fgrad, maxSteps, x0, eps0) {
+
+  override protected def calculateStep(y: Double, grad: Array[Double]): Unit = {
+    val directedFunc = x.directionalFunction(f, grad)
+    eps = GradientDescent.approximateMinimum(y, directedFunc, eps)
+  }
 }

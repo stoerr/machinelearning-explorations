@@ -19,7 +19,8 @@ class TestGradientDescent extends FunSuite {
     }
     val f: (Array[Double]) => Double = asDoubleFunction(fd)
     val fgrad: (Array[Double]) => (Double, Array[Double]) = asDoubleFunctionWithGradient(fd)
-    val (x, y, dy) = descentWithMinimumApproximation(f, fgrad, 25, Array(1001.0, 1000.0))
+    // val (x, y, dy) = descentWithMinimumApproximation(f, fgrad, 25, Array(1001.0, 1000.0))
+    val (x, y, dy) = new GradientDescentWithWithMinimumApproximation(f, fgrad, 25, Array(1001.0, 1000.0)).descent()
     println(x.toList, y, dy)
   }
 
