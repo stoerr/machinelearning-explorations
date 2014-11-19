@@ -15,21 +15,12 @@ class RunOptionStrategySearchWithGradientDescent extends App with OptionStrategy
 
   def evaluate(network: BackpropagatedNeuralNetwork, ex: OptionStrategyExample): Double = evaluateAndLearn(network, ex, 0)
 
-  /** n'_i = (1+o_i)/(p_i sum( (1+o_i) )) , evaluation ln(sum(n'_i p'_i)) */
   def evaluateAndLearn(network: BackpropagatedNeuralNetwork, ex: OptionStrategyExample, eps: Double): Double = {
     network.calculate(ex.inputs)
-    val o = network.lastLayer.zip(StockQuoteRepository.onames).map {
-      case (v, n) => DValue(v.lastOutput, n)
-    }
-    // n'_i = (1+o_i)/(p_i sum( (1+o_i) ))
-    val sum1poi = o.map(_ + ONE).reduce(_ + _)
-    val np = (o, ex.p).zipped map ((oi, pi) => (oi + ONE) / (pi * sum1poi))
-    // evaluation ln(sum(n'_i p'_i))
-    val valuation: DValue = (np, ex.pp).zipped.map(_ * _).reduce(_ + _).log
-    if (0 != eps) network.lastLayer.zip(StockQuoteRepository.onames).map {
-      case (v, n) => v.adapt(eps * valuation.deriv(n))
-    }
-    valuation.value
+    val nnOutputs: Array[Double] = network.lastLayer.map(_.lastOutput)
+    val (v, grad) = ex.gainWithGradient(nnOutputs)
+    (network.lastLayer, grad).zipped.foreach((n, d) => n.adapt(eps*d))
+    v
   }
 
   timing("learning")(for (round <- 0 until 500) {
@@ -53,6 +44,5 @@ class RunOptionStrategySearchWithGradientDescent extends App with OptionStrategy
   })
 
   // println(nn)
-
 
 }
