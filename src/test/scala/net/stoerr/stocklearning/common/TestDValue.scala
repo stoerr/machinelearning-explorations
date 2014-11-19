@@ -53,6 +53,8 @@ class TestDValue extends FunSuite {
     checkFunction(_ * _, _ * _)
     checkFunction(_ / _, _ / _)
     checkFunction(_.abs + _, abs(_) + _)
+    checkFunction(_.cosh + _, cosh(_) + _)
+    checkFunction(_.tanh + _, tanh(_) + _)
     checkFunction((x: DValue, y: DValue) => x.abs.log, (x: Double, y: Double) => log(abs(x)))
     checkFunction((x: DValue, y: DValue) => x / x, (x: Double, y: Double) => 1)
     checkFunction((x: DValue, y: DValue) => (x + DValue(2)).abs.log / y * (x - y), (x: Double, y: Double) => log(abs(x + 2)) / y * (x - y))

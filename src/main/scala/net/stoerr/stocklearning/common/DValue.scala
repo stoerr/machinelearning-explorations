@@ -53,4 +53,12 @@ case class DValue(value: Double, derivations: SortedMap[String, Double]) {
 
   def log: DValue = DValue(math.log(value), derivations.mapValues(_ * 1 / value))
 
+  def cosh: DValue = DValue(math.cosh(value), derivations.mapValues(_ * math.sinh(value)))
+
+  def tanh: DValue = {
+    val tanh = math.tanh(value)
+    val derivation = 1 - tanh * tanh
+    DValue(tanh, derivations.mapValues(_ * derivation))
+  }
+
 }
