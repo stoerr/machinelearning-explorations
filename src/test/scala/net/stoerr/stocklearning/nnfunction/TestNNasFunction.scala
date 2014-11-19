@@ -1,6 +1,6 @@
 package net.stoerr.stocklearning.nnfunction
 
-import net.stoerr.stocklearning.common.{GradientDescent, DValue}
+import net.stoerr.stocklearning.common._
 import net.stoerr.stocklearning.common.DoubleArrayVector._
 import org.scalatest.FunSuite
 
@@ -63,17 +63,23 @@ class TestNNasFunction extends FunSuite {
     val f = nn.joinedWeightFunction(examples)
     val fgrad = nn.joinedWeightFunctionWithGradient(examples)
     var x = (0 until nn.dimension).map(_ => math.random - 0.5).toArray
-    var eps = -1.0
-    for (i <- 0 until 100) {
-      val (y,grad) = fgrad(x)
-      val directedFunc = x.directionalFunction(f, grad)
-      eps = GradientDescent.approximateMinimum(y, directedFunc, eps)
-      println(y + "\t" + eps)
-      x = x + grad*eps
-    }
-    println(f(x))
-    println(x.mkString(","))
-    println(nn.toString(x))
+    var eps = -0.1
+    println("===================== GradientDescentWithWithMinimumApproximation")
+    println( new GradientDescentWithWithMinimumApproximation(f, fgrad, 100, x, eps).descent() )
+    println("===================== GradientDescentPseudoLinearNewton")
+    println( new GradientDescentPseudoLinearNewton(f, fgrad, 100, x, eps).descent() )
+    println("===================== GradientDescentMinimizeGradient")
+    println( new GradientDescentMinimizeGradient(f, fgrad, 100, x, eps).descent() )
+//    for (i <- 0 until 100) {
+//      val (y,grad) = fgrad(x)
+//      val directedFunc = x.directionalFunction(f, grad)
+//      eps = GradientDescent.approximateMinimum(y, directedFunc, eps)
+//      println(y + "\t" + eps)
+//      x = x + grad*eps
+//    }
+//    println(f(x))
+    // println(x.mkString(","))
+    // println(nn.toString(x))
   }
 
 }
