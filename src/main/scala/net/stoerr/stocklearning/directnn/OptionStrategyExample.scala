@@ -28,25 +28,6 @@ class OptionStrategyExample(length: Int, offset: Int) {
     StockQuoteRepository.options.map(extractOfStock).reduce(_ ++ _) ++ Array(offset.asInstanceOf[Double])
   // val inputs: Array[Double] = p.map(_.value) ++ pp.map(_.value)
 
-  def evaluate(network: BackpropagatedNeuralNetwork): Double = evaluateAndLearn(network, 0)
-
-  /** n'_i = (1+o_i)/(p_i sum( (1+o_i) )) , evaluation ln(sum(n'_i p'_i)) */
-  def evaluateAndLearn(network: BackpropagatedNeuralNetwork, eps: Double): Double = {
-    network.calculate(inputs)
-    val o = network.lastLayer.zip(StockQuoteRepository.onames).map {
-      case (v, n) => DValue(v.lastOutput, n)
-    }
-    // n'_i = (1+o_i)/(p_i sum( (1+o_i) ))
-    val sum1poi = o.map(_ + ONE).reduce(_ + _)
-    val np = (o, p).zipped map ((oi, pi) => (oi + ONE) / (pi * sum1poi))
-    // evaluation ln(sum(n'_i p'_i))
-    val valuation: DValue = (np, pp).zipped.map(_ * _).reduce(_ + _).log
-    if (0 != eps) network.lastLayer.zip(StockQuoteRepository.onames).map {
-      case (v, n) => v.adapt(eps * valuation.deriv(n))
-    }
-    valuation.value
-  }
-
   def theoreticalMaximumGain = {
     val res: Array[Double] = (pp, p).zipped map ((x: DValue, y: DValue) => (x / y).log.value)
     res.reduce((x, y) => math.max(x, y))
