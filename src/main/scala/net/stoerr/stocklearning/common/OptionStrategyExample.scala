@@ -1,6 +1,8 @@
 package net.stoerr.stocklearning.common
 
+import net.stoerr.stocklearning.common.DValue._
 import net.stoerr.stocklearning.common.StockQuoteRepository.StockData
+import net.stoerr.stocklearning.nnfunction.Example
 
 import scala.util.Random
 
@@ -10,9 +12,9 @@ import scala.util.Random
  * @since 30.10.2014
  * @param offset start index in maps -> <= -1
  */
-class OptionStrategyExample(length: Int, offset: Int) {
+class OptionStrategyExample(length: Int, offset: Int) extends Example {
 
-  def extractOfStock(stock: StockData): Array[Double] =
+  private def extractOfStock(stock: StockData): Array[Double] =
     ((offset - length) until offset).map(stock).toArray
 
   // current prices
@@ -29,6 +31,23 @@ class OptionStrategyExample(length: Int, offset: Int) {
   def theoreticalMaximumGain = {
     val res: Array[Double] = (pp, p).zipped map ((x: DValue, y: DValue) => (x / y).log.value)
     res.reduce((x, y) => math.max(x, y))
+  }
+
+  override def gain(outputValues: Array[Double]): Double = dvalueGain(outputValues).value
+
+  override def gainWithGradient(outputValues: Array[Double]): (Double, Array[Double]) = {
+    val dvalue = dvalueGain(outputValues)
+    (dvalue.value, StockQuoteRepository.onames.map(dvalue.deriv(_)))
+  }
+
+  /** n'_i = (1+o_i)/(p_i sum( (1+o_i) )) , evaluation ln(sum(n'_i p'_i)) */
+  private def dvalueGain(nnOutputs: Array[Double]): DValue = {
+    val o: Array[DValue] = (nnOutputs, StockQuoteRepository.onames).zipped.map(DValue(_, _))
+    // n'_i = (1+o_i)/(p_i sum( (1+o_i) ))
+    val sum1poi = o.map(_ + ONE).reduce(_ + _)
+    val np = (o, p).zipped map ((oi, pi) => (oi + ONE) / (pi * sum1poi))
+    // evaluation ln(sum(n'_i p'_i))
+    (np, pp).zipped.map(_ * _).reduce(_ + _).log
   }
 
 }
