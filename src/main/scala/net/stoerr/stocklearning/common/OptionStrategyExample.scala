@@ -1,10 +1,8 @@
-package net.stoerr.stocklearning.directnn
+package net.stoerr.stocklearning.common
 
-import net.stoerr.stocklearning.common.{StockQuoteRepository, DValue}
-import StockQuoteRepository.StockData
-import net.stoerr.stocklearning.java.BackpropagatedNeuralNetwork
-import net.stoerr.stocklearning.common.DValue
-import net.stoerr.stocklearning.common.DValue.ONE
+import net.stoerr.stocklearning.common.StockQuoteRepository.StockData
+
+import scala.util.Random
 
 /**
  * Example to train a neural network to make gains by bying / selling stock options.
@@ -32,5 +30,23 @@ class OptionStrategyExample(length: Int, offset: Int) {
     val res: Array[Double] = (pp, p).zipped map ((x: DValue, y: DValue) => (x / y).log.value)
     res.reduce((x, y) => math.max(x, y))
   }
+
+}
+
+trait OptionStrategyExampleSet {
+
+  val eps = 1
+  val historyLength = 30
+  val intermediateLayerSize = 100
+  val maxRange = StockQuoteRepository.maxIndex - 1
+  val minRange = StockQuoteRepository.minIndex + historyLength + 10
+  val controlQuotaPercent = 10
+
+  val rangeSplit: Int = (maxRange - minRange) * controlQuotaPercent / 100 + minRange
+  val modelExample = new OptionStrategyExample(historyLength, StockQuoteRepository.maxIndex)
+
+  val learnExamples = Random.shuffle(minRange until rangeSplit map (new OptionStrategyExample(historyLength, _)))
+  // val learnExamples = Array(modelExample)
+  val evalExamples = rangeSplit until maxRange map (new OptionStrategyExample(historyLength, _))
 
 }

@@ -2,7 +2,7 @@ package net.stoerr.stocklearning.directnn
 
 import net.stoerr.stocklearning.common.DValue._
 import net.stoerr.stocklearning.common.Timer._
-import net.stoerr.stocklearning.common.{DValue, Statistics, StockQuoteRepository}
+import net.stoerr.stocklearning.common._
 import net.stoerr.stocklearning.java.BackpropagatedNeuralNetwork
 
 import scala.util.Random
@@ -12,22 +12,9 @@ import scala.util.Random
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
  * @since 03.11.2014
  */
-object RunOptionStrategySearch extends App {
+object RunOptionStrategySearchWithBackpropNN extends App with OptionStrategyExampleSet {
 
-  val eps = 1
-  val historyLength = 30
-  val intermediateLayerSize = 100
-  val maxRange = StockQuoteRepository.maxIndex - 1
-  val minRange = StockQuoteRepository.minIndex + historyLength + 10
-  val controlQuotaPercent = 10
-
-  val rangeSplit: Int = (maxRange - minRange) * controlQuotaPercent / 100 + minRange
-  val modelExample = new OptionStrategyExample(historyLength, StockQuoteRepository.maxIndex)
   val nn = new BackpropagatedNeuralNetwork(modelExample.inputs.length, intermediateLayerSize, modelExample.p.length)
-
-  val learnExamples = Random.shuffle(minRange until rangeSplit map (new OptionStrategyExample(historyLength, _)))
-  // val learnExamples = Array(modelExample)
-  val evalExamples = rangeSplit until maxRange map (new OptionStrategyExample(historyLength, _))
 
   def evaluate(network: BackpropagatedNeuralNetwork, ex: OptionStrategyExample): Double = evaluateAndLearn(network, ex, 0)
 
