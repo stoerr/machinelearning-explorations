@@ -1,7 +1,6 @@
 package net.stoerr.stocklearning.common
 
 import net.stoerr.stocklearning.common.DValue._
-import net.stoerr.stocklearning.common.GradientDescent._
 import org.scalatest.FunSuite
 
 /**
@@ -15,13 +14,25 @@ class TestGradientDescent extends FunSuite {
   test("descentWithMinimumApproximation") {
     def fd(args: Array[DValue]) = {
       val dif = args(0) - args(1)
-      DValue(100) * dif * dif + (args(0) * args(0) + args(1) * args(1))
+      DValue(2) * dif * di + (args(0) * args(0) + args(1) * args(1))
     }
     val f: (Array[Double]) => Double = asDoubleFunction(fd)
     val fgrad: (Array[Double]) => (Double, Array[Double]) = asDoubleFunctionWithGradient(fd)
-    // val (x, y, dy) = descentWithMinimumApproximation(f, fgrad, 25, Array(1001.0, 1000.0))
-    val (x, y, dy) = new GradientDescentWithWithMinimumApproximation(f, fgrad, 25, Array(1001.0, 1000.0)).descent()
-    println(x.toList, y, dy)
+    println("GradientDescentWithWithMinimumApproximation");
+    {
+      val (x, y, dy) = new GradientDescentWithWithMinimumApproximation(f, fgrad, 25, Array(1001.0, 1000.0)).descent()
+      println(x.toList, y, dy)
+    }
+    println("GradientDescentPseudoLinearNewton");
+    {
+      val (x, y, dy) = new GradientDescentPseudoLinearNewton(f, fgrad, 25, Array(101.0, 100.0)).descent()
+      println(x.toList, y, dy)
+    }
+    println("GradientDescentMinimizeGradient");
+    {
+      val (x, y, dy) = new GradientDescentMinimizeGradient(f, fgrad, 25, Array(101.0, 100.0)).descent()
+      println(x.toList, y, dy)
+    }
   }
 
   test("Find Minimum") {

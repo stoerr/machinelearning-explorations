@@ -63,7 +63,7 @@ object GradientDescent {
 }
 
 abstract class AbstractGradientDescent(val f: Array[Double] => Double, val fgrad: Array[Double] => (Double, Array[Double]),
-                              val maxSteps: Int, x0: Array[Double], eps0: Double = -1.0) {
+                                       val maxSteps: Int, x0: Array[Double], eps0: Double = -1.0) {
   var lastY = Double.MaxValue
   var eps = eps0
   var x = x0
@@ -72,7 +72,7 @@ abstract class AbstractGradientDescent(val f: Array[Double] => Double, val fgrad
   def descent() = {
     for (i <- 0 until maxSteps if math.abs(eps) > 1e-8) {
       val (y, grad) = ygrad
-      calculateStep(y, grad)
+      eps = calculateStep(y, grad)
       println(y + "\t" + eps)
       x = x + grad * eps
       ygrad = fgrad(x)
@@ -83,7 +83,7 @@ abstract class AbstractGradientDescent(val f: Array[Double] => Double, val fgrad
     (x, y, math.abs(y - lastY))
   }
 
-  protected def calculateStep(y: Double, grad: Array[Double]): Unit
+  protected def calculateStep(y: Double, grad: Array[Double]): Double
 }
 
 class GradientDescentWithWithMinimumApproximation
@@ -91,8 +91,37 @@ class GradientDescentWithWithMinimumApproximation
  maxSteps: Int, x0: Array[Double], eps0: Double = -1.0)
   extends AbstractGradientDescent(f, fgrad, maxSteps, x0, eps0) {
 
-  override protected def calculateStep(y: Double, grad: Array[Double]): Unit = {
+  override protected def calculateStep(y: Double, grad: Array[Double]): Double = {
     val directedFunc = x.directionalFunction(f, grad)
-    eps = GradientDescent.approximateMinimum(y, directedFunc, eps)
+    GradientDescent.approximateMinimum(y, directedFunc, eps)
+  }
+}
+
+/** We calculate another gradient somewhat into the direction of the gradient, and calculate the step width by
+  * estimating the second derivation. */
+class GradientDescentPseudoLinearNewton
+(f: Array[Double] => Double, fgrad: Array[Double] => (Double, Array[Double]),
+ maxSteps: Int, x0: Array[Double], eps0: Double = -1.0)
+  extends AbstractGradientDescent(f, fgrad, maxSteps, x0, eps0) {
+
+  override protected def calculateStep(y: Double, grad: Array[Double]): Double = {
+    val x1 = x + grad * eps
+    val (y1, grad1) = fgrad(x1)
+    eps / (1 - (grad * grad1) / (grad * grad))
+  }
+}
+
+/** We calculate another gradient somewhat into the direction of the gradient, and
+  * then calculate the step that the resulting gradient should be minimal. */
+class GradientDescentMinimizeGradient
+(f: Array[Double] => Double, fgrad: Array[Double] => (Double, Array[Double]),
+ maxSteps: Int, x0: Array[Double], eps0: Double = -1.0)
+  extends AbstractGradientDescent(f, fgrad, maxSteps, x0, eps0) {
+
+  override protected def calculateStep(y: Double, grad: Array[Double]): Double = {
+    val x1 = x + grad * eps
+    val (y1, grad1) = fgrad(x1)
+    // eps * (grad * grad1 - grad * grad) / (grad * grad + grad1 * grad1 - grad * grad1)
+    eps * (grad * grad - grad * grad1) / (grad * grad + grad1 * grad1 - grad * grad1 * 2)
   }
 }
