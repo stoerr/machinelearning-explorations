@@ -1,8 +1,11 @@
 package net.stoerr.stocklearning.nnfunction
 
 import net.stoerr.stocklearning.common.DoubleArrayVector._
+import net.stoerr.stocklearning.common.Statistics
 import net.stoerr.stocklearning.java.DoubleArrayOps
 import net.stoerr.stocklearning.nnfunction.Example.ValueWithGradient
+
+import scala.collection.GenTraversableOnce
 
 /**
  * Makes a function R to the n -> R from a neural network with examples,
@@ -74,7 +77,9 @@ class NNasFunction(val inputSize: Int, val hiddenSize: Int, val outputSize: Int)
     val result = (gain, gradient)
   }
 
-  def weightFunction(example: Example): (Array[Double] => Double) = weights => example.gain(new Calculation(example, weights).out)
+  def gain(weights: Array[Double], example: Example) = example.gain(new Calculation(example, weights).out)
+
+  def weightFunction(example: Example): (Array[Double] => Double) = weights => gain(weights, example)
 
   def joinedWeightFunction(examples: Seq[Example]): (Array[Double] => Double) =
     examples.map(weightFunction).reduceLeft((f1, f2) => weights => f1(weights) + f2(weights))
@@ -90,5 +95,10 @@ class NNasFunction(val inputSize: Int, val hiddenSize: Int, val outputSize: Int)
       }
     }
 
+  def statistics(name: String, weights: Array[Double], examples: GenTraversableOnce[Example]): Statistics = {
+    val stats = new Statistics(name)
+    examples.foreach(ex => stats += gain(weights, ex))
+    stats
+  }
 
 }

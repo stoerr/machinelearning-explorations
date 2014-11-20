@@ -1,5 +1,7 @@
 package net.stoerr.stocklearning.common
 
+import scala.collection.GenTraversableOnce
+
 /**
  * Collects statistics for a single parameter.
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
@@ -13,12 +15,18 @@ class Statistics(name: String) {
   var min: Double = Double.PositiveInfinity
   var max: Double = Double.NegativeInfinity
 
-  def +=(x: Double): Unit = {
+  def +=(x: Double): this.type = {
     count += 1
     sum += x
     sumsquares += x * x
     min = math.min(min, x)
     max = math.max(max, x)
+    this
+  }
+
+  def ++=(values: GenTraversableOnce[Double]): this.type = {
+    values.foreach(this += _)
+    this
   }
 
   def mean = sum / count

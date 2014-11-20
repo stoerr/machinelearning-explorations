@@ -69,7 +69,7 @@ abstract class AbstractGradientDescent(val f: Array[Double] => Double, val fgrad
   var x = x0
   var ygrad: (Double, Array[Double]) = fgrad(x)
 
-  def descent() = {
+  def descent(): (Array[Double], Double, Double) = {
     for (i <- 0 until maxSteps if math.abs(eps) > 1e-8) {
       val (y, grad) = ygrad
       eps = calculateStep(y, grad)
