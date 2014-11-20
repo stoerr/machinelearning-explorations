@@ -82,7 +82,7 @@ class NNasFunction(val inputSize: Int, val hiddenSize: Int, val outputSize: Int)
   def weightFunction(example: Example): (Array[Double] => Double) = weights => gain(weights, example)
 
   def joinedWeightFunction(examples: Seq[Example]): (Array[Double] => Double) =
-    examples.map(weightFunction).reduceLeft((f1, f2) => weights => f1(weights) + f2(weights))
+    examples.map(weightFunction).reduceLeft((f1, f2) => weights => f1(weights) + f2(weights)).andThen(_ / examples.size)
 
   def weightFunctionWithGradient(example: Example): (Array[Double] => ValueWithGradient) = weights => new DerivCalculation(example, weights).result
 
@@ -93,7 +93,7 @@ class NNasFunction(val inputSize: Int, val hiddenSize: Int, val outputSize: Int)
         val (f2g, f2d) = f2(weights)
         (f1g + f2g, f1d + f2d)
       }
-    }
+    }.andThen { case (v, g) => (v / examples.size, g / examples.size)}
 
   def statistics(name: String, weights: Array[Double], examples: GenTraversableOnce[Example]): Statistics = {
     val stats = new Statistics(name)

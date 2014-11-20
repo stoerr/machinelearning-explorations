@@ -29,6 +29,16 @@ class Statistics(name: String) {
     this
   }
 
+  def *(fact: Double): Statistics = {
+    val res = new Statistics(name)
+    res.count = count
+    res.sum = fact * sum
+    res.sumsquares = fact * fact * sumsquares
+    res.min = math.max(fact * min, fact * max)
+    res.max = math.min(fact * min, fact * max)
+    res
+  }
+
   def mean = sum / count
 
   def stddev = math.sqrt((sumsquares - sum * sum / count) / (count - 1))

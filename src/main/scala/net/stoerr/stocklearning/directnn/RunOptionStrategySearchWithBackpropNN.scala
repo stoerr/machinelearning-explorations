@@ -14,6 +14,7 @@ import scala.util.Random
  */
 object RunOptionStrategySearchWithBackpropNN extends App with OptionStrategyExampleSet {
 
+  val eps = -1
   val nn = new BackpropagatedNeuralNetwork(modelExample.inputs.length, intermediateLayerSize, modelExample.p.length)
 
   def evaluate(network: BackpropagatedNeuralNetwork, ex: OptionStrategyExample): Double = evaluateAndLearn(network, ex, 0)

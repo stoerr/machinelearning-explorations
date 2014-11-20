@@ -52,6 +52,7 @@ object GradientDescent {
         y2 = y1
         x1 = (x0 + x2) / 2
         y1 = f(x1)
+        assert(math.abs(x0-x2) > 1e-20)
       }
       // println(((x0, x1, x2), (y0, y1, y2)))
     }
@@ -73,7 +74,7 @@ abstract class AbstractGradientDescent(val f: Array[Double] => Double, val fgrad
     for (i <- 0 until maxSteps if math.abs(eps) > 1e-8) {
       val (y, grad) = ygrad
       eps = calculateStep(y, grad)
-      // println(y + "\t" + eps)
+      println(i + "\t" + y + "\t" + eps)
       x = x + grad * eps
       ygrad = fgrad(x)
       if (math.abs(lastY - y) < 1e-8) eps = 0 // stop.
@@ -92,7 +93,7 @@ class GradientDescentWithWithMinimumApproximation
   extends AbstractGradientDescent(f, fgrad, maxSteps, x0, eps0) {
 
   override protected def calculateStep(y: Double, grad: Array[Double]): Double = {
-    val directedFunc = x.directionalFunction(f, grad)
+    val directedFunc: (Double) => Double = x.directionalFunction(f, grad)
     GradientDescent.approximateMinimum(y, directedFunc, eps)
   }
 }

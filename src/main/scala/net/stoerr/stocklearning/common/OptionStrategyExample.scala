@@ -28,7 +28,7 @@ class OptionStrategyExample(length: Int, offset: Int) extends Example {
     StockQuoteRepository.options.map(extractOfStock).reduce(_ ++ _) ++ Array(offset.asInstanceOf[Double])
   // val inputs: Array[Double] = p.map(_.value) ++ pp.map(_.value)
 
-  def theoreticalMaximumGain = {
+  def theoreticalMaximumGain: Double = {
     val res: Array[Double] = (pp, p).zipped map ((x: DValue, y: DValue) => (x / y).log.value)
     res.reduce((x, y) => math.max(x, y))
   }
@@ -47,14 +47,13 @@ class OptionStrategyExample(length: Int, offset: Int) extends Example {
     val sum1poi = o.map(_ + ONE).reduce(_ + _)
     val np = (o, p).zipped map ((oi, pi) => (oi + ONE) / (pi * sum1poi))
     // evaluation ln(sum(n'_i p'_i))
-    (np, pp).zipped.map(_ * _).reduce(_ + _).log
+    (np, pp).zipped.map(_ * _).reduce(_ + _).log * DValue(-1)
   }
 
 }
 
 trait OptionStrategyExampleSet {
 
-  val eps = 1
   val historyLength = 30
   val intermediateLayerSize = 100
   val maxRange = StockQuoteRepository.maxIndex - 1
