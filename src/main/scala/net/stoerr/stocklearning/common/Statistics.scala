@@ -1,6 +1,7 @@
 package net.stoerr.stocklearning.common
 
-import scala.collection.GenTraversableOnce
+import scala.collection.immutable.TreeMap
+import scala.collection.{GenTraversableOnce, immutable}
 
 /**
  * Collects statistics for a single parameter.
@@ -44,5 +45,45 @@ class Statistics(name: String) {
   def stddev = math.sqrt((sumsquares - sum * sum / count) / (count - 1))
 
   override def toString = name + " = " + mean + " +- " + stddev + " [ " + min + " , " + max + " ] : " + count
+
+}
+
+class StatisticsWithRanges(name: String) extends Statistics(name) {
+  private val maxbuckets = 100
+  private var buckets: immutable.SortedMap[Double, Int] = TreeMap()
+
+  override def +=(x: Double): this.type = {
+    super.+=(x)
+    buckets = buckets + (x -> (buckets.getOrElse(x, 0) + 1))
+    if (buckets.size >= maxbuckets) buckets = ranges(maxbuckets / 2)
+    this
+  }
+
+  def ranges(bucketcount: Int): immutable.SortedMap[Double, Int] = {
+    def joinBuckets(bucket1: (Double, Int), bucket2: (Double, Int)) =
+      if (0 == bucket1._2) bucket2
+      else ((bucket1._1 * bucket1._2 + bucket2._1 * bucket2._2) / (bucket1._2 + bucket2._2), bucket1._2 + bucket2._2)
+    val elementcount = buckets.valuesIterator.reduce(_ + _)
+    val bucketstep: Double = elementcount / bucketcount
+    val emptybucket = (Double.NegativeInfinity, 0)
+    var currentelementcount = 0
+    var nextbucketboundary = bucketstep
+    var currentbucket = emptybucket
+    val newbuckets = buckets.flatMap { bucket =>
+      currentelementcount += bucket._2
+      if (currentelementcount > nextbucketboundary) {
+        val b = currentbucket
+        currentbucket = bucket
+        nextbucketboundary += bucketstep
+        Some(b)
+      } else {
+        currentbucket = joinBuckets(currentbucket, bucket)
+        None
+      }
+    }
+    newbuckets + currentbucket
+  }
+
+  override def toString = super.toString + "\n" + ranges(10)
 
 }
