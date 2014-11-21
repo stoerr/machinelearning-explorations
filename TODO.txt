@@ -1,0 +1,4 @@
+- Simultaneously have n networks learning and periodically replace the worst by fresh random networks
+- Neuron statistics: which neurons are irrelevant? How many?
+- Recombine the best neurons of two networks -> periodically keep 33% best, 33% recombined from the best, 33% fresh
+

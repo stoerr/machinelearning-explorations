@@ -36,4 +36,6 @@ final class DoubleArrayVector(val self: Array[Double]) {
 
   def directionalFunction(func: Array[Double] => Double, dx: Array[Double]) = (v: Double) => func(self + dx * v)
 
+  def toRep: String = "Array(" + self.mkString(", ") + ")"
+
 }
