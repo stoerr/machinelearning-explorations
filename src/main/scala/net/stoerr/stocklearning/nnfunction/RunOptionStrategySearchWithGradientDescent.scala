@@ -15,14 +15,14 @@ object RunOptionStrategySearchWithGradientDescent extends App with OptionStrateg
   val fgrad = nn.joinedWeightFunctionWithGradient(learnExamples)
 
   timing("learning") {
-    val weights = (0 until nn.dimension).map(_ => math.random - 0.5).toArray
+    val weights = (0 until nn.dimension).map(_ => 2 * (math.random - 0.5)).toArray
 
     val learnMaxgain = new Statistics("learnMaxGain")
     learnMaxgain ++= learnExamples.map(_.theoreticalMaximumGain)
     val evalMaxgain = new Statistics("evalMaxGain")
     evalMaxgain ++= evalExamples.map(_.theoreticalMaximumGain)
 
-    val (nweights, lastgain, lastchange) = new GradientDescentWithWithMinimumApproximation(f, fgrad, 100, weights, -0.01).descent()
+    val (nweights, lastgain, lastchange) = new GradientDescentWithWithMinimumApproximation(f, fgrad, 200, weights, -0.01).descent()
 
     val learnStats = nn.statistics("learn", nweights, learnExamples) * -1
     println(learnStats)
@@ -32,8 +32,9 @@ object RunOptionStrategySearchWithGradientDescent extends App with OptionStrateg
     val evalStats = nn.statistics("eval", nweights, evalExamples) * -1
     println(evalStats)
     println(evalMaxgain)
-  }
 
-  // println(nn)
+    println(nn.outputWeightsStatistics(weights))
+    println(nn.outputWeightsStatistics(nweights))
+  }
 
 }

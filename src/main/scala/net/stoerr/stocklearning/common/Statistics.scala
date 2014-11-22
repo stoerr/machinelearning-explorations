@@ -11,8 +11,8 @@ import scala.collection.{GenTraversableOnce, immutable}
 class Statistics(name: String) {
 
   var count: Int = 0
-  private var sum: Double = 0.0
-  private var sumsquares: Double = 0.0
+  var sum: Double = 0.0
+  var sumsquares: Double = 0.0
   var min: Double = Double.PositiveInfinity
   var max: Double = Double.NegativeInfinity
 
@@ -42,7 +42,7 @@ class Statistics(name: String) {
 
   def mean = sum / count
 
-  def stddev = math.sqrt((sumsquares - sum * sum / count) / (count - 1))
+  def stddev = math.sqrt((sumsquares - sum * sum / count) / (count - 1.5))
 
   override def toString = name + " = " + mean + " +- " + stddev + " [ " + min + " , " + max + " ] : " + count
 
@@ -86,4 +86,28 @@ class StatisticsWithRanges(name: String) extends Statistics(name) {
 
   override def toString = super.toString + "\n" + ranges(10)
 
+}
+
+class XYStatistics(name: String) {
+  val xstats = new Statistics(name + " x")
+  val ystats = new Statistics(name + " y")
+  private var sumXY = 0.0
+
+  def +=(xy: (Double, Double)): this.type = {
+    xstats += xy._1
+    ystats += xy._2
+    sumXY += xy._1 * xy._2
+    this
+  }
+
+  def ++=(values: GenTraversableOnce[(Double, Double)]): this.type = {
+    values.foreach(this += _)
+    this
+  }
+
+  def correlationcoefficient = (xstats.count * sumXY - xstats.sum * ystats.sum) /
+    math.sqrt(xstats.count * xstats.sumsquares - xstats.sum * xstats.sum) /
+    math.sqrt(ystats.count * ystats.sumsquares - ystats.sum * ystats.sum)
+
+  override def toString = name + ": " + correlationcoefficient + "\n" + xstats + "\n" + ystats + "\n"
 }

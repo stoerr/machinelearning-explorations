@@ -1,7 +1,7 @@
 package net.stoerr.stocklearning.nnfunction
 
 import net.stoerr.stocklearning.common.DoubleArrayVector._
-import net.stoerr.stocklearning.common.Statistics
+import net.stoerr.stocklearning.common.{StatisticsWithRanges, Statistics}
 import net.stoerr.stocklearning.java.DoubleArrayOps
 import net.stoerr.stocklearning.nnfunction.Example.ValueWithGradient
 
@@ -32,6 +32,7 @@ class NNasFunction(val inputSize: Int, val hiddenSize: Int, val outputSize: Int)
 
   private def ind_offset1(j: Int) = ind_w1(j, inputSize)
 
+  /** i = output layer neuron number from j = hidden layer neuron number */
   private def ind_w2(i: Int, j: Int) = (inputSize + 1) * hiddenSize + (hiddenSize + 1) * i + j
 
   private def ind_offset2(i: Int) = ind_w2(i, hiddenSize)
@@ -98,6 +99,12 @@ class NNasFunction(val inputSize: Int, val hiddenSize: Int, val outputSize: Int)
   def statistics(name: String, weights: Array[Double], examples: GenTraversableOnce[Example]): Statistics = {
     val stats = new Statistics(name)
     examples.foreach(ex => stats += gain(weights, ex))
+    stats
+  }
+
+  def outputWeightsStatistics(weights: Array[Double]) : StatisticsWithRanges = {
+    val stats = new StatisticsWithRanges("output weights")
+    for (o <- 0 until outputSize; h <- 0 until hiddenSize) stats += math.abs(weights(ind_w2(o, h)))
     stats
   }
 
