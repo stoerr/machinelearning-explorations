@@ -25,7 +25,7 @@ object GradientDescent {
   def approximateMinimum(f0: Double, f: Double => Double, eps: Double): Double = {
     var (x0, y0) = (0.0, f0)
     var (x1, y1) = (eps, f(eps))
-    if (y0 == y1) return 0
+    if (y0 == y1 || y1.isInfinite || y1.isNaN) return 0
     var (x2, y2) = (0.0, 0.0)
     if (y1 >= y0) {
       x2 = x1
@@ -52,12 +52,13 @@ object GradientDescent {
         y2 = y1
         x1 = (x0 + x2) / 2
         y1 = f(x1)
-        assert(math.abs(x0-x2) > 1e-20)
+        assert(math.abs(x0 - x2) > 1e-20)
       }
       // println(((x0, x1, x2), (y0, y1, y2)))
+      if (math.abs(x2) > 1e6 || math.abs(x2) < 1e-6 || y2.isInfinite || y2.isNaN) return 0
     }
     val min = interpolatedMinimum(x0, y0, x1, y1, x2, y2)
-    assert((min >= x0) && (min <= x2) || (min <= x0) && (min >= x2), x0 + "\t" + min + "\t" + x2)
+    assert((min >= x0) && (min <= x2) || (min <= x0) && (min >= x2), (x0, y0) + "\t" +(x1, y1) + "\t" +(x2, y2) + "\t" + min)
     min
   }
 
@@ -65,6 +66,7 @@ object GradientDescent {
 
 abstract class AbstractGradientDescent(val f: Array[Double] => Double, val fgrad: Array[Double] => (Double, Array[Double]),
                                        val maxSteps: Int, x0: Array[Double], eps0: Double = -1.0) {
+  // println("-- descent")
   var lastY = Double.MaxValue
   var eps = eps0
   var x = x0

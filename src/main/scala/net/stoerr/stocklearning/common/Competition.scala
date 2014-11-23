@@ -24,10 +24,10 @@ trait Competition[COMPETITOR] {
     var competitorsOldGeneration: Array[COMPETITOR] = Array.fill(numCompetitors)(makeCompetitor())
     var competitorsNewGeneration: Array[COMPETITOR] = Array()
 
-    def trainAndEval(competitors: Array[COMPETITOR], descr: String) = {
-      val res = competitors map train map (c => (-eval(c), c))
+    def trainAndEval(competitors: Array[COMPETITOR], descr: String): Array[(Double, COMPETITOR)] = {
+      val res = competitors.par map train map (c => (-eval(c), c))
       println(new Statistics(descr) ++= res.map(-_._1))
-      res
+      res.toArray
     }
 
     for (r <- 0 until rounds) {
