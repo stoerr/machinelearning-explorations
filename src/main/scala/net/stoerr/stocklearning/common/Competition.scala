@@ -1,6 +1,5 @@
 package net.stoerr.stocklearning.common
 
-import scala.collection.immutable.TreeMap
 import scala.reflect.ClassTag
 
 /**
@@ -24,15 +23,15 @@ trait Competition[COMPETITOR] {
     var competitorsNewGeneration: Array[COMPETITOR] = Array()
 
     def trainAndEval(competitors: Array[COMPETITOR], descr: String) = {
-      val res = competitors map (train(_)) map (c => (-eval(c), c))
-      println(new Statistics(descr) ++= res.map(_._1))
+      val res = competitors map train map (c => (-eval(c), c))
+      println(new Statistics(descr) ++= res.map(-_._1))
       res
     }
 
     for (r <- 0 until rounds) {
       println("Competition round " + r)
       val og = trainAndEval(competitorsOldGeneration, "round " + r + " og")
-      val ng = trainAndEval(competitorsOldGeneration, "round " + r + " ng")
+      val ng = trainAndEval(competitorsNewGeneration, "round " + r + " ng")
       val sortedCompetitors = (og ++ ng).sortBy(_._1).map(_._2)
       competitorsOldGeneration = sortedCompetitors.take(numCompetitors - numfresh)
       competitorsNewGeneration = Array.fill(numfresh)(makeCompetitor())
