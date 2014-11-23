@@ -20,10 +20,11 @@ class TestStatistics extends FunSuite {
   }
 
   test("xystats - no correlation") {
-    val xystats = new XYStatistics("xystats")
+    val xystats = new XYStatisticsWithRankCorrelation("xystats")
     for (i <- 0 until 10000) xystats += (math.random, math.random)
     println(xystats)
     assert (math.abs(xystats.correlationcoefficient) < 0.1)
+    assert (math.abs(xystats.rankCorrelationCoefficient) < 0.1)
   }
 
   test("xystats - full correlation") {
@@ -35,5 +36,16 @@ class TestStatistics extends FunSuite {
     println(xystats)
     assert (math.abs(xystats.correlationcoefficient) > 0.999999)
     assert (math.abs(xystats.correlationcoefficient) < 1.000001)
+  }
+
+  test("rankstats") {
+    val xystats = new XYStatisticsWithRankCorrelation("xystats")
+    for (i <- 0 until 10000) {
+      val rnd = math.random
+      xystats += (rnd, math.sqrt(rnd))
+    }
+    println(xystats)
+    assert (math.abs(xystats.rankCorrelationCoefficient) > 0.999999)
+    assert (math.abs(xystats.rankCorrelationCoefficient) < 1.000001)
   }
 }

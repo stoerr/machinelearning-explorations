@@ -1,4 +1,7 @@
 - Simultaneously have n networks learning and periodically replace the worst by fresh random networks
 - Neuron statistics: which neurons are irrelevant? How many?
 - Recombine the best neurons of two networks -> periodically keep 33% best, 33% recombined from the best, 33% fresh
+- Devise measure how important an hidden neuron is - whether it influences stuff into correct or incorrect direction. Is
+  this the same thing as the weight of its output?
+- Extend input by fibonacci sequence
 

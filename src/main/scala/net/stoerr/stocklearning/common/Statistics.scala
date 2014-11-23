@@ -1,6 +1,7 @@
 package net.stoerr.stocklearning.common
 
 import scala.collection.immutable.TreeMap
+import scala.collection.mutable.ArrayBuffer
 import scala.collection.{GenTraversableOnce, immutable}
 
 /**
@@ -110,4 +111,27 @@ class XYStatistics(name: String) {
     math.sqrt(ystats.count * ystats.sumsquares - ystats.sum * ystats.sum)
 
   override def toString = name + ": " + correlationcoefficient + "\n" + xstats + "\n" + ystats + "\n"
+}
+
+class XYStatisticsWithRankCorrelation(name: String) extends XYStatistics(name) {
+
+  val xvalues = new ArrayBuffer[Double]()
+  val yvalues = new ArrayBuffer[Double]()
+
+  override def +=(xy: (Double, Double)): this.type = {
+    super.+=(xy)
+    xvalues += xy._1
+    yvalues += xy._2
+    this
+  }
+
+  def rankCorrelationCoefficient : Double = {
+    val xvalueRanks = xvalues.zipWithIndex.sortBy(_._1).toIterator.map(_._2.asInstanceOf[Double])
+    val yvalueRanks = yvalues.zipWithIndex.sortBy(_._1).toIterator.map(_._2.asInstanceOf[Double])
+    val rankstats = new XYStatistics("")
+    rankstats ++= xvalueRanks.zip(yvalueRanks)
+    rankstats.correlationcoefficient
+  }
+
+  override def toString = super.toString + "\nrankCorrelation = " + rankCorrelationCoefficient
 }
