@@ -19,15 +19,25 @@ trait Competition[COMPETITOR] {
   def eval(c: COMPETITOR): Double
 
   def compete(rounds: Int, numCompetitors: Int)(implicit ct: ClassTag[COMPETITOR]): COMPETITOR = {
-    var competitors = Array.fill(numCompetitors)(makeCompetitor())
     val numfresh = (numCompetitors * freshRatio).round.toInt
-    for (r <- 0 until rounds) {
-      competitors = competitors map (train(_))
-      val evaluated = competitors.map(c => (-eval(c), c)).sortBy(_._1)
-      println("Competition round " + r)
-      competitors = evaluated.take(numCompetitors - numfresh).map(_._2) ++ Array.fill(numfresh)(makeCompetitor())
+    var competitorsOldGeneration: Array[COMPETITOR] = Array.fill(numCompetitors)(makeCompetitor())
+    var competitorsNewGeneration: Array[COMPETITOR] = Array()
+
+    def trainAndEval(competitors: Array[COMPETITOR], descr: String) = {
+      val res = competitors map (train(_)) map (c => (-eval(c), c))
+      println(new Statistics(descr) ++= res.map(_._1))
+      res
     }
-    competitors(0)
+
+    for (r <- 0 until rounds) {
+      println("Competition round " + r)
+      val og = trainAndEval(competitorsOldGeneration, "round " + r + " og")
+      val ng = trainAndEval(competitorsOldGeneration, "round " + r + " ng")
+      val sortedCompetitors = (og ++ ng).sortBy(_._1).map(_._2)
+      competitorsOldGeneration = sortedCompetitors.take(numCompetitors - numfresh)
+      competitorsNewGeneration = Array.fill(numfresh)(makeCompetitor())
+    }
+    competitorsOldGeneration(0)
   }
 
 }
