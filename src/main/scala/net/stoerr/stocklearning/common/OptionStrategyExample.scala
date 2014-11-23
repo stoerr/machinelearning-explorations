@@ -55,7 +55,7 @@ class OptionStrategyExample(length: Int, offset: Int) extends Example {
 trait OptionStrategyExampleSet {
 
   val historyLength = 30
-  val intermediateLayerSize = 100
+  val intermediateLayerSize = 20
   val maxRange = StockQuoteRepository.maxIndex - 1
   val minRange = StockQuoteRepository.minIndex + historyLength + 10
   val controlQuotaPercent = 10

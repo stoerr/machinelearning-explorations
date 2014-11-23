@@ -74,7 +74,7 @@ abstract class AbstractGradientDescent(val f: Array[Double] => Double, val fgrad
     for (i <- 0 until maxSteps if math.abs(eps) > 1e-8) {
       val (y, grad) = ygrad
       eps = calculateStep(y, grad)
-      println(i + "\t" + y + "\t" + eps)
+      // println(i + "\t" + y + "\t" + eps)
       x = x + grad * eps
       ygrad = fgrad(x)
       if (math.abs(lastY - y) < 1e-8) eps = 0 // stop.

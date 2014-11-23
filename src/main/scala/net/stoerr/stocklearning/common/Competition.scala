@@ -3,6 +3,8 @@ package net.stoerr.stocklearning.common
 import scala.reflect.ClassTag
 
 /**
+ * Run a competitive training of many COMPETITORs , periodically removing the worst evaluated
+ * competitors and introduce freshRatio new ones.
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
  * @since 22.11.2014
  */
@@ -34,7 +36,7 @@ trait Competition[COMPETITOR] {
       val ng = trainAndEval(competitorsNewGeneration, "round " + r + " ng")
       val sortedCompetitors = (og ++ ng).sortBy(_._1).map(_._2)
       competitorsOldGeneration = sortedCompetitors.take(numCompetitors - numfresh)
-      competitorsNewGeneration = Array.fill(numfresh)(makeCompetitor())
+      competitorsNewGeneration = Array.fill(numCompetitors - competitorsOldGeneration.size)(makeCompetitor())
     }
     competitorsOldGeneration(0)
   }

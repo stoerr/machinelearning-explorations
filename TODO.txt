@@ -5,3 +5,4 @@
   this the same thing as the weight of its output?
 - Extend input by fibonacci sequence
 
+- Debug competition. Evtl. learn -> Optional[COMPETITOR] zum ignorieren von Fehlern.
