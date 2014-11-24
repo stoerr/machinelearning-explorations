@@ -12,7 +12,7 @@ object DoubleArrayVector {
  */
 final class DoubleArrayVector(val self: Array[Double]) {
 
-  import DoubleArrayVector._
+  import net.stoerr.stocklearning.common.DoubleArrayVector._
 
   def abs = math.sqrt(this * self)
 
@@ -37,5 +37,7 @@ final class DoubleArrayVector(val self: Array[Double]) {
   def directionalFunction(func: Array[Double] => Double, dx: Array[Double]) = (v: Double) => func(self + dx * v)
 
   def toRep: String = "Array(" + self.mkString(", ") + ")"
+
+  def normalize: Array[Double] = this / abs
 
 }

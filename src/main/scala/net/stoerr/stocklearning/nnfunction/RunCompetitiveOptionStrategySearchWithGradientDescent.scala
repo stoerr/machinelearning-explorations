@@ -29,7 +29,7 @@ with OptionStrategyExampleSet with Competition[Array[Double]] {
     println(learnMaxgain)
     println(evalMaxgain)
 
-    val bestExample = compete(20, 100)
+    val bestExample = compete(100, 100)
 
     println("=================================")
     val learnStats = nn.statistics("learn", bestExample, learnExamples) * -1

@@ -25,7 +25,7 @@ object GradientDescent {
   def approximateMinimum(f0: Double, f: Double => Double, eps: Double): Double = {
     var (x0, y0) = (0.0, f0)
     var (x1, y1) = (eps, f(eps))
-    if (y0 == y1 || y1.isInfinite || y1.isNaN) return 0
+    if (math.abs(y0 - y1) < 1e-7 || y1.isInfinite || y1.isNaN) return 0
     var (x2, y2) = (0.0, 0.0)
     if (y1 >= y0) {
       x2 = x1

@@ -4,3 +4,7 @@
 - Devise measure how important an hidden neuron is - whether it influences stuff into correct or incorrect direction. Is
   this the same thing as the weight of its output?
 - Extend input by fibonacci sequence
+
+
+https://github.com/log4s/log4s
+http://stackoverflow.com/questions/978252/logging-in-scala
