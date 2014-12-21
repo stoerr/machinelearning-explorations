@@ -16,6 +16,8 @@ final class DoubleArrayVector(val self: Array[Double]) {
 
   def abs = math.sqrt(this * self)
 
+  def elem_abs = self.map(math.abs)
+
   def +(other: Array[Double]): Array[Double] = (self, other).zipped.map(_ + _)
 
   def -(other: Array[Double]): Array[Double] = (self, other).zipped.map(_ - _)
@@ -25,7 +27,12 @@ final class DoubleArrayVector(val self: Array[Double]) {
 
   def *(other: Double): Array[Double] = self.map(_ * other)
 
+  /** elementwise product */
+  def elem_*(other: Array[Double]): Array[Double] = (self, other).zipped.map(_ * _)
+
   def /(other: Double): Array[Double] = self.map(_ / other)
+
+  def signum: Array[Double] = self.map(math.signum)
 
   /** func(self + Array(0,...,arg, ...,0)) - func(self) , arg is put in n-th place. */
   def projectFunction(func: Array[Double] => Double, n: Int) = { arg: Double =>
