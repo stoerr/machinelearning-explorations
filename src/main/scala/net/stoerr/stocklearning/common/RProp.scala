@@ -14,23 +14,30 @@ class RProp(val f: Array[Double] => Double, val fgrad: Array[Double] => (Double,
   private val etaminus = 0.5
   private val etaplus = 1.2
 
-  var lval = Array.fill(x0.length)(1e-2)
+  var lval = Array.fill(x0.length)(0.1)
   var lastsign = Array.fill(x0.length)(0.0)
   var x = x0
+  var lastY = Double.MaxValue
+  var eps = Double.MaxValue
 
-  def step() = {
+  def descent(): (Array[Double], Double, Double) = {
+    for (i <- 0 until maxSteps if math.abs(eps) > 1e-8) {
+      calculateStep()
+      println(i + "\t" + eps + "\t" + lastY)
+    }
+    val y = f(x)
+    (x, y, math.abs(y - lastY))
+  }
+
+  def calculateStep() = {
     val (y, ygrad) = fgrad(x)
-    println();
-    println(y + "\t" + ygrad.toList)
     val gradsign = ygrad.signum
-    println(lastsign.toList + "\t" + gradsign.toList)
     val lfac = gradsign * etaminus + (lastsign + gradsign) * ((etaplus - etaminus) / 2)
-    println(lfac.toList)
     lval = lval elem_* lfac.elem_abs
-    println(lval.toList)
     x = x - (gradsign elem_* lval)
     lastsign = gradsign
-    println(x.toList)
+    eps = y - lastY
+    lastY = y
   }
 
 }

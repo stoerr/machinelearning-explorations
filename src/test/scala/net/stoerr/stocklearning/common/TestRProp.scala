@@ -19,10 +19,8 @@ class TestRProp extends FunSuite {
     }
     val f: (Array[Double]) => Double = asDoubleFunction(fd)
     val fgrad: (Array[Double]) => (Double, Array[Double]) = asDoubleFunctionWithGradient(fd)
-    val rprop = new RProp(f, fgrad, 25, Array(2.0, 3.0))
-    for (i <- 0 until 100) {
-      rprop.step()
-    }
+    val (x, y, dy) = new RProp(f, fgrad, 100, Array(1001.0, 1000.0)).descent()
+    println(x.toList + "\t" + y + "\t" + dy)
   }
 
 }
