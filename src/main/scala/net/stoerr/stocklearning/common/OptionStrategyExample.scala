@@ -54,13 +54,13 @@ class OptionStrategyExample(length: Int, offset: Int) extends Example {
 
 trait OptionStrategyExampleSet {
 
-  val historyLength = 50
-  val intermediateLayerSize = 100
+  val historyLength = 30
+  val intermediateLayerSize = 50
   val maxRange = StockQuoteRepository.maxIndex - 1
   val minRange = StockQuoteRepository.minIndex + historyLength + 10
   val controlQuotaPercent = 10
 
-  val rangeSplit: Int = (maxRange - minRange) * controlQuotaPercent / 100 + minRange
+  val rangeSplit: Int = (maxRange - minRange) * (100 - controlQuotaPercent) / 100 + minRange
   val modelExample = new OptionStrategyExample(historyLength, StockQuoteRepository.maxIndex)
 
   val learnExamples = Random.shuffle(minRange until rangeSplit map (new OptionStrategyExample(historyLength, _)))

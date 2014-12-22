@@ -21,7 +21,7 @@ class RProp(val f: Array[Double] => Double, val fgrad: Array[Double] => (Double,
   var eps = Double.MaxValue
 
   def descent(): (Array[Double], Double, Double) = {
-    for (i <- 0 until maxSteps if math.abs(eps) > 1e-8) {
+    for (i <- 0 until maxSteps if math.abs(eps) > 1e-10) {
       calculateStep()
       println(i + "\t" + eps + "\t" + lastY)
     }

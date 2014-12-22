@@ -23,13 +23,13 @@ with OptionStrategyExampleSet with Competition[Array[Double]] {
   override def eval(weights: Array[Double]): Double = -f(weights)
 
   override def train(weights: Array[Double]): Array[Double] =
-    new GradientDescentWithWithMinimumApproximation(f, fgrad, 10, weights, -0.01).descent()._1
+    new RProp(f, fgrad, 50, weights).descent()._1
 
   timing("learning") {
     println(learnMaxgain)
     println(evalMaxgain)
 
-    val bestExample = compete(100, 100)
+    val bestExample = compete(10, 50)
 
     println("=================================")
     val learnStats = nn.statistics("learn", bestExample, learnExamples) * -1
