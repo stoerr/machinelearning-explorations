@@ -1,6 +1,7 @@
 package net.stoerr.stocklearning.deepnn
 
-import scala.collection.mutable.WrappedArray
+import net.stoerr.stocklearning.common.DoubleArrayVector._
+import net.stoerr.stocklearning.nnfunction.Example
 
 /**
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
@@ -12,22 +13,27 @@ trait DeepNN {
   val sizeWeights: Int
   val sizeOutputs: Int
 
-  /** R**sizeWeights x R**sizeInputs -> R**sizeOutputs */
-  def f(inputs: WrappedArray[Double])(weights: WrappedArray[Double]): WrappedArray[Double] = fg(inputs)(weights)._1
+  /** R**sizeInputs x R**sizeWeights -> R**sizeOutputs */
+  def f(inputs: Array[Double])(weights: Array[Double]): Array[Double] = fg(inputs)(weights)._1
 
-  case class GradInfo(inputGradient: WrappedArray[Double], weightGradient: WrappedArray[Double])
+  case class GradInfo(inputGradient: Array[Double], weightGradient: Array[Double])
 
-  def fg(inputs: WrappedArray[Double])(weights: WrappedArray[Double]): (WrappedArray[Double], WrappedArray[Double] => GradInfo)
+  /** R**sizeInputs x R**sizeWeights -> R**sizeOutputs , R**sizeOutputs => GradInfo */
+  def fg(inputs: Array[Double])(weights: Array[Double]): (Array[Double], Array[Double] => GradInfo)
 
   def |(o: DeepNN): DeepNN = DeepNN.join(this, o)
 
   /** R**sizeInputs x R**sizeWeights -> (R, R**sizeWeights) */
-  def fgrad(inputs: WrappedArray[Double], weights: WrappedArray[Double]): (WrappedArray[Double], WrappedArray[Double]) = {
-    assert(1 == sizeOutputs)
-    val (y, g) = fg(inputs)(weights)
-    (y, g(Array(1.0)).weightGradient)
+  def fgrad(example: Example)(weights: Array[Double]): (Array[Double], Array[Double]) = {
+    val (outputs, gradToGradinfo) = fg(example.inputs)(weights)
+    val (result, outputgrad) = example.gainWithGradient(outputs)
+    val ginfo = gradToGradinfo(outputgrad)
+    (Array(result), ginfo.weightGradient)
   }
 
+  def fgradCombined(examples: Seq[Example])(weights: Array[Double]): (Array[Double], Array[Double]) = {
+    examples.par.map(fgrad(_)(weights)).reduce((x, y) => (x._1 + y._1, x._2 + y._2))
+  }
 }
 
 object DeepNN {
@@ -35,11 +41,11 @@ object DeepNN {
   def join(m: DeepNN, n: DeepNN): DeepNN = new DeepNN {
     assert(m.sizeOutputs == n.sizeInputs)
 
-    override val sizeInputs: Int = this.sizeInputs
+    override val sizeInputs: Int = m.sizeInputs
     override val sizeWeights: Int = m.sizeWeights + n.sizeWeights
     override val sizeOutputs: Int = n.sizeOutputs
 
-    override def fg(inputs: WrappedArray[Double])(weights: WrappedArray[Double]): (WrappedArray[Double], WrappedArray[Double] => GradInfo) = {
+    override def fg(inputs: Array[Double])(weights: Array[Double]): (Array[Double], Array[Double] => GradInfo) = {
       assert(m.sizeInputs == inputs.size)
       assert(sizeWeights == weights.size)
       val (my, mg) = m.fg(inputs)(weights.slice(m.sizeWeights, sizeWeights))
