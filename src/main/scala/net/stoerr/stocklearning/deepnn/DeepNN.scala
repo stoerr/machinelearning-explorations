@@ -3,6 +3,8 @@ package net.stoerr.stocklearning.deepnn
 import net.stoerr.stocklearning.common.DoubleArrayVector._
 import net.stoerr.stocklearning.nnfunction.Example
 
+case class GradInfo(inputGradient: Array[Double], weightGradient: Array[Double])
+
 /**
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
  * @since 22.12.2014
@@ -15,8 +17,6 @@ trait DeepNN {
 
   /** R**sizeInputs x R**sizeWeights -> R**sizeOutputs */
   def f(inputs: Array[Double])(weights: Array[Double]): Array[Double] = fg(inputs)(weights)._1
-
-  case class GradInfo(inputGradient: Array[Double], weightGradient: Array[Double])
 
   /** R**sizeInputs x R**sizeWeights -> R**sizeOutputs , R**sizeOutputs => GradInfo */
   def fg(inputs: Array[Double])(weights: Array[Double]): (Array[Double], Array[Double] => GradInfo)

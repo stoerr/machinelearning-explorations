@@ -22,9 +22,9 @@ class TestNNasFunction extends FunSuite {
       case Array(x, y, z) => x + y * z
     }
     val ex = new ExampleWithDValueFunction(Array(0.2, 0.2, 0.2), gainfunc)
-    val base = Array.fill(nn.dimension)(0.1)
+    val base = Array.fill(nn.sizeWeights)(0.1)
     val weightFunction = nn.weightFunction(ex)
-    for (i <- 0 until nn.dimension) {
+    for (i <- 0 until nn.sizeWeights) {
       val fprojected = base.projectFunction(weightFunction, i)
       val f0: Double = fprojected(0)
       val feps: Double = fprojected(eps)
@@ -37,11 +37,11 @@ class TestNNasFunction extends FunSuite {
     val gainfunc: Array[DValue] => DValue = {
       case Array(u, v, w, x) => u + v * w - x
     }
-    val ex = new ExampleWithDValueFunction(Array.fill(nn.inputSize)(0.5), gainfunc)
+    val ex = new ExampleWithDValueFunction(Array.fill(nn.sizeInputs)(0.5), gainfunc)
     val f: (Array[Double]) => Double = nn.weightFunction(ex)
-    val base = Array.fill(nn.dimension)(0.1)
+    val base = Array.fill(nn.sizeWeights)(0.1)
     val weightFunction = nn.weightFunction(ex)
-    val realgradient = 0.until(nn.dimension).map { i =>
+    val realgradient = 0.until(nn.sizeWeights).map { i =>
       val fprojected = base.projectFunction(weightFunction, i)
       deriv(fprojected, 0)
     }
@@ -62,7 +62,7 @@ class TestNNasFunction extends FunSuite {
     val nn = new NNasFunction(2, 3, 2)
     val f = nn.joinedWeightFunction(examples)
     val fgrad = nn.joinedWeightFunctionWithGradient(examples)
-    var x = (0 until nn.dimension).map(_ => math.random - 0.5).toArray
+    var x = (0 until nn.sizeWeights).map(_ => math.random - 0.5).toArray
     var eps = -0.1
     println("===================== GradientDescentWithWithMinimumApproximation")
     println(new GradientDescentWithWithMinimumApproximation(f, fgrad, 100, x, eps).descent())

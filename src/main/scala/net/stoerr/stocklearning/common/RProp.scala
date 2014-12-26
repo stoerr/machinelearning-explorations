@@ -20,6 +20,7 @@ class RProp(val f: Array[Double] => Double, val fgrad: Array[Double] => (Double,
   var lastY = Double.MaxValue
   var eps = Double.MaxValue
 
+  /** Does the descent and returns the argument vector, the best function value and the last function change */
   def descent(): (Array[Double], Double, Double) = {
     for (i <- 0 until maxSteps if math.abs(eps) > 1e-10) {
       calculateStep()

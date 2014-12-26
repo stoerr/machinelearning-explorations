@@ -18,7 +18,7 @@ with OptionStrategyExampleSet with Competition[Array[Double]] {
   val learnMaxgain = new Statistics("learnMaxGain") ++= learnExamples.map(_.theoreticalMaximumGain)
   val evalMaxgain = new Statistics("evalMaxGain") ++= evalExamples.map(_.theoreticalMaximumGain)
 
-  override def makeCompetitor(): Array[Double] = (0 until nn.dimension).map(_ => 2 * (math.random - 0.5)).toArray
+  override def makeCompetitor(): Array[Double] = (0 until nn.sizeWeights).map(_ => 2 * (math.random - 0.5)).toArray
 
   override def eval(weights: Array[Double]): Double = -f(weights)
 
