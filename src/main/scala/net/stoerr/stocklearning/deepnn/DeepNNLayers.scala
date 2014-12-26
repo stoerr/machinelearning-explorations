@@ -11,10 +11,13 @@ abstract class SummingLayer(override val sizeInputs: Int, override val sizeOutpu
 
   /** R**sizeInputs x R**sizeWeights -> R**sizeOutputs , R**sizeOutputs => GradInfo */
   override def fg(inputs: Array[Double])(weights: Array[Double]): (Array[Double], (Array[Double]) => GradInfo) = {
+    assert(inputs.size == sizeInputs)
+    assert(weights.size == sizeWeights)
     val outputs = (for (o <- 0 until sizeOutputs) yield
       activation((0 until sizeInputs).map(i => inputs(i) * weights(o * sizeInputs + i)).reduce(_ + _))
       ).toArray
     return (outputs, { outGrad: Array[Double] =>
+      assert(outGrad.size == sizeOutputs)
       val outbase = outputs.map(derivActivation) elem_* outGrad
       GradInfo(
         inputGradient = (0 until sizeInputs).map { i =>

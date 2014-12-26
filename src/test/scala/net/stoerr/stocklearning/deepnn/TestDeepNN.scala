@@ -37,6 +37,8 @@ class TestDeepNN extends FunSuite {
 
   def deriv(f: Double => Double, x: Double) = (f(x + eps) - f(x - eps)) / (2 * eps)
 
+  def rdiff(x: Double, y: Double): Double = if (x == y) 0 else math.min(math.abs(x - y), math.abs(math.log(x / y)))
+
   test("Check that every parameter does something") {
     val nn = new SummingLayer(3, 2) with TanhActivation
     val gainfunc: Array[DValue] => DValue = {
@@ -55,15 +57,17 @@ class TestDeepNN extends FunSuite {
   }
 
   test("Check gradient") {
-    val nn = new SummingLayer(3, 1) with TanhActivation
+    val nn = new SummingLayer(3, 2) with TanhActivation
     val gainfunc: Array[DValue] => DValue = {
       case Array(u, v, w, x) => u + v * w - x
     }
     val inputs = Array(0.1, 0.2, 0.3)
-    val weights = Array(0.4, 0.5, 0.6)
+    val weights = Array(0.4, 0.5, 0.6, 0.7, 0.8, 0.9)
     val (_, fginfo) = nn.fg(inputs)(weights)
-    val ginfo: GradInfo = fginfo(Array(1.0))
     for (o <- 0 until nn.sizeOutputs) {
+      val outgrad: Array[Double] = Array(0.0, 0.0)
+      outgrad(o) = 1.0
+      val ginfo: GradInfo = fginfo(outgrad)
       val weightGradient = (0 until nn.sizeWeights).map { w =>
         val fprojected = weights.projectFunction(nn.f(inputs) _, w).andThen(_(o))
         deriv(fprojected, 0)
@@ -72,13 +76,8 @@ class TestDeepNN extends FunSuite {
         val fprojected = inputs.projectFunction(nn.f(_)(weights), i).andThen(_(o))
         deriv(fprojected, 0)
       }
-      println((inputGradient, ginfo.inputGradient).zipped.map(_ / _))
-      println(ginfo.inputGradient.toList)
-      println(inputGradient.toList)
-      println(ginfo.weightGradient.toList)
-      println(weightGradient.toList)
-      assert((inputGradient, ginfo.inputGradient).zipped.map(_ / _).map(math.log).map(math.abs).reduce(math.max(_, _)) < eps)
-      assert((weightGradient, ginfo.weightGradient).zipped.map(_ / _).map(math.log).map(math.abs).reduce(math.max(_, _)) < eps)
+      assert((inputGradient, ginfo.inputGradient).zipped.map(rdiff(_, _)).reduce(math.max(_, _)) < eps)
+      assert((weightGradient, ginfo.weightGradient).zipped.map(rdiff(_, _)).reduce(math.max(_, _)) < eps)
     }
   }
 
