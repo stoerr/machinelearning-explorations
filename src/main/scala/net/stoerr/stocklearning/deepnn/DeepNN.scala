@@ -16,7 +16,7 @@ trait DeepNN {
   /** R**sizeInputs x R**sizeWeights -> R**sizeOutputs */
   def f(inputs: Array[Double])(weights: Array[Double]): Array[Double] = fg(inputs)(weights)._1
 
-  case class GradInfo(inputGradient: => Array[Double], weightGradient: => Array[Double])
+  case class GradInfo(inputGradient: Array[Double], weightGradient: Array[Double])
 
   /** R**sizeInputs x R**sizeWeights -> R**sizeOutputs , R**sizeOutputs => GradInfo */
   def fg(inputs: Array[Double])(weights: Array[Double]): (Array[Double], Array[Double] => GradInfo)
@@ -24,16 +24,18 @@ trait DeepNN {
   def |(o: DeepNN): DeepNN = DeepNN.join(this, o)
 
   /** R**sizeInputs x R**sizeWeights -> (R, R**sizeWeights) */
-  def fgrad(example: Example)(weights: Array[Double]): (Array[Double], Array[Double]) = {
+  def fgrad(example: Example)(weights: Array[Double]): (Double, Array[Double]) = {
     val (outputs, gradToGradinfo) = fg(example.inputs)(weights)
     val (result, outputgrad) = example.gainWithGradient(outputs)
     val ginfo = gradToGradinfo(outputgrad)
-    (Array(result), ginfo.weightGradient)
+    (result, ginfo.weightGradient)
   }
 
-  def fgradCombined(examples: Seq[Example])(weights: Array[Double]): (Array[Double], Array[Double]) = {
+  def fgradCombined(examples: Seq[Example])(weights: Array[Double]): (Double, Array[Double]) = {
     examples.par.map(fgrad(_)(weights)).reduce((x, y) => (x._1 + y._1, x._2 + y._2))
   }
+
+  def fCombined(examples: Seq[Example])(weights: Array[Double]): Double = fgradCombined(examples)(weights)._1
 }
 
 object DeepNN {

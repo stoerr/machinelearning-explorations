@@ -11,13 +11,13 @@ abstract class SummingLayer(override val sizeInputs: Int, override val sizeOutpu
 
   /** R**sizeInputs x R**sizeWeights -> R**sizeOutputs , R**sizeOutputs => GradInfo */
   override def fg(inputs: Array[Double])(weights: Array[Double]): (Array[Double], (Array[Double]) => GradInfo) = {
-    val outputs = (0 until sizeOutputs).par.map { o =>
+    val outputs = (0 until sizeOutputs).map { o =>
       activation((0 until sizeInputs).map(i => inputs(i) * weights(o * sizeOutputs + i)).reduce(_ + _))
     }.toArray
     (outputs, { outGrad: Array[Double] =>
       val outbase = outGrad elem_* outputs.map(derivActivation)
       GradInfo(
-        inputGradient = (0 until sizeInputs).par.map { i =>
+        inputGradient = (0 until sizeInputs).map { i =>
           (0 until sizeOutputs).map(o => outbase(o) * weights(o * sizeOutputs + i)).reduce(_ + _)
         }.toArray,
         weightGradient = (for (o <- 0 until sizeOutputs; i <- 0 until sizeInputs) yield outbase(o) * inputs(i)).toArray
@@ -38,4 +38,10 @@ trait TanhActivation extends ActivationFunction {
   override def activation(sum: Double): Double = math.tanh(sum)
 
   override def derivActivation(output: Double): Double = 1 - output * output
+}
+
+object DeepNNLayers {
+  def twoLayerNN(sizeInput: Int, sizeHidden: Int, sizeOutput: Int) =
+    new SummingLayer(sizeInput, sizeHidden) with TanhActivation |
+      new SummingLayer(sizeHidden, sizeOutput) with TanhActivation
 }
