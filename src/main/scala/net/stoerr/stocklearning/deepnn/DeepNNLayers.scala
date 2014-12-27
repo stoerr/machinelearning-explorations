@@ -56,7 +56,10 @@ trait LinearActivation extends ActivationFunction {
 }
 
 object DeepNNLayers {
-  def twoLayerNN(sizeInput: Int, sizeHidden: Int, sizeOutput: Int) =
-    new SummingLayer(sizeInput, sizeHidden) with TanhActivation |
-      new SummingLayer(sizeHidden, sizeOutput) with TanhActivation
+  private def basicLayer(sizeInput: Int, sizeOutput: Int): DeepNN =
+    new SummingLayer(sizeInput, sizeOutput) with TanhActivation
+
+  def basicNN(sizes: Int*): DeepNN =
+    (sizes.take(sizes.size - 1), sizes.takeRight(sizes.size - 1)).zipped.map(basicLayer(_, _)).reduce(_ | _)
+
 }

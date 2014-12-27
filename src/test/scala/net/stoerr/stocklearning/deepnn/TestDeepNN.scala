@@ -80,7 +80,7 @@ class TestDeepNN extends FunSuite {
       new ExampleForStinoNN(Array(1, 0.0), Array(1, 1.0) / 2),
       new ExampleForStinoNN(Array(1, 1.0), Array(0, 0.0) / 2)
     )
-    val nn = DeepNNLayers.twoLayerNN(2, 7, 2)
+    val nn = DeepNNLayers.basicNN(2, 5, 2)
     val f = nn.fCombined(examples) _
     val fgrad = nn.fgradCombined(examples) _
     var x = (0 until nn.sizeWeights).map(_ => math.random - 0.5).toArray
