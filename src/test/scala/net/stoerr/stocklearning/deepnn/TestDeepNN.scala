@@ -68,8 +68,9 @@ class TestDeepNN extends FunSuite {
     val gradient = (0 until nn.sizeWeights).map { w =>
       val fprojected = weights.baseFunction(w).andThen(fgrad(_)).andThen(_._1)
       deriv(fprojected, 0)
-    }
+    }.toArray
     assert((gradient, fgrad(weights)._2).zipped.map(rdiff(_, _)).reduce(math.max(_, _)) < eps)
+    assert(gradient.elem_abs.reduce(math.min(_, _)) > eps)
   }
 
   test("learning") {
@@ -91,7 +92,11 @@ class TestDeepNN extends FunSuite {
     println("===================== GradientDescentMinimizeGradient")
     println(new GradientDescentMinimizeGradient(f, fgrad, 100, x, eps).descent())
     println("===================== RProp")
-    println(new RProp(f, fgrad, 200, x).descent())
+    val (wbest, ybest, lasteps) = new RProp(f, fgrad, 200, x).descent()
+    println((wbest, ybest, lasteps))
+    for (example <- examples) {
+      println(example + "\t" + nn.f(example.inputs)(wbest).toList)
+    }
   }
 
 }

@@ -18,6 +18,8 @@ trait Example {
   def gain(outputValues: Array[Double]): Double
 
   def gainWithGradient(outputValues: Array[Double]): ValueWithGradient
+
+  override def toString() = getClass.getSimpleName + inputs.toList
 }
 
 class ExampleWithDValueFunction(val inputs: Array[Double], func: Array[DValue] => DValue) extends Example {
@@ -32,4 +34,6 @@ class ExampleWithDValueFunction(val inputs: Array[Double], func: Array[DValue] =
 
 class ExampleForStinoNN(inputs: Array[Double], val expectedOutputs: Array[Double])
   extends ExampleWithDValueFunction(inputs, outputs =>
-    (outputs, expectedOutputs.map(DValue(_))).zipped.map(_ - _).map(x => x * x).reduce(_ + _))
+    (outputs, expectedOutputs.map(DValue(_))).zipped.map(_ - _).map(x => x * x).reduce(_ + _)) {
+  override def toString() = "StinoExample{" + inputs.toList + " => " + expectedOutputs.toList + "}"
+}
