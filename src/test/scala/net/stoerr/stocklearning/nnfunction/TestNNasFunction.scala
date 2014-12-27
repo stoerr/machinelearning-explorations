@@ -25,7 +25,7 @@ class TestNNasFunction extends FunSuite {
     val base = Array.fill(nn.sizeWeights)(0.1)
     val weightFunction = nn.weightFunction(ex)
     for (i <- 0 until nn.sizeWeights) {
-      val fprojected = base.projectFunction(weightFunction, i)
+      val fprojected = base.baseFunction(i).andThen(weightFunction)
       val f0: Double = fprojected(0)
       val feps: Double = fprojected(eps)
       assert(feps != f0, "Independent of arg " + i)
@@ -42,7 +42,7 @@ class TestNNasFunction extends FunSuite {
     val base = Array.fill(nn.sizeWeights)(0.1)
     val weightFunction = nn.weightFunction(ex)
     val realgradient = 0.until(nn.sizeWeights).map { i =>
-      val fprojected = base.projectFunction(weightFunction, i)
+      val fprojected = base.baseFunction(i) andThen (weightFunction)
       deriv(fprojected, 0)
     }
     val (value, gradient) = nn.weightFunctionWithGradient(ex)(base)

@@ -50,8 +50,8 @@ object DeepNN {
     override def fg(inputs: Array[Double])(weights: Array[Double]): (Array[Double], Array[Double] => GradInfo) = {
       assert(m.sizeInputs == inputs.size)
       assert(sizeWeights == weights.size)
-      val (my, mg) = m.fg(inputs)(weights.slice(m.sizeWeights, sizeWeights))
-      val (ny, ng) = n.fg(my)(weights.slice(0, m.sizeWeights))
+      val (my, mg) = m.fg(inputs)(weights.slice(0, m.sizeWeights))
+      val (ny, ng) = n.fg(my)(weights.slice(m.sizeWeights, sizeWeights))
       (ny, outputGradient => {
         val nginfo = ng(outputGradient)
         val mginfo = mg(nginfo.inputGradient)
