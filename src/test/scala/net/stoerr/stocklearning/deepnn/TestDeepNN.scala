@@ -40,7 +40,7 @@ class TestDeepNN extends FunSuite {
       case Array(u, v, w, x) => u + v * w - x
     }
     val inputs = Array(0.1, 0.2, 0.3)
-    val weights = Array(0.4, 0.5, 0.6, 0.7, 0.8, 0.9)
+    val weights = Array(0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08)
     val (_, fginfo) = nn.fg(inputs)(weights)
     for (o <- 0 until nn.sizeOutputs) {
       val outgrad: Array[Double] = Array(0.0, 0.0)
@@ -84,19 +84,18 @@ class TestDeepNN extends FunSuite {
     val f = nn.fCombined(examples) _
     val fgrad = nn.fgradCombined(examples) _
     var x = (0 until nn.sizeWeights).map(_ => math.random - 0.5).toArray
-    var eps = -0.1
-    println("===================== GradientDescentWithWithMinimumApproximation")
-    println(new GradientDescentWithWithMinimumApproximation(f, fgrad, 100, x, eps).descent())
-    println("===================== GradientDescentPseudoLinearNewton")
-    println(new GradientDescentPseudoLinearNewton(f, fgrad, 100, x, eps).descent())
-    println("===================== GradientDescentMinimizeGradient")
-    println(new GradientDescentMinimizeGradient(f, fgrad, 100, x, eps).descent())
-    println("===================== RProp")
+    //    var step = -0.1
+    //    println("===================== GradientDescentWithWithMinimumApproximation")
+    //    println(new GradientDescentWithWithMinimumApproximation(f, fgrad, 100, x, step).descent())
+    //    println("===================== GradientDescentPseudoLinearNewton")
+    //    println(new GradientDescentPseudoLinearNewton(f, fgrad, 100, x, step).descent())
+    //    println("===================== GradientDescentMinimizeGradient")
+    //    println(new GradientDescentMinimizeGradient(f, fgrad, 100, x, step).descent())
+    //    println("===================== RProp")
     val (wbest, ybest, lasteps) = new RProp(f, fgrad, 200, x).descent()
     println((wbest, ybest, lasteps))
-    for (example <- examples) {
-      println(example + "\t" + nn.f(example.inputs)(wbest).toList)
-    }
+    // for (example <- examples) println(example + "\t" + nn.f(example.inputs)(wbest).toList)
+    assert(ybest > 0 && ybest < eps)
   }
 
 }
