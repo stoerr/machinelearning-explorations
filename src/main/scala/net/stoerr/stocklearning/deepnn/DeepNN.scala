@@ -31,6 +31,9 @@ trait DeepNN {
     (result, ginfo.weightGradient)
   }
 
+  /** R**sizeInputs x R**sizeWeights -> R */
+  def f(example: Example)(weights: Array[Double]): Double = fgrad(example)(weights)._1
+
   def fgradCombined(examples: Seq[Example])(weights: Array[Double]): (Double, Array[Double]) = {
     examples.par.map(fgrad(_)(weights)).reduce((x, y) => (x._1 + y._1, x._2 + y._2))
   }
