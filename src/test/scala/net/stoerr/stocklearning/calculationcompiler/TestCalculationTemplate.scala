@@ -11,11 +11,14 @@ class TestCalculationTemplate extends FunSuite {
   test("build template") {
     val tmpl = new CalculationTemplate
     val inputs = (0 until 2) map (_ => tmpl.newInput())
+    val weights = (0 until 2) map (_ => tmpl.newInput())
     val intermediate = tmpl.newVariable()
     val output = tmpl.newOutput()
-    tmpl ++= inputs map (Sum(_, intermediate))
+    tmpl ++= (inputs, weights).zipped map (WeightedSum(_, _, intermediate))
     tmpl += Cosh(intermediate, output)
     println(tmpl)
+    val compiler = tmpl.compile()
+    println(compiler)
   }
 
 }

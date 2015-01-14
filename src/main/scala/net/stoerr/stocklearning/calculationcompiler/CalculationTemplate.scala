@@ -30,18 +30,41 @@ class CalculationTemplate {
   def newOutput() = newVariable()
 
   override def toString() = "CalculationTemplate[" + calculations + "]"
+
+  def compile() = new CalculationCompiler(calculations.toArray)
 }
 
 case class CalculationVariable(n: Int) {
   override def toString() = "v" + n
 }
 
-sealed trait CalculationItem
+sealed trait CalculationItem {
+  val output: CalculationVariable
+  val inputs: Traversable[CalculationVariable]
+}
 
-case class Sum(input: CalculationVariable, output: CalculationVariable) extends CalculationItem {
-  override def toString() = output + " += " + input
+case class WeightedSum(input: CalculationVariable, weight: CalculationVariable, output: CalculationVariable) extends CalculationItem {
+  override def toString() = output + " += " + input + "*" + weight
+
+  override val inputs: Traversable[CalculationVariable] = Array(input, weight)
 }
 
 case class Cosh(input: CalculationVariable, output: CalculationVariable) extends CalculationItem {
   override def toString() = output + " = cosh(" + input + ")"
+
+  override val inputs: Traversable[CalculationVariable] = Array(input)
+}
+
+case class CalculationGroup(inputs: Array[CalculationVariable], output: CalculationVariable, calculations: Array[CalculationItem]) {
+  override def toString() = "CalculationGroup(inputs:" + inputs.mkString(",") + "; output:" + output + "; calculations: " +
+    calculations.mkString(", ") + ")"
+}
+
+class CalculationCompiler(val calculations: Array[CalculationItem]) {
+
+  val groups = calculations.groupBy(_.output).map { case (output, calcs) =>
+    CalculationGroup(calcs.flatMap(_.inputs), output, calcs)
+  }.toArray
+
+  override def toString() = "CalculationCompiler(\n  " + groups.mkString("\n  ") + "\n)"
 }
