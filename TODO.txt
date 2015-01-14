@@ -1,4 +1,3 @@
-- Simultaneously have n networks learning and periodically replace the worst by fresh random networks
 - Neuron statistics: which neurons are irrelevant? How many?
 - Recombine the best neurons of two networks -> periodically keep 33% best, 33% recombined from the best, 33% fresh
 - Devise measure how important an hidden neuron is - whether it influences stuff into correct or incorrect direction. Is
@@ -8,3 +7,6 @@
 
 https://github.com/log4s/log4s
 http://stackoverflow.com/questions/978252/logging-in-scala
+
+- competition should stop even when everything is not changed by train anymore
+- competition of normal BackpropNN
