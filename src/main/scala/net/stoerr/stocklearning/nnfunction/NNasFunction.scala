@@ -1,7 +1,7 @@
 package net.stoerr.stocklearning.nnfunction
 
 import net.stoerr.stocklearning.common.DoubleArrayVector._
-import net.stoerr.stocklearning.common.{StatisticsWithRanges, Statistics}
+import net.stoerr.stocklearning.common.{Statistics, StatisticsWithRanges}
 import net.stoerr.stocklearning.java.DoubleArrayOps
 import net.stoerr.stocklearning.nnfunction.Example.ValueWithGradient
 
@@ -18,7 +18,7 @@ import scala.collection.GenTraversableOnce
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
  * @since 11.11.2014
  */
-class NNasFunction(val inputSize: Int, val hiddenSize: Int, val outputSize: Int) {
+class NNasFunction(val sizeInputs: Int, val sizeHidden: Int, val outputSize: Int) {
 
   /** Dimension of the weight vector.
     * w1_jk (in_k -> o1_j) : (inputSize + 1)*j + k
@@ -26,36 +26,36 @@ class NNasFunction(val inputSize: Int, val hiddenSize: Int, val outputSize: Int)
     * w2_ij (o1_j -> o2_i) : (inputSize + 1) * hiddenSize + (hiddenSize + 1) * i + j
     * offset2_i (-> o2_i) : (inputSize + 1) * hiddenSize + (hiddenSize + 1) * i + hiddenSize
     */
-  val dimension = (inputSize + 1) * hiddenSize + (hiddenSize + 1) * outputSize
+  val sizeWeights = (sizeInputs + 1) * sizeHidden + (sizeHidden + 1) * outputSize
 
-  private def ind_w1(j: Int, k: Int) = (inputSize + 1) * j + k
+  private def ind_w1(j: Int, k: Int) = (sizeInputs + 1) * j + k
 
-  private def ind_offset1(j: Int) = ind_w1(j, inputSize)
+  private def ind_offset1(j: Int) = ind_w1(j, sizeInputs)
 
   /** i = output layer neuron number from j = hidden layer neuron number */
-  private def ind_w2(i: Int, j: Int) = (inputSize + 1) * hiddenSize + (hiddenSize + 1) * i + j
+  private def ind_w2(i: Int, j: Int) = (sizeInputs + 1) * sizeHidden + (sizeHidden + 1) * i + j
 
-  private def ind_offset2(i: Int) = ind_w2(i, hiddenSize)
+  private def ind_offset2(i: Int) = ind_w2(i, sizeHidden)
 
   def toString(w: Array[Double]): String =
-    (0 until hiddenSize).map(i =>
-      (0 until inputSize).map(j => w(ind_w1(i, j))).mkString(" ") + " + " + w(ind_offset1(i))
+    (0 until sizeHidden).map(i =>
+      (0 until sizeInputs).map(j => w(ind_w1(i, j))).mkString(" ") + " + " + w(ind_offset1(i))
         + " => " + (0 until outputSize).map(k => w(ind_w2(k, i))).mkString(" ")
     ).mkString("\n") + "\n++ " + (0 until outputSize).map(k => w(ind_offset2(k))).mkString(" ")
 
   private class Calculation(example: Example, weights: Array[Double]) {
-    val hiddenOut: Array[Double] = Array.ofDim(hiddenSize)
-    for (i <- 0.until(hiddenSize)) hiddenOut(i) = DoubleArrayOps.dotProductAndTanh(inputSize, example.inputs, 0, weights, ind_w1(i, 0))
+    val hiddenOut: Array[Double] = Array.ofDim(sizeHidden)
+    for (i <- 0.until(sizeHidden)) hiddenOut(i) = DoubleArrayOps.dotProductAndTanh(sizeInputs, example.inputs, 0, weights, ind_w1(i, 0))
     val out: Array[Double] = Array.ofDim(outputSize)
-    for (i <- 0.until(outputSize)) out(i) = DoubleArrayOps.dotProductAndTanh(hiddenSize, hiddenOut, 0, weights, ind_w2(i, 0))
+    for (i <- 0.until(outputSize)) out(i) = DoubleArrayOps.dotProductAndTanh(sizeHidden, hiddenOut, 0, weights, ind_w2(i, 0))
   }
 
   private class DerivCalculation(example: Example, weights: Array[Double]) extends Calculation(example, weights) {
     private def sqr(x: Double) = x * x
 
     val (gain, gainOut2Gradient) = example.gainWithGradient(out)
-    val gradient: Array[Double] = Array.ofDim(dimension)
-    val hiddenDivSum: Array[Double] = Array.ofDim(hiddenSize) // d(gain)/d(hiddenOut(_))
+    val gradient: Array[Double] = Array.ofDim(sizeWeights)
+    val hiddenDivSum: Array[Double] = Array.ofDim(sizeHidden) // d(gain)/d(hiddenOut(_))
     for ((o2i, i) <- out.zipWithIndex) {
       val o2id = (1 - o2i * o2i) * gainOut2Gradient(i) // d(gain)/d(o2_i)
       //      for (j <- 0 until hiddenSize) {
@@ -63,8 +63,8 @@ class NNasFunction(val inputSize: Int, val hiddenSize: Int, val outputSize: Int)
       //        gradient(ind_w2_ij) = o2id * hiddenOut(j)
       //        hiddenDivSum(j) += o2id * weights(ind_w2_ij)
       //      }
-      DoubleArrayOps.assignMultiplied(hiddenSize, hiddenOut, 0, gradient, ind_w2(i, 0), o2id)
-      DoubleArrayOps.addMultiplied(hiddenSize, weights, ind_w2(i, 0), hiddenDivSum, 0, o2id)
+      DoubleArrayOps.assignMultiplied(sizeHidden, hiddenOut, 0, gradient, ind_w2(i, 0), o2id)
+      DoubleArrayOps.addMultiplied(sizeHidden, weights, ind_w2(i, 0), hiddenDivSum, 0, o2id)
       gradient(ind_offset2(i)) = o2id
     }
     for ((o1j, j) <- hiddenOut.zipWithIndex) {
@@ -72,7 +72,7 @@ class NNasFunction(val inputSize: Int, val hiddenSize: Int, val outputSize: Int)
       //      for (k <- 0 until inputSize) {
       //        gradient(ind_w1(j, k)) = o1jd * example.inputs(k)
       //      }
-      DoubleArrayOps.assignMultiplied(inputSize, example.inputs, 0, gradient, ind_w1(j, 0), o1jd)
+      DoubleArrayOps.assignMultiplied(sizeInputs, example.inputs, 0, gradient, ind_w1(j, 0), o1jd)
       gradient(ind_offset1(j)) = o1jd
     }
     val result = (gain, gradient)
@@ -102,9 +102,9 @@ class NNasFunction(val inputSize: Int, val hiddenSize: Int, val outputSize: Int)
     stats
   }
 
-  def outputWeightsStatistics(weights: Array[Double]) : StatisticsWithRanges = {
+  def outputWeightsStatistics(weights: Array[Double]): StatisticsWithRanges = {
     val stats = new StatisticsWithRanges("output weights")
-    for (o <- 0 until outputSize; h <- 0 until hiddenSize) stats += math.abs(weights(ind_w2(o, h)))
+    for (o <- 0 until outputSize; h <- 0 until sizeHidden) stats += math.abs(weights(ind_w2(o, h)))
     stats
   }
 

@@ -1,7 +1,7 @@
 package net.stoerr.stocklearning.nnfunction
 
-import net.stoerr.stocklearning.common._
 import net.stoerr.stocklearning.common.DoubleArrayVector._
+import net.stoerr.stocklearning.common._
 import org.scalatest.FunSuite
 
 import scala.collection.immutable.IndexedSeq
@@ -22,10 +22,10 @@ class TestNNasFunction extends FunSuite {
       case Array(x, y, z) => x + y * z
     }
     val ex = new ExampleWithDValueFunction(Array(0.2, 0.2, 0.2), gainfunc)
-    val base = Array.fill(nn.dimension)(0.1)
+    val base = Array.fill(nn.sizeWeights)(0.1)
     val weightFunction = nn.weightFunction(ex)
-    for (i <- 0 until nn.dimension) {
-      val fprojected = base.projectFunction(weightFunction, i)
+    for (i <- 0 until nn.sizeWeights) {
+      val fprojected = base.baseFunction(i).andThen(weightFunction)
       val f0: Double = fprojected(0)
       val feps: Double = fprojected(eps)
       assert(feps != f0, "Independent of arg " + i)
@@ -37,12 +37,12 @@ class TestNNasFunction extends FunSuite {
     val gainfunc: Array[DValue] => DValue = {
       case Array(u, v, w, x) => u + v * w - x
     }
-    val ex = new ExampleWithDValueFunction(Array.fill(nn.inputSize)(0.5), gainfunc)
+    val ex = new ExampleWithDValueFunction(Array.fill(nn.sizeInputs)(0.5), gainfunc)
     val f: (Array[Double]) => Double = nn.weightFunction(ex)
-    val base = Array.fill(nn.dimension)(0.1)
+    val base = Array.fill(nn.sizeWeights)(0.1)
     val weightFunction = nn.weightFunction(ex)
-    val realgradient = 0.until(nn.dimension).map { i =>
-      val fprojected = base.projectFunction(weightFunction, i)
+    val realgradient = 0.until(nn.sizeWeights).map { i =>
+      val fprojected = base.baseFunction(i) andThen (weightFunction)
       deriv(fprojected, 0)
     }
     val (value, gradient) = nn.weightFunctionWithGradient(ex)(base)
@@ -62,22 +62,24 @@ class TestNNasFunction extends FunSuite {
     val nn = new NNasFunction(2, 3, 2)
     val f = nn.joinedWeightFunction(examples)
     val fgrad = nn.joinedWeightFunctionWithGradient(examples)
-    var x = (0 until nn.dimension).map(_ => math.random - 0.5).toArray
+    var x = (0 until nn.sizeWeights).map(_ => math.random - 0.5).toArray
     var eps = -0.1
     println("===================== GradientDescentWithWithMinimumApproximation")
-    println( new GradientDescentWithWithMinimumApproximation(f, fgrad, 100, x, eps).descent() )
+    println(new GradientDescentWithWithMinimumApproximation(f, fgrad, 100, x, eps).descent())
     println("===================== GradientDescentPseudoLinearNewton")
-    println( new GradientDescentPseudoLinearNewton(f, fgrad, 100, x, eps).descent() )
+    println(new GradientDescentPseudoLinearNewton(f, fgrad, 100, x, eps).descent())
     println("===================== GradientDescentMinimizeGradient")
-    println( new GradientDescentMinimizeGradient(f, fgrad, 100, x, eps).descent() )
-//    for (i <- 0 until 100) {
-//      val (y,grad) = fgrad(x)
-//      val directedFunc = x.directionalFunction(f, grad)
-//      eps = GradientDescent.approximateMinimum(y, directedFunc, eps)
-//      println(y + "\t" + eps)
-//      x = x + grad*eps
-//    }
-//    println(f(x))
+    println(new GradientDescentMinimizeGradient(f, fgrad, 100, x, eps).descent())
+    println("===================== RProp")
+    println(new RProp(f, fgrad, 200, x).descent())
+    //    for (i <- 0 until 100) {
+    //      val (y,grad) = fgrad(x)
+    //      val directedFunc = x.directionalFunction(f, grad)
+    //      eps = GradientDescent.approximateMinimum(y, directedFunc, eps)
+    //      println(y + "\t" + eps)
+    //      x = x + grad*eps
+    //    }
+    //    println(f(x))
     // println(x.mkString(","))
     // println(nn.toString(x))
   }

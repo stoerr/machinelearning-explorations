@@ -18,9 +18,9 @@ object RunOptionStrategySearchWithGradientDescent extends App with OptionStrateg
   val evalMaxgain = new Statistics("evalMaxGain") ++= evalExamples.map(_.theoreticalMaximumGain)
 
   timing("learning") {
-    val weights = (0 until nn.dimension).map(_ => 2 * (math.random - 0.5)).toArray
+    val weights = (0 until nn.sizeWeights).map(_ => 2 * (math.random - 0.5)).toArray
 
-    val (nweights, lastgain, lastchange) = new GradientDescentWithWithMinimumApproximation(f, fgrad, 200, weights, -0.01).descent()
+    val (nweights, lastgain, lastchange) = new RProp(f, fgrad, 200, weights).descent()
 
     val learnStats = nn.statistics("learn", nweights, learnExamples) * -1
     println(learnStats)
