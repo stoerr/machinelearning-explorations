@@ -31,6 +31,14 @@ case class Constant(output: CalculationVariable, value: Double) extends Calculat
   override val inputs: immutable.SortedSet[CalculationVariable] = TreeSet.empty
 }
 
+case class Factor(input: CalculationVariable, output: CalculationVariable, value: Double) extends CalculationItem {
+  override def toString = output + " = " + (if (1 == value) input else value + " * " + input)
+
+  override def execute(values: Array[Double]): Unit = values(output.n) = value * values(input.n)
+
+  override val inputs: immutable.SortedSet[CalculationVariable] = TreeSet(input)
+}
+
 case class WeightedSum(input: CalculationVariable, weight: CalculationVariable, output: CalculationVariable) extends CalculationItem {
   override def toString = output + " += " + input + "*" + weight
 
