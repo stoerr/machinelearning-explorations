@@ -8,7 +8,7 @@ import scala.collection.mutable.ArrayBuffer
  */
 class CalculationTemplate {
   val calculations = new ArrayBuffer[CalculationItem]
-  private var runningNumberOfVariable = -1;
+  private var runningNumberOfVariable = -1
 
   def +=(calculation: CalculationItem): this.type = {
     calculations += calculation
@@ -29,42 +29,13 @@ class CalculationTemplate {
 
   def newOutput() = newVariable()
 
-  override def toString() = "CalculationTemplate[" + calculations + "]"
+  override def toString = "CalculationTemplate[" + calculations + "]"
 
   def compile() = new CalculationCompiler(calculations.toArray)
 }
 
-case class CalculationVariable(n: Int) {
-  override def toString() = "v" + n
-}
+case class CalculationVariable(n: Int) extends Comparable[CalculationVariable] {
+  override def toString = "v" + n
 
-sealed trait CalculationItem {
-  val output: CalculationVariable
-  val inputs: Traversable[CalculationVariable]
-}
-
-case class WeightedSum(input: CalculationVariable, weight: CalculationVariable, output: CalculationVariable) extends CalculationItem {
-  override def toString() = output + " += " + input + "*" + weight
-
-  override val inputs: Traversable[CalculationVariable] = Array(input, weight)
-}
-
-case class Cosh(input: CalculationVariable, output: CalculationVariable) extends CalculationItem {
-  override def toString() = output + " = cosh(" + input + ")"
-
-  override val inputs: Traversable[CalculationVariable] = Array(input)
-}
-
-case class CalculationGroup(inputs: Array[CalculationVariable], output: CalculationVariable, calculations: Array[CalculationItem]) {
-  override def toString() = "CalculationGroup(inputs:" + inputs.mkString(",") + "; output:" + output + "; calculations: " +
-    calculations.mkString(", ") + ")"
-}
-
-class CalculationCompiler(val calculations: Array[CalculationItem]) {
-
-  val groups = calculations.groupBy(_.output).map { case (output, calcs) =>
-    CalculationGroup(calcs.flatMap(_.inputs), output, calcs)
-  }.toArray
-
-  override def toString() = "CalculationCompiler(\n  " + groups.mkString("\n  ") + "\n)"
+  override def compareTo(o: CalculationVariable): Int = n.compareTo(o.n)
 }
