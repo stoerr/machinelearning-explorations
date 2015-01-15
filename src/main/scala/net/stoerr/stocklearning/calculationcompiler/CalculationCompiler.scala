@@ -6,9 +6,10 @@ package net.stoerr.stocklearning.calculationcompiler
  */
 class CalculationCompiler(val calculations: Vector[CalculationItem]) {
 
-  val groups = calculations.groupBy(_.output).map(c => new CalculationGroup(c._2)).map(simplify).toArray
+  val groups: Array[CalculationGroup] = calculations.groupBy(_.output).map(c => new CalculationGroup(c._2)).map(simplify).toArray
 
-  val ordered = order(groups)
+  /** A list of "levels": sets of independent CalculationGroups that can be executed in parallel. */
+  val ordered: List[Traversable[CalculationGroup]] = order(groups)
 
   override def toString = "CalculationCompiler(ordered: \n  " + ordered.mkString("\n  ") + "\n)"
 
@@ -25,8 +26,17 @@ class CalculationCompiler(val calculations: Vector[CalculationItem]) {
     return first :: order(rest)
   }
 
+  def execute(values: Array[Double]): Unit = {
+    ordered.seq.foreach { level: Traversable[CalculationGroup] =>
+      level.par.foreach { group: CalculationGroup =>
+        group.execute(values)
+      }
+    }
+  }
+
 }
 
+/** A number of calculations with a common output that can be executed in any order, but serially */
 case class CalculationGroup(inputs: Vector[CalculationVariable], output: CalculationVariable, calculations: Vector[CalculationItem]) {
   require(!inputs.contains(output))
 
@@ -37,5 +47,8 @@ case class CalculationGroup(inputs: Vector[CalculationVariable], output: Calcula
 
   /** Uses an output of another CalculationGroup. Not transitive; a calculation never depends on itself. */
   def dependsOn(o: CalculationGroup) = inputs.contains(o.output)
+
+  def execute(values: Array[Double]): Unit = calculations.seq.foreach(_.execute(values))
+
 }
 

@@ -10,3 +10,8 @@ http://stackoverflow.com/questions/978252/logging-in-scala
 
 - competition should stop even when everything is not changed by train anymore
 - competition of normal BackpropNN
+
+CalculationCompiler:
+- how to do derivations?
+- how to construct NN
+- (Very much later): how to do this with the GPU?
