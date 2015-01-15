@@ -1,5 +1,7 @@
 package net.stoerr.stocklearning.calculationcompiler
 
+import net.stoerr.stocklearning.java.DoubleArrayOps
+
 import scala.collection.immutable
 
 /**
@@ -10,6 +12,8 @@ sealed trait CalculationItem extends Comparable[CalculationItem] {
   val output: CalculationVariable
   val inputs: immutable.IndexedSeq[CalculationVariable]
 
+  def execute(values: Array[Double]): Unit
+
   override def compareTo(o: CalculationItem): Int = CalculationItem.calculationItemOrdering.compare(this, o)
 }
 
@@ -18,14 +22,26 @@ object CalculationItem {
     Ordering.by(i => (i.getClass.toString, i.output, i.inputs.toIterable))
 }
 
+case class Constant(output: CalculationVariable, value: Double) extends CalculationItem {
+  override def toString = output + " = " + value
+
+  override def execute(values: Array[Double]): Unit = values(output.n) = value
+
+  override val inputs: immutable.IndexedSeq[CalculationVariable] = Vector.empty
+}
+
 case class WeightedSum(input: CalculationVariable, weight: CalculationVariable, output: CalculationVariable) extends CalculationItem {
   override def toString = output + " += " + input + "*" + weight
+
+  override def execute(values: Array[Double]): Unit = values(output.n) = values(input.n) * values(weight.n)
 
   override val inputs: immutable.IndexedSeq[CalculationVariable] = Vector(input, weight)
 }
 
-case class Cosh(input: CalculationVariable, output: CalculationVariable) extends CalculationItem {
-  override def toString = output + " = cosh(" + input + ")"
+case class Tanh(input: CalculationVariable, output: CalculationVariable) extends CalculationItem {
+  override def toString = output + " = tanh(" + input + ")"
+
+  override def execute(values: Array[Double]): Unit = values(output.n) = math.tanh(values(input.n))
 
   override val inputs: immutable.IndexedSeq[CalculationVariable] = Vector(input)
 }
@@ -33,6 +49,9 @@ case class Cosh(input: CalculationVariable, output: CalculationVariable) extends
 case class WeightedSumCombined(inputStart: Int, inputStep: Int, weightStart: Int, weightStep: Int, count: Int, inputs: immutable.IndexedSeq[CalculationVariable], weights: immutable.IndexedSeq[CalculationVariable], output: CalculationVariable) extends CalculationItem {
 
   require(inputs.length == weights.length)
+
+  override def execute(values: Array[Double]): Unit =
+    values(output.n) = DoubleArrayOps.dotProduct(count, values, inputStart, inputStep, values, weightStart, weightStep)
 
   override def toString = "WeightedSumCombined(istart=" + inputStart + ", istep=" + inputStep +
     ", wstart=" + weightStart + ", wstep=" + weightStep + ", count=" + count +
