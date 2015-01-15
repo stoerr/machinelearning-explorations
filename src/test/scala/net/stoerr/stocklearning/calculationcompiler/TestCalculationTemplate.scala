@@ -10,8 +10,8 @@ class TestCalculationTemplate extends FunSuite {
 
   test("build template") {
     val tmpl = new CalculationTemplate
-    val inputs = (0 until 2) map (_ => tmpl.newInput())
-    val weights = (0 until 2) map (_ => tmpl.newInput())
+    val inputs = (0 until 4) map (_ => tmpl.newInput())
+    val weights = (0 until 4) map (_ => tmpl.newInput())
     val intermediate = tmpl.newVariable()
     val output = tmpl.newOutput()
     tmpl ++= (inputs, weights).zipped map (WeightedSum(_, _, intermediate))

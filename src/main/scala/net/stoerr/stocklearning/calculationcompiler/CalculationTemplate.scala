@@ -31,7 +31,7 @@ class CalculationTemplate {
 
   override def toString = "CalculationTemplate[" + calculations + "]"
 
-  def compile() = new CalculationCompiler(calculations.toArray)
+  def compile() = new CalculationCompiler(calculations.toVector)
 }
 
 case class CalculationVariable(n: Int) extends Comparable[CalculationVariable] {
