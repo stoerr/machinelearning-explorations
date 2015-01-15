@@ -3,6 +3,7 @@ package net.stoerr.stocklearning.calculationcompiler
 import net.stoerr.stocklearning.java.DoubleArrayOps
 
 import scala.collection.immutable
+import scala.collection.immutable.TreeSet
 
 /**
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
@@ -10,7 +11,7 @@ import scala.collection.immutable
  */
 sealed trait CalculationItem extends Comparable[CalculationItem] {
   val output: CalculationVariable
-  val inputs: immutable.IndexedSeq[CalculationVariable]
+  val inputs: immutable.SortedSet[CalculationVariable]
 
   def execute(values: Array[Double]): Unit
 
@@ -27,7 +28,7 @@ case class Constant(output: CalculationVariable, value: Double) extends Calculat
 
   override def execute(values: Array[Double]): Unit = values(output.n) = value
 
-  override val inputs: immutable.IndexedSeq[CalculationVariable] = Vector.empty
+  override val inputs: immutable.SortedSet[CalculationVariable] = TreeSet.empty
 }
 
 case class WeightedSum(input: CalculationVariable, weight: CalculationVariable, output: CalculationVariable) extends CalculationItem {
@@ -35,7 +36,7 @@ case class WeightedSum(input: CalculationVariable, weight: CalculationVariable, 
 
   override def execute(values: Array[Double]): Unit = values(output.n) = values(input.n) * values(weight.n)
 
-  override val inputs: immutable.IndexedSeq[CalculationVariable] = Vector(input, weight)
+  override val inputs: immutable.SortedSet[CalculationVariable] = TreeSet(input, weight)
 }
 
 case class Tanh(input: CalculationVariable, output: CalculationVariable) extends CalculationItem {
@@ -43,32 +44,33 @@ case class Tanh(input: CalculationVariable, output: CalculationVariable) extends
 
   override def execute(values: Array[Double]): Unit = values(output.n) = math.tanh(values(input.n))
 
-  override val inputs: immutable.IndexedSeq[CalculationVariable] = Vector(input)
+  override val inputs: immutable.SortedSet[CalculationVariable] = TreeSet(input)
 }
 
-case class WeightedSumCombined(inputStart: Int, inputStep: Int, weightStart: Int, weightStep: Int, count: Int, inputs: immutable.IndexedSeq[CalculationVariable], weights: immutable.IndexedSeq[CalculationVariable], output: CalculationVariable) extends CalculationItem {
+case class WeightedSumCombined(firstStart: Int, firstStep: Int, secondStart: Int, secondStep: Int, count: Int, first: immutable.IndexedSeq[CalculationVariable], second: immutable.IndexedSeq[CalculationVariable], output: CalculationVariable) extends CalculationItem {
 
-  require(inputs.length == weights.length)
+  require(first.length == second.length)
+  override val inputs: immutable.SortedSet[CalculationVariable] = TreeSet[CalculationVariable]() ++ first ++ second
 
   override def execute(values: Array[Double]): Unit =
-    values(output.n) = DoubleArrayOps.dotProduct(count, values, inputStart, inputStep, values, weightStart, weightStep)
+    values(output.n) = DoubleArrayOps.dotProduct(count, values, firstStart, firstStep, values, secondStart, secondStep)
 
-  override def toString = "WeightedSumCombined(istart=" + inputStart + ", istep=" + inputStep +
-    ", wstart=" + weightStart + ", wstep=" + weightStep + ", count=" + count +
-    ", inputs:" + inputs.mkString(", ") + "; weights:" + weights.mkString(", ") + "; output=" + output + ")"
+  override def toString = "WeightedSumCombined(istart=" + firstStart + ", istep=" + firstStep +
+    ", wstart=" + secondStart + ", wstep=" + secondStep + ", count=" + count +
+    ", first:" + first.mkString(", ") + "; second:" + second.mkString(", ") + "; output=" + output + ")"
 
   def this(w1: WeightedSum, w2: WeightedSum) =
-    this(inputStart = w1.input.n, inputStep = w2.input.n - w1.input.n, weightStart = w1.weight.n, weightStep = w2.weight.n - w1.weight.n,
-      count = 2, inputs = Vector(w1.input, w2.input), weights = Vector(w1.weight, w2.weight), output = w1.output)
+    this(firstStart = w1.input.n, firstStep = w2.input.n - w1.input.n, secondStart = w1.weight.n, secondStep = w2.weight.n - w1.weight.n,
+      count = 2, first = Vector(w1.input, w2.input), second = Vector(w1.weight, w2.weight), output = w1.output)
 
   def +(w: WeightedSum) = {
     require(extendedBy(w))
-    new WeightedSumCombined(inputStart = inputStart, inputStep = inputStep, weightStart = weightStart, weightStep = weightStep, count = count + 1,
-      inputs = inputs :+ w.input, weights = weights :+ w.weight, output = output)
+    new WeightedSumCombined(firstStart = firstStart, firstStep = firstStep, secondStart = secondStart, secondStep = secondStep, count = count + 1,
+      first = first :+ w.input, second = second :+ w.weight, output = output)
   }
 
   def extendedBy(w: WeightedSum): Boolean = (w.output == output) &&
-    (w.input.n == inputStart + count * inputStep) && (w.weight.n == weightStart + count * weightStep)
+    (w.input.n == firstStart + count * firstStep) && (w.weight.n == secondStart + count * secondStep)
 
 }
 
