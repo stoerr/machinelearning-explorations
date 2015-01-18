@@ -33,16 +33,7 @@ class CalculationTemplate {
 
   def compile() = new CalculationCompiler(calculations.toVector)
 
-  /** gives the possibility to write a calculation with operators */
-  case class CalculationTerm(calculation: CalculationItem) {
-    CalculationTemplate.this += calculation
-
-    def this(variable: CalculationVariable) = this(Factor(variable, newVariable(), 1))
-
-    def *(o: CalculationTerm) = WeightedSum(calculation.output, o.calculation.output, newVariable())
-  }
-
-  def toTerm(v: CalculationVariable) = new CalculationTerm(v)
+  def toTerm(v: CalculationVariable) = new CalculationTerm(v)(this)
 
 }
 
@@ -51,8 +42,4 @@ case class CalculationVariable(n: Int) extends Comparable[CalculationVariable] {
 
   override def compareTo(o: CalculationVariable): Int = n.compareTo(o.n)
 
-}
-
-object CalculationVariable {
-  implicit def toCalculationTerm(v: CalculationVariable)(implicit template: CalculationTemplate) = template.toTerm(v)
 }
