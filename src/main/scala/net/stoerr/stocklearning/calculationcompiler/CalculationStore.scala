@@ -6,7 +6,7 @@ import scala.collection.mutable.ArrayBuffer
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
  * @since 14.01.2015
  */
-class CalculationTemplate {
+class CalculationStore {
   val calculations = new ArrayBuffer[CalculationItem]
   private var runningNumberOfVariable = -1
 
@@ -29,9 +29,9 @@ class CalculationTemplate {
 
   def newOutput() = newVariable()
 
-  override def toString = "CalculationTemplate[" + calculations + "]"
+  override def toString = "CalculationStore[" + calculations + "]"
 
-  def compile() = new CalculationCompiler(calculations.toVector)
+  def compile() = new CalculationLinker(calculations.toVector)
 
   def toTerm(v: CalculationVariable) = new CalculationTerm(v)(this)
 

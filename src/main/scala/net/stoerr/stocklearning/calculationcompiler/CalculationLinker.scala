@@ -4,14 +4,14 @@ package net.stoerr.stocklearning.calculationcompiler
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
  * @since 15.01.2015
  */
-class CalculationCompiler(val calculations: Vector[CalculationItem]) {
+class CalculationLinker(val calculations: Vector[CalculationItem]) {
 
   val groups: Array[CalculationGroup] = calculations.groupBy(_.output).map(c => new CalculationGroup(c._2)).map(simplify).toArray
 
   /** A list of "levels": sets of independent CalculationGroups that can be executed in parallel. */
   val ordered: List[Traversable[CalculationGroup]] = order(groups)
 
-  override def toString = "CalculationCompiler(ordered: \n  " + ordered.mkString("\n  ") + "\n)"
+  override def toString = "CalculationLinker(ordered: \n  " + ordered.mkString("\n  ") + "\n)"
 
   def simplify(group: CalculationGroup): CalculationGroup = {
     val newCalcs = WeightedSumSimplifier(group.calculations.toList).toArray
