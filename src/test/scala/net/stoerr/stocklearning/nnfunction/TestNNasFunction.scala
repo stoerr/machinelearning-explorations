@@ -14,8 +14,6 @@ class TestNNasFunction extends FunSuite {
 
   val eps = 1e-7
 
-  def deriv(f: Double => Double, x: Double) = (f(x + eps) - f(x - eps)) / (2 * eps)
-
   test("Check that every parameter does something") {
     val nn = new NNasFunction(3, 7, 3)
     val gainfunc: Array[DValue] => DValue = {
@@ -43,7 +41,7 @@ class TestNNasFunction extends FunSuite {
     val weightFunction = nn.weightFunction(ex)
     val realgradient = 0.until(nn.sizeWeights).map { i =>
       val fprojected = base.baseFunction(i) andThen (weightFunction)
-      deriv(fprojected, 0)
+      derivation(fprojected, 0)
     }
     val (value, gradient) = nn.weightFunctionWithGradient(ex)(base)
     val quotients: IndexedSeq[Double] = (realgradient, gradient).zipped.map(_ / _)

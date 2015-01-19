@@ -4,6 +4,17 @@ import scala.language.implicitConversions
 
 object DoubleArrayVector {
   implicit def doubleArrayVector(v: Array[Double]) = new DoubleArrayVector(v)
+
+  /** step for numerical calcuations */
+  val eps = 1e-6
+
+  def derivation(f: Double => Double, x: Double) = (-f(x + 2 * eps) + 8 * f(x + eps) - 8 * f(x - eps) + f(x - 2 * eps)) / (12 * eps)
+
+  def gradient(f: Array[Double] => Double, x: Array[Double]) = 0.until(x.length).map { i =>
+    val fprojected = x.baseFunction(i) andThen f
+    derivation(fprojected, 0)
+  }.toArray
+
 }
 
 /**
@@ -35,7 +46,7 @@ final class DoubleArrayVector(val self: Array[Double]) {
   def signum: Array[Double] = self.map(math.signum)
 
   /** function arg => self + Array(0,...,arg, ...,0) , arg is put in n-th place. */
-  def baseFunction(n: Int) = { arg: Double =>
+  def baseFunction(n: Int): Double => Array[Double] = { arg: Double =>
     val basePlusArg = self.clone()
     basePlusArg(n) += arg
     basePlusArg

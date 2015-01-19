@@ -1,5 +1,6 @@
 package net.stoerr.stocklearning.calculationcompiler
 
+import net.stoerr.stocklearning.common.DoubleArrayVector._
 import org.scalatest.FunSuite
 
 /**
@@ -8,13 +9,27 @@ import org.scalatest.FunSuite
  */
 class TestTerm extends FunSuite {
 
+  def assertAlmostEqual(x: Double, y: Double): Unit = assert(math.abs(x - y) < eps)
+
   test("just try it") {
     val x = Variable("x")
     val y = Variable("y")
-    val f = (x + y) * x
+    val f = (x + y * 2.0) * x
     println(f)
-    val deriv = f.totalDerivative
+    val deriv: Map[Variable, Term] = f.totalDerivative
     println(deriv)
+    val v = Array(0.2, 0.3)
+    val variables: List[Variable] = List(x, y)
+    val func = f.asFunction(variables)
+    assertAlmostEqual(func(v), (0.2 + 0.3 * 2.0) * 0.2)
+    val grad = gradient(func, v)
+    val gradSymbolic = variables.map(deriv(_).asFunction(variables)(v))
+    println(grad.toList)
+    println(gradSymbolic.toList)
+    (grad, gradSymbolic).zipped.foreach(assertAlmostEqual(_, _))
+
+    val funcOpt = { x: Array[Double] => Term.evalOptimized(f, ((variables, x).zipped.toMap))}
+    assertAlmostEqual(funcOpt(v), (0.2 + 0.3 * 2.0) * 0.2)
   }
 
 }

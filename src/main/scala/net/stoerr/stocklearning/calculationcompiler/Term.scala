@@ -25,6 +25,10 @@ sealed trait Term {
 
   def totalDerivative: Map[Variable, Term]
 
+  def asFunction(vars: Seq[Variable]): Array[Double] => Double = { x =>
+    eval((vars, x).zipped.toMap)
+  }
+
   protected def sumDerivations(derivs: Traversable[Map[Variable, Term]]): Map[Variable, Term] = {
     val mapped: Map[Variable, Traversable[Term]] = derivs.flatten.groupBy(_._1).mapValues(_.map(_._2))
     mapped.mapValues(_.reduce(_ + _))
@@ -64,7 +68,7 @@ case class Constant(value: Double) extends Term {
 }
 
 case class Sum(summands: Seq[Term]) extends Term {
-  override def toString = summands.mkString(" + ")
+  override def toString = "( " + summands.mkString(" + ") + ")"
 
   def this(term1: Term, term2: Term) = this(term1 match {
     case Sum(summands) => term2 match {
@@ -86,7 +90,7 @@ case class Sum(summands: Seq[Term]) extends Term {
 }
 
 case class Product(factor1: Term, factor2: Term) extends Term {
-  override def toString = "(" + factor1 + ") * (" + factor2 + ")"
+  override def toString = factor1 + " * " + factor2
 
   override def eval(vars: Map[Variable, Double]): Double = factor1.eval(vars) * factor2.eval(vars)
 
