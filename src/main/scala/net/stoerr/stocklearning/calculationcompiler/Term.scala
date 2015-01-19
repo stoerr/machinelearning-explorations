@@ -49,6 +49,8 @@ object Term {
     }
     value.getOrElseUpdate(term, calculate(term))
   }
+
+  val ONE = Constant(1.0)
 }
 
 case class Variable(name: String) extends Term {

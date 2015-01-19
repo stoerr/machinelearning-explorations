@@ -4,32 +4,34 @@ package net.stoerr.stocklearning.calculationcompiler
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
  * @since 15.01.2015
  */
-class CalculationLinker(val calculations: Vector[CalculationItem]) {
+class CalculationExecutionPlan(val calculations: Vector[CalculationItem]) {
 
   val groups: Array[CalculationGroup] = calculations.groupBy(_.output).map(c => new CalculationGroup(c._2)).map(simplify).toArray
 
   /** A list of "levels": sets of independent CalculationGroups that can be executed in parallel. */
   val ordered: List[Traversable[CalculationGroup]] = order(groups)
 
+  val areaSize = math.max(calculations.map(_.output.n).max, calculations.flatMap(_.inputs).map(_.n).max)
+
   override def toString = "CalculationLinker(ordered: \n  " + ordered.mkString("\n  ") + "\n)"
 
-  def simplify(group: CalculationGroup): CalculationGroup = {
+  private def simplify(group: CalculationGroup): CalculationGroup = {
     val newCalcs = WeightedSumSimplifier(group.calculations.toList).toArray
     println("Simplified " + group.calculations.size + " to " + newCalcs.length)
     new CalculationGroup(newCalcs)
   }
 
   /** An ordering of the calculations - we process everything in one step that depends on nothing, then order the rest. */
-  def order(unordered: Traversable[CalculationGroup]): List[Traversable[CalculationGroup]] = {
+  private def order(unordered: Traversable[CalculationGroup]): List[Traversable[CalculationGroup]] = {
     if (unordered.isEmpty) return List()
     val (first, rest) = unordered.partition(c => !unordered.exists(c dependsOn _))
     return first :: order(rest)
   }
 
-  def execute(values: Array[Double]): Unit = {
+  def execute(executionArea: Array[Double]): Unit = {
     ordered.seq.foreach { level: Traversable[CalculationGroup] =>
       level.par.foreach { group: CalculationGroup =>
-        group.execute(values)
+        group.execute(executionArea)
       }
     }
   }

@@ -25,15 +25,13 @@ class CalculationStore {
     new CalculationVariable(runningNumberOfVariable)
   }
 
-  def newInput() = newVariable()
-
-  def newOutput() = newVariable()
-
   override def toString = "CalculationStore[" + calculations + "]"
 
-  def compile() = new CalculationLinker(calculations.toVector)
+  def executionPlan() = new CalculationExecutionPlan(calculations.toVector)
 
   def toTerm(v: CalculationVariable) = new CalculationTerm(v)(this)
+
+  def variableCount = runningNumberOfVariable
 
 }
 

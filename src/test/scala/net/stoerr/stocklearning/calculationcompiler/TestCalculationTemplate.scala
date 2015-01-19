@@ -1,6 +1,5 @@
 package net.stoerr.stocklearning.calculationcompiler
 
-import net.stoerr.stocklearning.calculationcompiler.CalculationTerm.toTerm
 import org.scalatest.FunSuite
 
 /**
@@ -20,7 +19,7 @@ class TestCalculationTemplate extends FunSuite {
     val t = output * output
     println(t)
     println(tmpl)
-    val compiler = tmpl.compile()
+    val compiler = tmpl.executionPlan()
     println(compiler)
   }
 
