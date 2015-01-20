@@ -11,7 +11,7 @@ class CalculationExecutionPlan(val calculations: Vector[CalculationItem]) {
   /** A list of "levels": sets of independent CalculationGroups that can be executed in parallel. */
   val ordered: List[Traversable[CalculationGroup]] = order(groups)
 
-  val areaSize = math.max(calculations.map(_.output.n).max, calculations.flatMap(_.inputs).map(_.n).max)
+  val areaSize = math.max(calculations.map(_.output.n).max, calculations.flatMap(_.inputs).map(_.n).max) + 1
 
   override def toString = "CalculationLinker(ordered: \n  " + ordered.mkString("\n  ") + "\n)"
 

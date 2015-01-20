@@ -19,7 +19,7 @@ class CalculationTermCompiler {
   private val compiledTerms = mutable.Map[Term, CalculationVariable]()
 
   /** (Cachedly) creates calculations to calculate a term */
-  def compile(term: Term): CalculationVariable = {
+  private def compile(term: Term): CalculationVariable = {
     def translate(): CalculationVariable = term match {
       case v: Variable => store.newVariable()
       case Constant(v) => addToStore(ConstantItem(store.newVariable(), v)).output
@@ -36,16 +36,21 @@ class CalculationTermCompiler {
     compiledTerms.getOrElseUpdate(term, translate())
   }
 
-  def toFunction(term: Term, vars: Seq[Variable]): Array[Double] => Double = {
-    val outvar: CalculationVariable = compile(term)
-    val invars: Seq[CalculationVariable] = vars.map(compile(_))
+  def toFunction(vars: Seq[Variable], terms: Seq[Term]): Array[Double] => Array[Double] = {
+    val outvars: Array[CalculationVariable] = terms.map(compile).toArray
+    val invars: Seq[CalculationVariable] = vars.map(compile)
     val plan: CalculationExecutionPlan = store.executionPlan()
     return { (values: Array[Double]) =>
       val executionArea: Array[Double] = Array.fill(plan.areaSize)(0)
       (invars, values).zipped.foreach { case (v, value) => executionArea(v.n) = value}
+      println(executionArea.zipWithIndex.map(z => "v" + z._2 + "=" + z._1).toList)
       plan.execute(executionArea)
-      executionArea(outvar.n)
+      println(executionArea.zipWithIndex.map(z => "v" + z._2 + "=" + z._1).toList)
+      println(plan)
+      outvars.map(v => executionArea(v.n))
     }
   }
+
+  def toFunction(vars: Seq[Variable], term: Term): Array[Double] => Double = toFunction(vars, List(term)).andThen(_(0))
 
 }

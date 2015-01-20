@@ -1,5 +1,6 @@
 package net.stoerr.stocklearning.calculationcompiler
 
+import net.stoerr.stocklearning.calculationcompiler.CalculationTerm._
 import org.scalatest.FunSuite
 
 /**
@@ -10,10 +11,10 @@ class TestCalculationTemplate extends FunSuite {
 
   test("build template") {
     implicit val tmpl = new CalculationStore
-    val inputs = (0 until 4) map (_ => tmpl.newInput())
-    val weights = (0 until 4) map (_ => tmpl.newInput())
+    val inputs = (0 until 4) map (_ => tmpl.newVariable())
+    val weights = (0 until 4) map (_ => tmpl.newVariable())
     val intermediate = tmpl.newVariable()
-    val output = tmpl.newOutput()
+    val output = tmpl.newVariable()
     tmpl ++= (inputs, weights).zipped map (WeightedSumItem(_, _, intermediate))
     tmpl += TanhItem(intermediate, output)
     val t = output * output

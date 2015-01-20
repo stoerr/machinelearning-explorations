@@ -42,7 +42,7 @@ case class FactorItem(input: CalculationVariable, output: CalculationVariable, v
 case class WeightedSumItem(input: CalculationVariable, weight: CalculationVariable, output: CalculationVariable) extends CalculationItem {
   override def toString = output + " += " + input + "*" + weight
 
-  override def execute(values: Array[Double]): Unit = values(output.n) = values(input.n) * values(weight.n)
+  override def execute(values: Array[Double]): Unit = values(output.n) += values(input.n) * values(weight.n)
 
   override val inputs: immutable.SortedSet[CalculationVariable] = TreeSet(input, weight)
 }
@@ -61,7 +61,7 @@ case class WeightedSumCombinedItem(firstStart: Int, firstStep: Int, secondStart:
   override val inputs: immutable.SortedSet[CalculationVariable] = TreeSet[CalculationVariable]() ++ first ++ second
 
   override def execute(values: Array[Double]): Unit =
-    values(output.n) = DoubleArrayOps.dotProduct(count, values, firstStart, firstStep, values, secondStart, secondStep)
+    values(output.n) += DoubleArrayOps.dotProduct(count, values, firstStart, firstStep, values, secondStart, secondStep)
 
   override def toString = "WeightedSumCombined(istart=" + firstStart + ", istep=" + firstStep +
     ", wstart=" + secondStart + ", wstep=" + secondStep + ", count=" + count +
