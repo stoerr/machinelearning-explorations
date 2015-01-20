@@ -24,14 +24,14 @@ class CalculationTermCompiler {
       case v: Variable => store.newVariable()
       case Constant(v) => addToStore(ConstantItem(store.newVariable(), v)).output
       case Product(f1, f2) => addToStore(WeightedSumItem(compile(f1), compile(f2), store.newVariable())).output
-      case Sum(summands) => {
-        val out = store.newVariable()
-        summands foreach {
-          case Product(f1, f2) => addToStore(WeightedSumItem(compile(f1), compile(f2), out))
-          case other => addToStore(WeightedSumItem(compile(other), compile(Term.ONE), out)) // hopefully rare
+      case Sum(summands) =>
+        val productParts: Seq[(CalculationVariable, CalculationVariable)] = summands map {
+          case Product(f1, f2) => (compile(f1), compile(f2))
+          case other => (compile(other), compile(Term.ONE)) // hopefully rare
         }
+        val out = store.newVariable()
+        productParts foreach { case (f1, f2) => addToStore(WeightedSumItem(f1, f2, out))}
         out
-      }
     }
     compiledTerms.getOrElseUpdate(term, translate())
   }
@@ -43,10 +43,10 @@ class CalculationTermCompiler {
     return { (values: Array[Double]) =>
       val executionArea: Array[Double] = Array.fill(plan.areaSize)(0)
       (invars, values).zipped.foreach { case (v, value) => executionArea(v.n) = value}
-      println(executionArea.zipWithIndex.map(z => "v" + z._2 + "=" + z._1).toList)
+      // println(executionArea.zipWithIndex.map(z => "v" + z._2 + "=" + z._1).toList)
       plan.execute(executionArea)
-      println(executionArea.zipWithIndex.map(z => "v" + z._2 + "=" + z._1).toList)
-      println(plan)
+      // println(executionArea.zipWithIndex.map(z => "v" + z._2 + "=" + z._1).toList)
+      // println(plan)
       outvars.map(v => executionArea(v.n))
     }
   }
