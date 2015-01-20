@@ -2,6 +2,7 @@ package net.stoerr.stocklearning.calculationcompiler
 
 import java.util
 
+import scala.collection.immutable.{IndexedSeq, TreeMap}
 import scala.collection.mutable
 import scala.language.implicitConversions
 
@@ -12,6 +13,8 @@ import scala.language.implicitConversions
 sealed trait Term {
 
   def +(o: Term): Term = new Sum(this, o)
+
+  def -(o: Term): Term = new Sum(Product(this, Term.ONE), Product(o, Term.MINUSONE))
 
   def *(o: Term): Term = this match {
     case Constant(1.0) => o
@@ -24,6 +27,8 @@ sealed trait Term {
   def eval(vars: Map[Variable, Double]): Double
 
   def totalDerivative: Map[Variable, Term]
+
+  def subterms: Seq[Term]
 
   def asFunction(vars: Seq[Variable]): Array[Double] => Double = { x =>
     eval((vars, x).zipped.toMap)
@@ -46,11 +51,23 @@ object Term {
       case Constant(v) => v
       case Sum(summands) => summands.map(calculate(_)).reduce(_ + _)
       case Product(f1, f2) => calculate(f1) * calculate(f2)
+      case f: UnaryFunction => f.rawFunction(calculate(f.arg))
     }
     value.getOrElseUpdate(term, calculate(term))
   }
 
   val ONE = Constant(1.0)
+
+  val MINUSONE = Constant(-1.0)
+
+  def variableVector(prefix: String, size: Int): IndexedSeq[Variable] = (0 until size).map(i => Variable(prefix + ":" + i))
+
+  def variableMatrix(prefix: String, size1: Int, size2: Int): Map[(Int, Int), Variable] =
+    TreeMap((for (i <- 0 until size1; j <- 0 until size2) yield ((i, j) -> Variable(prefix + ":" + i + ":" + j))): _*)
+
+  def tanh(arg: Term) = Tanh(arg)
+
+  def exp(arg: Term) = Exp(arg)
 }
 
 case class Variable(name: String) extends Term {
@@ -59,6 +76,8 @@ case class Variable(name: String) extends Term {
   override def totalDerivative: Map[Variable, Term] = Map(this -> Constant(1.0))
 
   override def eval(vars: Map[Variable, Double]): Double = vars.get(this).get // throw up when nothing's there.
+
+  override def subterms: Seq[Term] = Vector.empty
 }
 
 case class Constant(value: Double) extends Term {
@@ -67,6 +86,8 @@ case class Constant(value: Double) extends Term {
   override def eval(vars: Map[Variable, Double]): Double = value
 
   override def totalDerivative: Map[Variable, Term] = Map()
+
+  override def subterms: Seq[Term] = Vector.empty
 }
 
 case class Sum(summands: Seq[Term]) extends Term {
@@ -87,7 +108,10 @@ case class Sum(summands: Seq[Term]) extends Term {
 
   override def totalDerivative: Map[Variable, Term] = {
     sumDerivations(summands.map(_.totalDerivative))
+
   }
+
+  override def subterms: Seq[Term] = summands
 
 }
 
@@ -102,4 +126,35 @@ case class Product(factor1: Term, factor2: Term) extends Term {
     sumDerivations(List(d1, d2))
   }
 
+  override def subterms: Seq[Term] = Vector(factor1, factor2)
+
+}
+
+trait UnaryFunction extends Term {
+  val name: String
+  val arg: Term
+
+  override def toString = name + "(" + arg + ")"
+
+  def rawFunction(arg: Double): Double
+
+  override def eval(vars: Map[Variable, Double]): Double = rawFunction(arg.eval(vars))
+
+  override def subterms: Seq[Term] = Vector(arg)
+}
+
+case class Tanh(arg: Term) extends UnaryFunction {
+  override def totalDerivative: Map[Variable, Term] = arg.totalDerivative.mapValues(_ * (1 - this * this))
+
+  override val name: String = "tanh"
+
+  override def rawFunction(arg: Double): Double = math.tanh(arg)
+}
+
+case class Exp(arg: Term) extends UnaryFunction {
+  override def totalDerivative: Map[Variable, Term] = arg.totalDerivative.mapValues(_ * this)
+
+  override val name: String = "exp"
+
+  override def rawFunction(arg: Double): Double = math.exp(arg)
 }

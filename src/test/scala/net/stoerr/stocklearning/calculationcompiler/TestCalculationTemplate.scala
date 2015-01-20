@@ -16,7 +16,7 @@ class TestCalculationTemplate extends FunSuite {
     val intermediate = tmpl.newVariable()
     val output = tmpl.newVariable()
     tmpl ++= (inputs, weights).zipped map (WeightedSumItem(_, _, intermediate))
-    tmpl += TanhItem(intermediate, output)
+    tmpl += UnaryFunctionItem("tanh", math.tanh, intermediate, output)
     val t = output * output
     println(t)
     println(tmpl)

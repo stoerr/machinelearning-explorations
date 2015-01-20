@@ -13,7 +13,8 @@ class CalculationExecutionPlan(val calculations: Vector[CalculationItem]) {
 
   val areaSize = math.max(calculations.map(_.output.n).max, calculations.flatMap(_.inputs).map(_.n).max) + 1
 
-  override def toString = "CalculationLinker(ordered: \n  " + ordered.mkString("\n  ") + "\n)"
+  override def toString = "CalculationLinker(ordered: \n  " +
+    ordered.map(_.map(_.calculations.mkString(", ")).mkString(";  ")).mkString("\n  ") + "\n)"
 
   private def simplify(group: CalculationGroup): CalculationGroup = {
     val newCalcs = WeightedSumSimplifier(group.calculations.toList).toArray

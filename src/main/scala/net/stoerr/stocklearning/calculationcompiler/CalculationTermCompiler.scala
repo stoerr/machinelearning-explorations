@@ -24,6 +24,7 @@ class CalculationTermCompiler {
       case v: Variable => store.newVariable()
       case Constant(v) => addToStore(ConstantItem(store.newVariable(), v)).output
       case Product(f1, f2) => addToStore(WeightedSumItem(compile(f1), compile(f2), store.newVariable())).output
+      case f: UnaryFunction => addToStore(UnaryFunctionItem(f.name, f.rawFunction, compile(f.arg), store.newVariable())).output
       case Sum(summands) =>
         val productParts: Seq[(CalculationVariable, CalculationVariable)] = summands map {
           case Product(f1, f2) => (compile(f1), compile(f2))
@@ -46,7 +47,7 @@ class CalculationTermCompiler {
       // println(executionArea.zipWithIndex.map(z => "v" + z._2 + "=" + z._1).toList)
       plan.execute(executionArea)
       // println(executionArea.zipWithIndex.map(z => "v" + z._2 + "=" + z._1).toList)
-      // println(plan)
+      println(plan)
       outvars.map(v => executionArea(v.n))
     }
   }
