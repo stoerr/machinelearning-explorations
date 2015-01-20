@@ -28,11 +28,15 @@ sealed trait Term {
 
   def totalDerivative: Map[Variable, Term]
 
-  def subterms: Seq[Term]
-
   def asFunction(vars: Seq[Variable]): Array[Double] => Double = { x =>
     eval((vars, x).zipped.toMap)
   }
+
+  def subterms: Seq[Term]
+
+  def recursiveSubtermSet: Set[Term] = subterms.toSet ++ subterms.flatMap(_.recursiveSubtermSet)
+
+  def variables: Set[Variable] = recursiveSubtermSet.filter(_.isInstanceOf[Variable]).map(_.asInstanceOf[Variable])
 
   protected def sumDerivations(derivs: Traversable[Map[Variable, Term]]): Map[Variable, Term] = {
     val mapped: Map[Variable, Traversable[Term]] = derivs.flatten.groupBy(_._1).mapValues(_.map(_._2))
