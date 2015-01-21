@@ -39,4 +39,8 @@ class TestTerm extends FunSuite {
     assertAlmostEqual(compiledFunc(v), func(v))
   }
 
+  test("TermNN") {
+
+  }
+
 }
