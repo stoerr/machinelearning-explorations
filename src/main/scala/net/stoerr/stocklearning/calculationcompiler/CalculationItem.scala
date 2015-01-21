@@ -47,10 +47,10 @@ case class WeightedSumItem(input: CalculationVariable, weight: CalculationVariab
   override val inputs: immutable.SortedSet[CalculationVariable] = TreeSet(input, weight)
 }
 
-case class TanhItem(input: CalculationVariable, output: CalculationVariable) extends CalculationItem {
-  override def toString = output + " = tanh(" + input + ")"
+case class UnaryFunctionItem(name: String, function: Double => Double, input: CalculationVariable, output: CalculationVariable) extends CalculationItem {
+  override def toString = output + " = " + name + "(" + input + ")"
 
-  override def execute(values: Array[Double]): Unit = values(output.n) = math.tanh(values(input.n))
+  override def execute(values: Array[Double]): Unit = values(output.n) = function(values(input.n))
 
   override val inputs: immutable.SortedSet[CalculationVariable] = TreeSet(input)
 }

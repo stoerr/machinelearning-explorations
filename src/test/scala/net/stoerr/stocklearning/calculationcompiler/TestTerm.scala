@@ -1,5 +1,6 @@
 package net.stoerr.stocklearning.calculationcompiler
 
+import net.stoerr.stocklearning.calculationcompiler.Term._
 import net.stoerr.stocklearning.common.DoubleArrayVector._
 import org.scalatest.FunSuite
 
@@ -15,12 +16,12 @@ class TestTerm extends FunSuite {
     val x = Variable("x")
     val y = Variable("y")
     val z = Variable("z")
-    val f = (x + y * 2.0 + z * 3.0) * z
+    val f = (x + tanh(y) * 2.0 + exp(z) * 3.0) * z
     // println(f)
     val deriv: Map[Variable, Term] = f.totalDerivative
     // println(deriv)
     val v = Array(0.2, 0.3, 0.5)
-    val expectedFunc: Double = (0.2 + 0.3 * 2.0 + 0.5 * 3.0) * 0.5
+    val expectedFunc: Double = (0.2 + math.tanh(0.3) * 2.0 + math.exp(0.5) * 3.0) * 0.5
     val variables: List[Variable] = List(x, y, z)
     val func: (Array[Double]) => Double = f.asFunction(variables)
     // println(func(v))
