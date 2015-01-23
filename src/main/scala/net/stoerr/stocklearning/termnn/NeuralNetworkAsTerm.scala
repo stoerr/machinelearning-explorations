@@ -15,17 +15,11 @@ object NeuralNetworkAsTerm {
 
 case class SimpleNNLayer(inputCount: Int, outputCount: Int, layerName: String) {
 
-  private def makeWeightVariable(i: Int, o: Int): Variable = Variable(layerName + ":" + i + ":" + o)
-
-  val weightVariableMap: Map[(Int, Int), Variable] = (0 until inputCount).flatMap { i =>
-    (0 until outputCount).map(o => ((i, o), makeWeightVariable(i, o)))
-  }.toMap
+  private val weightVariableMap: Map[(Int, Int), Variable] = Term.variableMatrix(layerName, inputCount, outputCount)
 
   val weightVariables: IndexedSeq[Variable] = weightVariableMap.toList.sortBy(_._1).map(_._2).toIndexedSeq
 
-  def termFunction(inputs: IndexedSeq[Term]): Term =
-    (0 until inputCount).flatMap { i =>
-      (0 until outputCount).map(o => weightVariableMap((i, o)) * inputs(i))
-    }.reduce(_ + _)
+  def termFunction(inputs: IndexedSeq[Term]) =
+    (0 until outputCount).map { o => (0 until inputCount).map(i => weightVariableMap(i, o) * inputs(i)).reduce(_ + _)}
 
 }

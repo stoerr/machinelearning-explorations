@@ -2,6 +2,7 @@ package net.stoerr.stocklearning.calculationcompiler
 
 import net.stoerr.stocklearning.calculationcompiler.Term._
 import net.stoerr.stocklearning.common.DoubleArrayVector._
+import net.stoerr.stocklearning.termnn.SimpleNNLayer
 import org.scalatest.FunSuite
 
 /**
@@ -41,7 +42,17 @@ class TestTerm extends FunSuite {
   }
 
   test("TermNN") {
-
+    val inputs = Term.variableVector("i", 5)
+    val layer1 = SimpleNNLayer(5, 5, "l1")
+    val layer2 = SimpleNNLayer(5, 5, "l2")
+    val fl1 = layer1.termFunction(inputs)
+    // println(fl1)
+    val fl2 = layer2.termFunction(fl1)
+    // println(fl2)
+    val compiler = new CalculationTermCompiler
+    val vars = inputs ++ layer1.weightVariables ++ layer2.weightVariables
+    println(vars)
+    val compiledFunc = compiler.toFunction(vars, fl2)
   }
 
 }
