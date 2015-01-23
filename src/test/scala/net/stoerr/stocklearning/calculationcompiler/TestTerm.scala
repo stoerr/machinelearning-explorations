@@ -51,8 +51,13 @@ class TestTerm extends FunSuite {
     // println(fl2)
     val compiler = new CalculationTermCompiler
     val vars = inputs ++ layer1.weightVariables ++ layer2.weightVariables
-    println(vars)
+    // println(vars)
     val compiledFunc = compiler.toFunction(vars, fl2)
+    val s = fl2.map(t => t * t).reduce(_ + _)
+    val deriv = s.totalDerivative
+    println("===")
+    val funcs = compiler.toFunction(vars, List(s) ++ deriv.values)
+    // println(s)
   }
 
 }

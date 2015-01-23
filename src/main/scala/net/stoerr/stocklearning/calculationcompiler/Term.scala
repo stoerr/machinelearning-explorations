@@ -125,7 +125,7 @@ case class Product(factor1: Term, factor2: Term) extends Term {
   override def eval(vars: Map[Variable, Double]): Double = factor1.eval(vars) * factor2.eval(vars)
 
   override def totalDerivative: Map[Variable, Term] = {
-    val d1 = factor1.totalDerivative.mapValues(_ * factor2)
+    val d1 = factor1.totalDerivative.mapValues(factor2 * _)
     val d2 = factor2.totalDerivative.mapValues(factor1 * _)
     sumDerivations(List(d1, d2))
   }
