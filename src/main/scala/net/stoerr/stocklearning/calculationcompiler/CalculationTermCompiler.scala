@@ -41,17 +41,19 @@ class CalculationTermCompiler {
     val outvars: Array[CalculationVariable] = terms.map(compile).toArray
     val invars: Seq[CalculationVariable] = vars.map(compile)
     val plan: CalculationExecutionPlan = store.executionPlan()
+    println(plan)
     return { (values: Array[Double]) =>
       val executionArea: Array[Double] = Array.fill(plan.areaSize)(0)
       (invars, values).zipped.foreach { case (v, value) => executionArea(v.n) = value}
       // println(executionArea.zipWithIndex.map(z => "v" + z._2 + "=" + z._1).toList)
       plan.execute(executionArea)
       // println(executionArea.zipWithIndex.map(z => "v" + z._2 + "=" + z._1).toList)
-      println(plan)
       outvars.map(v => executionArea(v.n))
     }
   }
 
   def toFunction(vars: Seq[Variable], term: Term): Array[Double] => Double = toFunction(vars, List(term)).andThen(_(0))
+
+  override def toString = "CalculationTermCompiler(" + store + ")"
 
 }

@@ -42,9 +42,10 @@ class TestTerm extends FunSuite {
   }
 
   test("TermNN") {
-    val inputs = Term.variableVector("i", 5)
-    val layer1 = SimpleNNLayer(5, 5, "l1")
-    val layer2 = SimpleNNLayer(5, 5, "l2")
+    val l: Int = 3
+    val inputs = Term.variableVector("i", l)
+    val layer1 = SimpleNNLayer(l, l, "l1")
+    val layer2 = SimpleNNLayer(l, l, "l2")
     val fl1 = layer1.termFunction(inputs)
     // println(fl1)
     val fl2 = layer2.termFunction(fl1)
@@ -52,12 +53,13 @@ class TestTerm extends FunSuite {
     val compiler = new CalculationTermCompiler
     val vars = inputs ++ layer1.weightVariables ++ layer2.weightVariables
     // println(vars)
-    val compiledFunc = compiler.toFunction(vars, fl2)
-    val s = fl2.map(t => t * t).reduce(_ + _)
+    // val compiledFunc = compiler.toFunction(vars, fl2)
+    val s = fl1.map(t => t * t).reduce(_ + _)
     val deriv = s.totalDerivative
     println("===")
     val funcs = compiler.toFunction(vars, List(s) ++ deriv.values)
     // println(s)
+    println(compiler)
   }
 
 }

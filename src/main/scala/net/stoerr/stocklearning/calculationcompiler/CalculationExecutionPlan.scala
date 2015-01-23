@@ -19,6 +19,7 @@ class CalculationExecutionPlan(val calculations: Vector[CalculationItem]) {
   private def simplify(group: CalculationGroup): CalculationGroup = {
     val newCalcs = WeightedSumSimplifier(group.calculations.toList).toArray
     println("Simplified " + group.calculations.size + " to " + newCalcs.length)
+    if (group.calculations.size == newCalcs.length) println(newCalcs.mkString(",  "))
     new CalculationGroup(newCalcs)
   }
 
