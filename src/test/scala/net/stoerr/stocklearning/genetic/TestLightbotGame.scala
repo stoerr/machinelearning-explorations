@@ -9,26 +9,26 @@ import org.scalatest.FunSuite
 class TestLightbotGame extends FunSuite {
 
   test("Run Lightbot") {
-    val setup = "E e l "
+    val setup = "E e1l2"
     val board = LightbotGame(setup)
     println(board)
-    val program = List(board.Forward, board.Forward, board.Switch)
-    println(program)
+    val program = List(board.Jump, board.Jump, board.Switch)
+    // println(program)
     val result: Option[board.BoardState] = board.run(program)
-    println(result)
+    // println(result)
     assert(result.get.finished)
   }
 
   test("Create program") {
     val setup =
-      """e e l
-        |E e e
-        |e l e""".stripMargin
+      """E e l2
+        |e l e1""".stripMargin
     val board = LightbotGame(setup)
     // board.allPrograms take 20 foreach println
     val solution = board.allPrograms find (board.solvedBy(_))
-    // println(solution.get)
-    assert("List(R, F, L, F, S, F, L, F, F, S)" == solution.get.toString)
+    println(board.run(solution.get))
+    println(solution.get)
+    assert("List(R, F, L, F, S, J, L, J, S)" == solution.get.toString)
   }
 
 }

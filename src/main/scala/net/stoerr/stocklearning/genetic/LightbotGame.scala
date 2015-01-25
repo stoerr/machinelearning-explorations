@@ -11,13 +11,13 @@ object LightbotGame {
     val locations: Map[Location, Field] = description.split("\r\n").zipWithIndex.flatMap { case (row, rownum) =>
       val lineAdjusted = if (row.length % 2 == 0) row else row + " "
       lineAdjusted.toCharArray.grouped(2).zipWithIndex.map { case (Array(ftype, heightChar), column) =>
-        val height: Int = if (heightChar == ' ') 0 else heightChar.toInt
+        val height: Int = if (heightChar == ' ') 0 else heightChar - '0'
         val loc = Location(column, rownum)
         if (ftype == 'E' || ftype == 'L') startBot = loc
         ftype match {
           case 'e' | 'E' => (loc, Empty(height))
           case 'l' | 'L' => (loc, Light(height))
-          case other => error("Invalid character " + other + " at " +(rownum, column) + " in \n" + description)
+          case other => sys.error("Invalid character " + other + " at " +(rownum, column) + " in \n" + description)
         }
       }
     }.toMap
@@ -72,6 +72,15 @@ case class LightbotGame(val locations: Map[Location, Field], startBot: Location,
     }
   }
 
+  object Jump extends Action {
+    override def toString = "J"
+
+    override def apply(state: BoardState): Option[BoardState] = {
+      val nextLocation = state.botLocation + state.direction
+      locations.get(nextLocation).filter(state.currentField.height + 1 >= _.height).map(_ => state.copy(botLocation = nextLocation))
+    }
+  }
+
   object Right extends Action {
     override def toString = "R"
 
@@ -92,7 +101,7 @@ case class LightbotGame(val locations: Map[Location, Field], startBot: Location,
     }
   }
 
-  val allActions: Seq[Action] = Array(Forward, Switch, Left, Right)
+  val allActions: Seq[Action] = Array(Forward, Switch, Left, Right, Jump)
 
   val allPrograms: Stream[List[Action]] = allActions.map(List(_)).toStream #::: allPrograms.flatMap(p => allActions.map(_ :: p))
 
