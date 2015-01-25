@@ -26,9 +26,9 @@ class TestLightbotGame extends FunSuite {
     val board = LightbotGame(setup)
     // board.allPrograms take 20 foreach println
     val solution = board.allPrograms find (board.solvedBy(_))
-    println(board.run(solution.get))
-    println(solution.get)
-    assert("List(R, F, L, F, S, J, L, J, S)" == solution.get.toString)
+    // println(board.run(solution.get))
+    println(solution.get.mkString)
+    assert("RFLFSJLJS" == solution.get.mkString)
   }
 
 }
