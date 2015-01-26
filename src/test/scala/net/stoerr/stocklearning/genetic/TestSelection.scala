@@ -11,7 +11,7 @@ import scala.util.Random
  */
 class TestSelection extends FunSuite {
 
-  val testDomain1 = new SelectionDomain[mutable.WrappedArray[Double]] {
+  val testDomain = new SelectionDomain[mutable.WrappedArray[Double]] {
     override def make: mutable.WrappedArray[Double] = Array.fill(3)(Random.nextDouble() * 4)
 
     override def crossover(c1: mutable.WrappedArray[Double], c2: mutable.WrappedArray[Double]): mutable.WrappedArray[Double] = (c1, c2).zipped.map((x1, x2) =>
@@ -19,7 +19,7 @@ class TestSelection extends FunSuite {
     )
 
     override def mutate(c: mutable.WrappedArray[Double]): mutable.WrappedArray[Double] = {
-      val cn = c.clone();
+      val cn = c.clone()
       val mutateIdx: Int = Random.nextInt(cn.size)
       cn(mutateIdx) = cn(mutateIdx) + Random.nextDouble() - 0.5
       cn
@@ -32,11 +32,44 @@ class TestSelection extends FunSuite {
   }
 
   test("GenericSelection") {
-    val selection = new Selection(testDomain1, 100, 0.1, 0.2, 0.3)
-    // println(selection.best)
-    (0 until 10) foreach (_ => selection.step())
-    // println(selection.best)
-    assert(selection.best.fitness <= 0 && selection.best.fitness >= -0.01)
+    val selection = new Selection(testDomain, 100, 0.1, 0.4, 0.2)
+    println(selection.best)
+    (0 until 100) foreach (_ => selection.step())
+    println(selection.best)
+    assert(selection.best.fitness <= 0 && selection.best.fitness >= -0.0001)
   }
 
+  val metaDomain = new SelectionDomain[mutable.WrappedArray[Double]] {
+    override def make: mutable.WrappedArray[Double] = Array(Random.nextInt(30), Random.nextDouble() * 0.1, Random.nextDouble() * 0.6, Random.nextDouble() * 0.25)
+
+    override def crossover(c1: mutable.WrappedArray[Double], c2: mutable.WrappedArray[Double]): mutable.WrappedArray[Double] = (c1, c2).zipped.map((x1, x2) =>
+      if (Random.nextInt(2) == 0) x1 else x2
+    )
+
+    override def mutate(c: mutable.WrappedArray[Double]): mutable.WrappedArray[Double] = {
+      val cn = c.clone()
+      val mutateIdx: Int = Random.nextInt(cn.size)
+      cn(mutateIdx) = cn(mutateIdx) * (1 + (Random.nextDouble() - 0.5) * 0.1)
+      cn
+    }
+
+    override def fitness(c: mutable.WrappedArray[Double]): Double = c.array match {
+      case Array(psize, freshratio, mutationratio, crossoverratio) =>
+        val tries = (1 until 3).map { _ =>
+          val selection = new Selection(testDomain, psize.toInt + 2, freshratio, mutationratio, crossoverratio)
+          (0 until 50) foreach (_ => selection.step())
+          selection.best.fitness
+        }
+        tries.sum / tries.length
+    }
+  }
+
+  test("MetaSelection") {
+    val selection = new Selection(metaDomain, 50, 0.1, 0.2, 0.3)
+    println(selection.best)
+    (0 until 50) foreach { i => print(i + " "); selection.step()}
+    println("\n" + selection.best)
+    // selection.population take 10 foreach println
+    assert(selection.best.fitness <= 0 && selection.best.fitness >= -0.0000001)
+  }
 }
