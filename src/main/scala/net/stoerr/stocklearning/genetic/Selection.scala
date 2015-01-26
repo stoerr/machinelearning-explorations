@@ -7,25 +7,25 @@ import scala.util.Random
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
  * @since 25.01.2015
  */
-case class Selection[COMPETITOR](selectable: Selectable[COMPETITOR], populationSize: Int,
+case class Selection[COMPETITOR](domain: SelectionDomain[COMPETITOR], populationSize: Int,
                                  freshRatio: Double, mutationRatio: Double, crossoverRatio: Double) {
 
   case class Competitor(c: COMPETITOR, fitness: Double) {
-    def this(c: COMPETITOR) = this(c, selectable.fitness(c))
+    def this(c: COMPETITOR) = this(c, domain.fitness(c))
   }
 
-  var population: Vector[Competitor] = Vector.fill(populationSize)(new Competitor(selectable.make))
+  var population: Vector[Competitor] = Vector.fill(populationSize)(new Competitor(domain.make))
 
   def best = population(0)
 
   private def part(ratio: Double): Int = (populationSize * ratio).toInt
 
   def step() = {
-    val fresh = Vector.fill(part(freshRatio))(selectable.make)
-    val mutated = population.take(part(mutationRatio)).map(_.c).map(selectable.mutate)
+    val fresh = Vector.fill(part(freshRatio))(domain.make)
+    val mutated = population.take(part(mutationRatio)).map(_.c).map(domain.mutate)
     // unclear: selection of xover individuals
     val xover = Vector.fill(part(crossoverRatio))(
-      selectable.crossover(population(Random.nextInt(populationSize)).c, population(Random.nextInt(populationSize)).c)
+      domain.crossover(population(Random.nextInt(populationSize)).c, population(Random.nextInt(populationSize)).c)
     )
     val newpopulation = (fresh ++ mutated ++ xover).map(new Competitor(_))
     population = (population ++ newpopulation) sortBy (-_.fitness) take populationSize
@@ -33,7 +33,7 @@ case class Selection[COMPETITOR](selectable: Selectable[COMPETITOR], populationS
 
 }
 
-trait Selectable[COMPETITOR] {
+trait SelectionDomain[COMPETITOR] {
   def make: COMPETITOR
 
   def fitness(c: COMPETITOR): Double
