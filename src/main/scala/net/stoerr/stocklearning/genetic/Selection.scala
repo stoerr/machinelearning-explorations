@@ -27,8 +27,14 @@ case class Selection[COMPETITOR](domain: SelectionDomain[COMPETITOR], population
     val xover = Vector.fill(part(crossoverRatio))(
       domain.crossover(population(Random.nextInt(populationSize)).c, population(Random.nextInt(populationSize)).c)
     )
-    val newpopulation = (fresh ++ mutated ++ xover).map(new Competitor(_))
+    val newpopulation = (fresh ++ mutated ++ xover).par.map(new Competitor(_))
     population = (population ++ newpopulation) sortBy (-_.fitness) take populationSize
+  }
+
+  private def selectFromProbabilityDistribution[T](probabilities: Traversable[(T, Double)]) = {
+    require(probabilities.map(_._2).min >= 0)
+    val sum = probabilities.map(_._2).sum
+    // probabilities.scanLeft()
   }
 
 }
