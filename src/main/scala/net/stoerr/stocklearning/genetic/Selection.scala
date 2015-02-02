@@ -1,6 +1,6 @@
 package net.stoerr.stocklearning.genetic
 
-import scala.util.Random
+import net.stoerr.stocklearning.common.ProbabilityDistributionGenerator
 
 /**
  * Genetic altgorithm: selection
@@ -23,18 +23,14 @@ case class Selection[COMPETITOR](domain: SelectionDomain[COMPETITOR], population
   def step() = {
     val fresh = Vector.fill(part(freshRatio))(domain.make)
     val mutated = population.take(part(mutationRatio)).map(_.c).map(domain.mutate)
-    // unclear: selection of xover individuals
+
+    val minfitness = population.map(_.fitness).min
+    val xoverDistribution = new ProbabilityDistributionGenerator(population.map(p => (p.c, p.fitness - minfitness)))
     val xover = Vector.fill(part(crossoverRatio))(
-      domain.crossover(population(Random.nextInt(populationSize)).c, population(Random.nextInt(populationSize)).c)
+      domain.crossover(xoverDistribution.draw(), xoverDistribution.draw())
     )
     val newpopulation = (fresh ++ mutated ++ xover).par.map(new Competitor(_))
     population = (population ++ newpopulation) sortBy (-_.fitness) take populationSize
-  }
-
-  private def selectFromProbabilityDistribution[T](probabilities: Traversable[(T, Double)]) = {
-    require(probabilities.map(_._2).min >= 0)
-    val sum = probabilities.map(_._2).sum
-    // probabilities.scanLeft()
   }
 
 }
@@ -48,3 +44,5 @@ trait SelectionDomain[COMPETITOR] {
 
   def crossover(c1: COMPETITOR, c2: COMPETITOR): COMPETITOR
 }
+
+
