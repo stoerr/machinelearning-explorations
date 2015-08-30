@@ -35,16 +35,23 @@ sealed trait NNTerm extends Ordered[NNTerm] {
       val (c1, c2) = (it1.next(), it2.next())
       if (0 != c1.compareTo(c2)) return c1.compareTo(c2)
     }
-    if (it1.hasNext) return 1; else if (it2.hasNext) return -1; else return 0
+    if (it1.hasNext) 1 else if (it2.hasNext) -1; else 0
+  }
+
+  def componentStream: Stream[NNTerm] = this match {
+    case W(_) => Stream(this)
+    case I(_) => Stream(this)
+    case C(_) => Stream(this)
+    case Sum(summands) => this #:: summands.toStream.flatMap(_.componentStream)
+    case Prod(p1, p2) => this #:: p1 #:: p2 #:: Stream.empty
   }
 }
 
 object NNTerm {
-  implicit def c(value: Double) = C(value)
+  implicit def c(value: Double): C = C(value)
 
   val ZERO = C(0)
   val ONE = C(1)
-
 }
 
 case class W(name: String) extends NNTerm {
@@ -94,12 +101,19 @@ sealed trait SNNTerm extends Ordered[SNNTerm] {
       val (c1, c2) = (it1.next(), it2.next())
       if (0 != c1.compareTo(c2)) return c1.compareTo(c2)
     }
-    if (it1.hasNext) return 1; else if (it2.hasNext) return -1; else return 0
+    if (it1.hasNext) 1; else if (it2.hasNext) -1; else 0
+  }
+
+  def componentStream: Stream[Either[SNNTerm, NNTerm]] = this match {
+    case SC(_) => Stream(Left(this))
+    case SSum(summands) => Left(this) #:: summands.toStream.flatMap(_.componentStream)
+    case SProd(p1, p2) => Left(p1) #:: Left(p2) #:: Stream.empty
+    case SUMMED(t) => Stream(Left(this)) ++ t.componentStream.map(Right(_))
   }
 }
 
 object SNNTerm {
-  implicit def sc(value: Double) = SC(value)
+  implicit def sc(value: Double): SC = SC(value)
 
   val SZERO = SC(0)
   val SONE = SC(1)
