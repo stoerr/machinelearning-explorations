@@ -1,6 +1,7 @@
 package net.stoerr.stocklearning.deepnn2
 
 import NNTerm._
+import SNNTerm._
 
 import scala.language.implicitConversions
 
@@ -43,6 +44,7 @@ object NNTerm {
 
   val ZERO = C(0)
   val ONE = C(1)
+
 }
 
 case class W(name: String) extends NNTerm {
@@ -63,5 +65,59 @@ case class Sum(summands: IndexedSeq[NNTerm]) extends NNTerm {
 }
 
 case class Prod(p1: NNTerm, p2: NNTerm) extends NNTerm {
+  override def toChars = p1.toChars ++ " * ".toIterator ++ p2.toChars
+}
+
+sealed trait SNNTerm extends Ordered[SNNTerm] {
+  def toChars: Iterator[Char]
+
+  override def toString = toChars.mkString
+
+  def +(o: SNNTerm): SNNTerm = {
+    def summandlist(t: SNNTerm): IndexedSeq[SNNTerm] = t match {
+      case SSum(summands) => summands
+      case _ => Vector(t)
+    }
+    SSum((summandlist(this) ++ summandlist(o)).sorted)
+  }
+
+  def *(o: SNNTerm): SNNTerm =
+    if (this == SZERO) SZERO
+    else if (this == SONE) o
+    else if (o == SZERO) this
+    else if (o == SONE) this
+    else if (this > o) SProd(o, this) else SProd(this, o)
+
+  def compare(o: SNNTerm): Int = {
+    val (it1, it2) = (this.toChars, o.toChars)
+    while (it1.hasNext && it2.hasNext) {
+      val (c1, c2) = (it1.next(), it2.next())
+      if (0 != c1.compareTo(c2)) return c1.compareTo(c2)
+    }
+    if (it1.hasNext) return 1; else if (it2.hasNext) return -1; else return 0
+  }
+}
+
+object SNNTerm {
+  implicit def sc(value: Double) = SC(value)
+
+  val SZERO = SC(0)
+  val SONE = SC(1)
+}
+
+case class SUMMED(t: NNTerm) extends SNNTerm {
+  override def toChars = "SUMMED(".toIterator ++ t.toChars ++ ")".toIterator
+}
+
+case class SC(value: Double) extends SNNTerm {
+  override def toChars = value.toString.iterator
+}
+
+case class SSum(summands: IndexedSeq[SNNTerm]) extends SNNTerm {
+  override def toChars = "(".toIterator ++ summands.toIterator.map(_.toChars).reduce(_ ++ " + ".toIterator ++ _) ++
+    ")".toIterator
+}
+
+case class SProd(p1: SNNTerm, p2: SNNTerm) extends SNNTerm {
   override def toChars = p1.toChars ++ " * ".toIterator ++ p2.toChars
 }
