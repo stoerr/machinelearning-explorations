@@ -45,6 +45,13 @@ sealed trait NNTerm extends Ordered[NNTerm] {
     case Sum(summands) => this #:: summands.toStream.flatMap(_.componentStream)
     case Prod(p1, p2) => this #:: p1 #:: p2 #:: Stream.empty
   }
+
+  def eval(valuation: PartialFunction[NNTerm, Double]): Double = this match {
+    case C(v) => v
+    case v if valuation.isDefinedAt(v) => valuation(v)
+    case Sum(summands) => summands.map(_.eval(valuation)).reduce(_ + _)
+    case Prod(p1, p2) => p1.eval(valuation) * p2.eval(valuation)
+  }
 }
 
 object NNTerm {
