@@ -25,7 +25,8 @@ case class Selection[COMPETITOR](domain: SelectionDomain[COMPETITOR], population
     val mutated = population.take(part(mutationRatio)).map(_.c).map(domain.mutate)
 
     val minfitness = population.map(_.fitness).min
-    val xoverDistribution = new ProbabilityDistributionGenerator(population.map(p => (p.c, p.fitness - minfitness)))
+    val xoverDistribution = new ProbabilityDistributionGenerator(population.map(p => (p.c,
+      p.fitness - minfitness)))
     val xover = Vector.fill(part(crossoverRatio))(
       domain.crossover(xoverDistribution.draw(), xoverDistribution.draw())
     )

@@ -31,6 +31,8 @@ class TestSelection extends FunSuite {
     }
   }
 
+  // best: n=30, fresh=0.1, mutation=0.5, xover = 0.2
+  // Competitor(WrappedArray(29.0, 0.07314287729366356, 0.5755120547073116, 0.23313520936771964),-2.3032466890510694E-9)
   test("GenericSelection") {
     val selection = new Selection(testDomain, 100, 0.1, 0.4, 0.2)
     println(selection.best)
