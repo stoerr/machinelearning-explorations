@@ -9,7 +9,22 @@ import scala.language.implicitConversions
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
  * @since 29.08.2015
  */
-sealed trait NNTerm extends Ordered[NNTerm] {
+
+sealed trait NNTermBase {
+  def componentStream: Stream[NNTermBase] = this match {
+    case W(_) => Stream(this)
+    case I(_) => Stream(this)
+    case C(_) => Stream(this)
+    case Sum(summands) => this #:: summands.toStream.flatMap(_.componentStream)
+    case Prod(p1, p2) => this #:: p1 #:: p2 #:: Stream.empty[NNTermBase]
+    case SC(_) => Stream(this)
+    case SSum(summands) => this #:: summands.toStream.flatMap(_.componentStream)
+    case SProd(p1, p2) => p1 #:: p2 #:: Stream.empty
+    case SUMMED(t) => Stream(this) ++ t.componentStream
+  }
+}
+
+sealed trait NNTerm extends NNTermBase with Ordered[NNTerm] {
   def toChars: Iterator[Char]
 
   override def toString = toChars.mkString
@@ -36,14 +51,6 @@ sealed trait NNTerm extends Ordered[NNTerm] {
       if (0 != c1.compareTo(c2)) return c1.compareTo(c2)
     }
     if (it1.hasNext) 1 else if (it2.hasNext) -1; else 0
-  }
-
-  def componentStream: Stream[NNTerm] = this match {
-    case W(_) => Stream(this)
-    case I(_) => Stream(this)
-    case C(_) => Stream(this)
-    case Sum(summands) => this #:: summands.toStream.flatMap(_.componentStream)
-    case Prod(p1, p2) => this #:: p1 #:: p2 #:: Stream.empty
   }
 
   def eval(valuation: PartialFunction[NNTerm, Double]): Double = this match {
@@ -82,7 +89,7 @@ case class Prod(p1: NNTerm, p2: NNTerm) extends NNTerm {
   override def toChars = p1.toChars ++ " * ".toIterator ++ p2.toChars
 }
 
-sealed trait SNNTerm extends Ordered[SNNTerm] {
+sealed trait SNNTerm extends NNTermBase with Ordered[SNNTerm] {
   def toChars: Iterator[Char]
 
   override def toString = toChars.mkString
@@ -109,13 +116,6 @@ sealed trait SNNTerm extends Ordered[SNNTerm] {
       if (0 != c1.compareTo(c2)) return c1.compareTo(c2)
     }
     if (it1.hasNext) 1; else if (it2.hasNext) -1; else 0
-  }
-
-  def componentStream: Stream[Either[SNNTerm, NNTerm]] = this match {
-    case SC(_) => Stream(Left(this))
-    case SSum(summands) => Left(this) #:: summands.toStream.flatMap(_.componentStream)
-    case SProd(p1, p2) => Left(p1) #:: Left(p2) #:: Stream.empty
-    case SUMMED(t) => Stream(Left(this)) ++ t.componentStream.map(Right(_))
   }
 }
 
