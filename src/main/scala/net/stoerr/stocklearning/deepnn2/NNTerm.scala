@@ -62,6 +62,17 @@ sealed trait NNTerm extends NNTermBase with Ordered[NNTerm] {
     case Sum(summands) => summands.map(_.eval(valuation)).sum
     case Prod(p1, p2) => p1.eval(valuation) * p2.eval(valuation)
   }
+
+  private def sumDerivatives(derivatives: Traversable[(W, NNTerm)]): Map[W, NNTerm] =
+    derivatives.groupBy(_._1).mapValues(_.map(_._2)).mapValues(_.reduce(_ + _))
+
+  def wDerivative: Map[W, NNTerm] = this match {
+    case C(_) | I(_) | O(_) => Map()
+    case t@W(_) => Map(t -> ONE)
+    case Sum(summands) => sumDerivatives(summands.flatMap(_.wDerivative))
+    case Prod(p1, p2) =>
+      sumDerivatives(p1.wDerivative.mapValues(_ * p2).toSeq ++ p2.wDerivative.mapValues(_ * p1).toSeq)
+  }
 }
 
 object NNTerm {

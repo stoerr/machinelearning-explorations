@@ -36,4 +36,6 @@ class TestNNTerm extends FunSuite {
   assert("(-1.0 * 2.5 + SUMMED((-1.0 * O1 + 3.0 + I2 * W1)))" == t2.toString)
   assertAlmostEqual(13.5, t2.eval(List(inputval1, inputval2), restVal))
 
+  assert(Map(W("1") -> I("2")) == t1.wDerivative)
+
 }
