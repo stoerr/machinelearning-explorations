@@ -16,6 +16,7 @@ sealed trait NNTermBase {
     case I(_) => Stream(this)
     case O(_) => Stream(this)
     case C(_) => Stream(this)
+    case Tanh(t) => this #:: t.componentStream
     case Sum(summands) => this #:: summands.toStream.flatMap(_.componentStream)
     case Prod(p1, p2) => this #:: p1 #:: p2 #:: Stream.empty[NNTermBase]
     case SC(_) => Stream(this)
@@ -61,6 +62,7 @@ sealed trait NNTerm extends NNTermBase with Ordered[NNTerm] {
     case v if valuation.isDefinedAt(v) => valuation(v)
     case Sum(summands) => summands.map(_.eval(valuation)).sum
     case Prod(p1, p2) => p1.eval(valuation) * p2.eval(valuation)
+    case Tanh(t) => math.tanh(t.eval(valuation))
   }
 
   private def sumDerivatives(derivatives: Traversable[(W, NNTerm)]): Map[W, NNTerm] =
@@ -72,6 +74,7 @@ sealed trait NNTerm extends NNTermBase with Ordered[NNTerm] {
     case Sum(summands) => sumDerivatives(summands.flatMap(_.wDerivative))
     case Prod(p1, p2) =>
       sumDerivatives(p1.wDerivative.mapValues(_ * p2).toSeq ++ p2.wDerivative.mapValues(_ * p1).toSeq)
+    case Tanh(t) => t.wDerivative.mapValues(_ * (1 - this * this))
   }
 }
 
@@ -109,6 +112,10 @@ case class Sum(summands: IndexedSeq[NNTerm]) extends NNTerm {
 
 case class Prod(p1: NNTerm, p2: NNTerm) extends NNTerm {
   override def toChars = p1.toChars ++ " * ".toIterator ++ p2.toChars
+}
+
+case class Tanh(t: NNTerm) extends NNTerm {
+  override def toChars = "Tanh(".toIterator ++ t.toChars ++ ")".toIterator
 }
 
 sealed trait SNNTerm extends NNTermBase with Ordered[SNNTerm] {
