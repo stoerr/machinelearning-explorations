@@ -103,6 +103,8 @@ case class C(value: Double) extends NNTerm {
 case class Sum(summands: IndexedSeq[NNTerm]) extends NNTerm {
   override def toChars = "(".toIterator ++ summands.toIterator.map(_.toChars).reduce(_ ++ " + ".toIterator ++ _) ++
     ")".toIterator
+
+  override def hashCode = sys.error("Do not put this in a hashmap as key - that'd be seriously inefficient.")
 }
 
 case class Prod(p1: NNTerm, p2: NNTerm) extends NNTerm {
@@ -147,6 +149,17 @@ sealed trait SNNTerm extends NNTermBase with Ordered[SNNTerm] {
     case SSum(summands) => summands.map(_.eval(valuations, restValuation)).sum
     case SProd(p1, p2) => p1.eval(valuations, restValuation) * p2.eval(valuations, restValuation)
     case SUMMED(t) => valuations.map(valuation => t.eval(valuation orElse restValuation)).sum
+  }
+
+  private def sumDerivatives(derivatives: Traversable[(W, SNNTerm)]): Map[W, SNNTerm] =
+    derivatives.groupBy(_._1).mapValues(_.map(_._2)).mapValues(_.reduce(_ + _))
+
+  def wDerivative: Map[W, SNNTerm] = this match {
+    case SC(_) => Map()
+    case SSum(summands) => sumDerivatives(summands.flatMap(_.wDerivative))
+    case SProd(p1, p2) =>
+      sumDerivatives(p1.wDerivative.mapValues(_ * p2).toSeq ++ p2.wDerivative.mapValues(_ * p1).toSeq)
+    case SUMMED(t) => t.wDerivative.mapValues(SUMMED)
   }
 }
 
