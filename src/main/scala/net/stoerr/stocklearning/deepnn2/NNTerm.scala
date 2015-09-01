@@ -14,6 +14,7 @@ sealed trait NNTermBase {
   def componentStream: Stream[NNTermBase] = this match {
     case W(_) => Stream(this)
     case I(_) => Stream(this)
+    case O(_) => Stream(this)
     case C(_) => Stream(this)
     case Sum(summands) => this #:: summands.toStream.flatMap(_.componentStream)
     case Prod(p1, p2) => this #:: p1 #:: p2 #:: Stream.empty[NNTermBase]
@@ -37,6 +38,8 @@ sealed trait NNTerm extends NNTermBase with Ordered[NNTerm] {
     Sum((summandlist(this) ++ summandlist(o)).sorted)
   }
 
+  def -(o: NNTerm): NNTerm = this + o * -1.0
+
   def *(o: NNTerm): NNTerm =
     if (this == ZERO) ZERO
     else if (this == ONE) o
@@ -56,13 +59,15 @@ sealed trait NNTerm extends NNTermBase with Ordered[NNTerm] {
   def eval(valuation: PartialFunction[NNTerm, Double]): Double = this match {
     case C(v) => v
     case v if valuation.isDefinedAt(v) => valuation(v)
-    case Sum(summands) => summands.map(_.eval(valuation)).reduce(_ + _)
+    case Sum(summands) => summands.map(_.eval(valuation)).sum
     case Prod(p1, p2) => p1.eval(valuation) * p2.eval(valuation)
   }
 }
 
 object NNTerm {
   implicit def c(value: Double): C = C(value)
+
+  implicit def c(value: Int): C = C(value)
 
   val ZERO = C(0)
   val ONE = C(1)
@@ -74,6 +79,10 @@ case class W(name: String) extends NNTerm {
 
 case class I(name: String) extends NNTerm {
   override def toChars = ("I" + name).iterator
+}
+
+case class O(name: String) extends NNTerm {
+  override def toChars = ("O" + name).iterator
 }
 
 case class C(value: Double) extends NNTerm {
@@ -102,6 +111,8 @@ sealed trait SNNTerm extends NNTermBase with Ordered[SNNTerm] {
     SSum((summandlist(this) ++ summandlist(o)).sorted)
   }
 
+  def -(o: SNNTerm): SNNTerm = this + o * -1.0
+
   def *(o: SNNTerm): SNNTerm =
     if (this == SZERO) SZERO
     else if (this == SONE) o
@@ -117,10 +128,21 @@ sealed trait SNNTerm extends NNTermBase with Ordered[SNNTerm] {
     }
     if (it1.hasNext) 1; else if (it2.hasNext) -1; else 0
   }
+
+  def eval(valuations: Traversable[PartialFunction[NNTerm, Double]], restValuation: PartialFunction[NNTerm, Double]):
+  Double
+  = this match {
+    case SC(v) => v
+    case SSum(summands) => summands.map(_.eval(valuations, restValuation)).sum
+    case SProd(p1, p2) => p1.eval(valuations, restValuation) * p2.eval(valuations, restValuation)
+    case SUMMED(t) => valuations.map(valuation => t.eval(valuation orElse restValuation)).sum
+  }
 }
 
 object SNNTerm {
   implicit def sc(value: Double): SC = SC(value)
+
+  implicit def sc(value: Int): SC = SC(value)
 
   val SZERO = SC(0)
   val SONE = SC(1)

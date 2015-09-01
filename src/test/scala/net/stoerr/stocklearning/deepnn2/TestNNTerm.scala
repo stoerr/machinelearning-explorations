@@ -2,6 +2,7 @@ package net.stoerr.stocklearning.deepnn2
 
 import NNTerm._
 import SNNTerm._
+import net.stoerr.stocklearning.common.DoubleArrayVector.eps
 import org.scalatest.FunSuite
 
 /**
@@ -10,8 +11,29 @@ import org.scalatest.FunSuite
  */
 class TestNNTerm extends FunSuite {
 
-  println(W("1") + I("2") * 3.0)
+  def assertAlmostEqual(x: Double, y: Double): Unit = assert(math.abs(x - y) < eps)
 
-  println(SUMMED(W("1")) + 2.5)
+  val inputval1: PartialFunction[NNTerm, Double] = {
+    case I("2") => 1.0
+    case O("1") => 2.0
+  }
+
+  val inputval2: PartialFunction[NNTerm, Double] = {
+    case I("2") => 4.0
+    case O("1") => 3.0
+  }
+
+  val restVal: PartialFunction[NNTerm, Double] = {
+    case W("1") => 3.0
+  }
+
+  val t1 = W("1") * I("2") + 3.0 - O("1")
+  assert("(-1.0 * O1 + 3.0 + I2 * W1)" == t1.toString)
+  assertAlmostEqual(4, t1.eval(inputval1 orElse restVal))
+  assertAlmostEqual(12, t1.eval(inputval2 orElse restVal))
+
+  val t2 = SUMMED(t1) - 2.5
+  assert("(-1.0 * 2.5 + SUMMED((-1.0 * O1 + 3.0 + I2 * W1)))" == t2.toString)
+  assertAlmostEqual(13.5, t2.eval(List(inputval1, inputval2), restVal))
 
 }
