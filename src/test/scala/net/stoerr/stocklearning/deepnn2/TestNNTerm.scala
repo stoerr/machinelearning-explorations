@@ -30,14 +30,17 @@ class TestNNTerm extends FunSuite {
   val t1 = W("1") * I("2") + 3.0 - O("1")
   test("NNTerm.eval") {
     assert("(-1.0 * O1 + 3.0 + I2 * W1)" == t1.toString)
-    assertAlmostEqual(4, NNCalculationStrategy.eval(t1, inputval1 orElse restVal))
-    assertAlmostEqual(12, NNCalculationStrategy.eval(t1, inputval2 orElse restVal))
+    assertAlmostEqual(4, NNSimpleCalculationStrategy.eval(inputval1 orElse restVal, t1))
+    assertAlmostEqual(12, NNSimpleCalculationStrategy.eval(inputval2 orElse restVal, t1))
+    assertAlmostEqual(4, NNCachedCalculationStrategy.eval(inputval1 orElse restVal, t1))
+    assertAlmostEqual(12, NNCachedCalculationStrategy.eval(inputval2 orElse restVal, t1))
   }
 
   val t2 = SUMMED(t1) - 2.5
   test("SNNTerm.eval") {
     assert("(-1.0 * 2.5 + SUMMED((-1.0 * O1 + 3.0 + I2 * W1)))" == t2.toString)
-    assertAlmostEqual(13.5, NNCalculationStrategy.eval(t2, List(inputval1, inputval2), restVal))
+    assertAlmostEqual(13.5, NNSimpleCalculationStrategy.eval(List(inputval1, inputval2), restVal, t2))
+    assertAlmostEqual(13.5, NNCachedCalculationStrategy.eval(List(inputval1, inputval2), restVal, t2))
   }
 
   test("Derivatives") {
