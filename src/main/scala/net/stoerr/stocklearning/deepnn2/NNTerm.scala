@@ -6,6 +6,8 @@ import SNNTerm._
 import scala.language.implicitConversions
 
 /**
+ * Definition of terms that can be used to implement neural network learning.
+ * TODO: cached implementation of evaluation (parallel for SUMMED -> careful with wDerivative); do neural network.
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
  * @since 29.08.2015
  */
@@ -55,14 +57,6 @@ sealed trait NNTerm extends NNTermBase with Ordered[NNTerm] {
       if (0 != c1.compareTo(c2)) return c1.compareTo(c2)
     }
     if (it1.hasNext) 1 else if (it2.hasNext) -1; else 0
-  }
-
-  def eval(valuation: PartialFunction[NNTerm, Double]): Double = this match {
-    case C(v) => v
-    case v if valuation.isDefinedAt(v) => valuation(v)
-    case Sum(summands) => summands.map(_.eval(valuation)).sum
-    case Prod(p1, p2) => p1.eval(valuation) * p2.eval(valuation)
-    case Tanh(t) => math.tanh(t.eval(valuation))
   }
 
   private def sumDerivatives(derivatives: Traversable[(W, NNTerm)]): Map[W, NNTerm] =
@@ -147,15 +141,6 @@ sealed trait SNNTerm extends NNTermBase with Ordered[SNNTerm] {
       if (0 != c1.compareTo(c2)) return c1.compareTo(c2)
     }
     if (it1.hasNext) 1; else if (it2.hasNext) -1; else 0
-  }
-
-  def eval(valuations: Traversable[PartialFunction[NNTerm, Double]], restValuation: PartialFunction[NNTerm, Double]):
-  Double
-  = this match {
-    case SC(v) => v
-    case SSum(summands) => summands.map(_.eval(valuations, restValuation)).sum
-    case SProd(p1, p2) => p1.eval(valuations, restValuation) * p2.eval(valuations, restValuation)
-    case SUMMED(t) => valuations.map(valuation => t.eval(valuation orElse restValuation)).sum
   }
 
   private def sumDerivatives(derivatives: Traversable[(W, SNNTerm)]): Map[W, SNNTerm] =
