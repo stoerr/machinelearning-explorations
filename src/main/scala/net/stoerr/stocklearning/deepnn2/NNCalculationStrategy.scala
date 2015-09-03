@@ -9,23 +9,23 @@ import collection.parallel.ParSeq
  * @since 02.09.2015
  */
 object NNSimpleCalculationStrategy {
-  def eval(valuation: PartialFunction[NNTerm, Double], term: NNTerm): Double =
-    new NNSimpleEvaluator(valuation).eval(term)
+  def eval(valuation: PartialFunction[NNTerm, Double]): Function[NNTerm, Double] =
+    new NNSimpleEvaluator(valuation).eval
 
-  def eval(valuations: Traversable[PartialFunction[NNTerm, Double]], restValuation: PartialFunction[NNTerm, Double],
-           term: SNNTerm): Double
-  = new SNNSimpleEvaluator(valuations, restValuation).eval(term)
+  def eval(valuations: Traversable[PartialFunction[NNTerm, Double]], restValuation: PartialFunction[NNTerm, Double])
+  : Function[SNNTerm, Double]
+  = new SNNSimpleEvaluator(valuations, restValuation).eval
 }
 
 /** Calculation strategy that caches common subterms and is somewhat parallelized. Still not the most efficient
   * way to do it, since the cache is not very efficient */
 object NNCachedCalculationStrategy {
-  def eval(valuation: PartialFunction[NNTerm, Double], term: NNTerm): Double =
-    new NNCachedEvaluator(valuation).eval(term)
+  def eval(valuation: PartialFunction[NNTerm, Double]): Function[NNTerm, Double] =
+    new NNCachedEvaluator(valuation).eval
 
-  def eval(valuations: Traversable[PartialFunction[NNTerm, Double]], restValuation: PartialFunction[NNTerm, Double],
-           term: SNNTerm): Double
-  = new SNNCachedEvaluator(valuations, restValuation).eval(term)
+  def eval(valuations: Traversable[PartialFunction[NNTerm, Double]], restValuation: PartialFunction[NNTerm, Double]):
+  Function[SNNTerm, Double]
+  = new SNNCachedEvaluator(valuations, restValuation).eval
 }
 
 
