@@ -18,7 +18,7 @@ object NNCreator {
   def wireup(in: Seq[NNTerm], numOut: Int, layernum: Int): Vector[NNTerm] = {
     for (o <- 1 to numOut) yield {
       val summands = for ((i, inum) <- in.zipWithIndex) yield i * W(num(layernum) + "-" + num(inum) + "-" + num(o))
-      summands.reduce(_ + _)
+      Tanh(summands.reduce(_ + _))
     }
   }.toVector
 
