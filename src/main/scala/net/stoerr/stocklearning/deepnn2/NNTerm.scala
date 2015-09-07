@@ -22,6 +22,7 @@ sealed trait NNTermBase {
     case Sqr(t) => this #:: t.componentStream
     case Sum(summands) => this #:: summands.toStream.flatMap(_.componentStream)
     case Prod(p1, p2) => this #:: p1.componentStream #::: p2.componentStream #::: Stream.empty[NNTermBase]
+    case SumProd(s) => this #:: s.toStream.flatMap(_._1.componentStream) #::: s.toStream.flatMap(_._2.componentStream)
     case SC(_) => Stream(this)
     case SSum(summands) => this #:: summands.toStream.flatMap(_.componentStream)
     case SProd(p1, p2) => this #:: p1.componentStream #::: p2.componentStream #::: Stream.empty[NNTermBase]
@@ -70,6 +71,8 @@ sealed trait NNTerm extends NNTermBase with Ordered[NNTerm] {
     case Sum(summands) => sumDerivatives(summands.flatMap(_.wDerivative))
     case Prod(p1, p2) =>
       sumDerivatives(p1.wDerivative.mapValues(_ * p2).toSeq ++ p2.wDerivative.mapValues(_ * p1).toSeq)
+    case SumProd(s) => sumDerivatives(s.flatMap(p => p._1.wDerivative.mapValues(_ * p._2)) ++
+      s.flatMap(p => p._2.wDerivative.mapValues(_ * p._1)))
     case Tanh(t) => t.wDerivative.mapValues(_ * (1 - this * this))
     case Sqr(t) => t.wDerivative.mapValues(_ * t * 2)
   }
@@ -79,6 +82,12 @@ object NNTerm {
   implicit def c(value: Double): C = C(value)
 
   implicit def c(value: Int): C = C(value)
+
+
+  def sumProd(s: IndexedSeq[(NNTerm, NNTerm)]) = {
+    def sort(p: (NNTerm, NNTerm)): (NNTerm, NNTerm) = if (p._1 > p._2) (p._2, p._1) else (p._1, p._2)
+    SumProd(s.map(sort).sortBy(p => p._1 * p._2))
+  }
 
   val ZERO = C(0)
   val ONE = C(1)
@@ -103,6 +112,13 @@ case class C(value: Double) extends NNTerm {
 case class Sum(summands: IndexedSeq[NNTerm]) extends NNTerm {
   override def toChars = "(".toIterator ++ summands.toIterator.map(_.toChars).reduce(_ ++ " + ".toIterator ++ _) ++
     ")".toIterator
+
+  override def hashCode = sys.error("Do not put this in a hashmap as key - that'd be seriously inefficient.")
+}
+
+case class SumProd(summands: IndexedSeq[(NNTerm, NNTerm)]) extends NNTerm {
+  override def toChars = "(".toIterator ++ summands.toIterator.map(s => s._1.toChars ++ " * ".toIterator ++ s._2
+    .toChars).reduce(_ ++ " + ".toIterator ++ _) ++ ")".toIterator
 
   override def hashCode = sys.error("Do not put this in a hashmap as key - that'd be seriously inefficient.")
 }

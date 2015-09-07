@@ -49,14 +49,17 @@ class TestNNTerm extends FunSuite {
   }
 
   test("Network creation") {
-    assert("Vector((I00 * W03-00-01 + I01 * W03-01-01), (I00 * W03-00-02 + I01 * W03-01-02))" == NNCreator.wireup
-      (NNCreator.inputs(2), 2, 3).toString())
+    assert("Vector(Tanh((I00 * W03-00-01 + I01 * W03-01-01)), Tanh((I00 * W03-00-02 + I01 * W03-01-02)))" ==
+      NNCreator.wireup
+        (NNCreator.inputs(2), 2, 3).toString())
     assert("NNRepresentation(Vector(I00, I01),Vector(W01-00-01, W01-01-01, W01-00-02, W01-01-02),Vector(O00, O01)," +
-      "Vector((I00 * W01-00-01 + I01 * W01-01-01), (I00 * W01-00-02 + I01 * W01-01-02)),SUMMED((Sqr((-1.0 * O00 + I00" +
-      " * W01-00-01 + I01 * W01-01-01)) + Sqr((-1.0 * O01 + I00 * W01-00-02 + I01 * W01-01-02)))))" == NNCreator
+      "Vector(Tanh((I00 * W01-00-01 + I01 * W01-01-01)), Tanh((I00 * W01-00-02 + I01 * W01-01-02))),SUMMED((Sqr((-1.0" +
+      " * O00 + Tanh((I00 * W01-00-01 + I01 * W01-01-01)))) + Sqr((-1.0 * O01 + Tanh((I00 * W01-00-02 + I01 * " +
+      "W01-01-02)))))))" == NNCreator
       .simpleNetwork(List(2, 2)).toString)
-    assert("NNRepresentation(Vector(I00),Vector(W01-00-01, W02-00-01, W03-00-01),Vector(O00),Vector(I00 * W01-00-01 *" +
-      " W02-00-01 * W03-00-01),SUMMED(Sqr((-1.0 * O00 + I00 * W01-00-01 * W02-00-01 * W03-00-01))))" == NNCreator
+    assert("NNRepresentation(Vector(I00),Vector(W01-00-01, W02-00-01, W03-00-01),Vector(O00),Vector(Tanh((Tanh((Tanh(" +
+      "(I00 * W01-00-01)) * W02-00-01)) * W03-00-01))),SUMMED(Sqr((-1.0 * O00 + Tanh((Tanh((Tanh((I00 * W01-00-01)) *" +
+      " W02-00-01)) * W03-00-01))))))" == NNCreator
       .simpleNetwork(List(1, 1, 1, 1)).toString)
     val nn = NNCreator.simpleNetwork(List(3, 5, 4))
     assert(3 == nn.inputs.size)
