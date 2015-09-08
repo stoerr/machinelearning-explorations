@@ -28,6 +28,15 @@ sealed trait NNTermBase {
     case SProd(p1, p2) => this #:: p1.componentStream #::: p2.componentStream #::: Stream.empty[NNTermBase]
     case SUMMED(t) => Stream(this) ++ t.componentStream
   }
+
+  def inputs = componentStream.filter(_.isInstanceOf[I]).map(_.asInstanceOf[NNTerm]).toArray.sorted.map(_
+    .asInstanceOf[I])
+
+  def outputs = componentStream.filter(_.isInstanceOf[O]).map(_.asInstanceOf[NNTerm]).toArray.sorted.map(_
+    .asInstanceOf[O])
+
+  def weights = componentStream.filter(_.isInstanceOf[W]).map(_.asInstanceOf[NNTerm]).toArray.sorted.map(_
+    .asInstanceOf[W])
 }
 
 sealed trait NNTerm extends NNTermBase with Ordered[NNTerm] {
