@@ -2,8 +2,10 @@ package net.stoerr.stocklearning.deepnn2
 
 import NNTerm._
 
-case class NNRepresentation(inputs: Vector[I], weights: Vector[W], outputs: Vector[O], calculation: Vector[NNTerm],
-                            term: SNNTerm)
+case class NNRepresentation(inputs: Vector[I], weights: Vector[W], outputs: Vector[O],
+                            outputCalculations: Vector[NNTerm], evaluationTerm: SNNTerm) {
+  override def toString = s"NNRepresentation(\n$inputs, \n$outputs,\n$outputCalculations,\n$evaluationTerm)"
+}
 
 /**
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>

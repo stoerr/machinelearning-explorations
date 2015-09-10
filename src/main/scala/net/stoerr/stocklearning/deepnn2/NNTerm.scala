@@ -29,13 +29,13 @@ sealed trait NNTermBase {
     case SUMMED(t) => Stream(this) ++ t.componentStream
   }
 
-  def inputs = componentStream.filter(_.isInstanceOf[I]).map(_.asInstanceOf[NNTerm]).toArray.sorted.map(_
+  def inputs = componentStream.filter(_.isInstanceOf[I]).map(_.asInstanceOf[NNTerm]).toSet.toArray.sorted.map(_
     .asInstanceOf[I])
 
-  def outputs = componentStream.filter(_.isInstanceOf[O]).map(_.asInstanceOf[NNTerm]).toArray.sorted.map(_
+  def outputs = componentStream.filter(_.isInstanceOf[O]).map(_.asInstanceOf[NNTerm]).toSet.toArray.sorted.map(_
     .asInstanceOf[O])
 
-  def weights = componentStream.filter(_.isInstanceOf[W]).map(_.asInstanceOf[NNTerm]).toArray.sorted.map(_
+  def weights = componentStream.filter(_.isInstanceOf[W]).map(_.asInstanceOf[NNTerm]).toSet.toArray.sorted.map(_
     .asInstanceOf[W])
 }
 

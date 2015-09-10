@@ -1,7 +1,6 @@
 package net.stoerr.stocklearning.deepnn2
 
 import collection.immutable.TreeMap
-import collection.parallel.ParSeq
 
 /**
  * Reference calculation strategy - not particularily efficient
@@ -32,21 +31,20 @@ object NNCachedCalculationStrategy extends SNNDoubleEvaluator {
 trait SNNDoubleEvaluator {
 
   /** returns function of weights to value and vector of derivative of value by weight */
-  def asDerivedFunction(term: SNNTerm, inputs: Traversable[IndexedSeq[Double]], outputs:
-  Traversable[IndexedSeq[Double]]):
-  Function[IndexedSeq[Double], (Double, IndexedSeq[Double])] = {
+  def asDerivedFunction[LDOUBLE <: Seq[Double]](term: SNNTerm, inputOutput: Traversable[(LDOUBLE, LDOUBLE)]):
+  Function[Array[Double], (Double, Array[Double])] = {
     val derivative = term.wDerivative
     val weightVars = term.weights
-    val valuations = outputs.map(values => toValuation(term.outputs, values)) ++
-      inputs.map(values => toValuation(term.inputs, values))
-    weights: IndexedSeq[Double] => {
+    val valuations = inputOutput.map(values => toValuation(term.inputs, values._1) orElse toValuation(term.outputs,
+      values._2))
+    weights: Array[Double] => {
       val restValuation = toValuation(weightVars, weights)
       val evalFunction: Function[SNNTerm, Double] = eval(valuations, restValuation)
       (evalFunction(term), weightVars.map(derivative).map(evalFunction))
     }
   }
 
-  private def toValuation[T <: NNTerm](variables: Array[T], values: IndexedSeq[Double]):
+  private def toValuation[T <: NNTerm](variables: Array[T], values: Seq[Double]):
   PartialFunction[NNTerm, Double] = variables.zip(values).toMap
 
   def eval(valuations: Traversable[PartialFunction[NNTerm, Double]], restValuation: PartialFunction[NNTerm, Double]):
@@ -58,10 +56,14 @@ private class NNSimpleEvaluator(valuation: PartialFunction[NNTerm, Double]) {
 
   def eval(term: NNTerm): Double = term match {
     case C(v) => v
-    case v if valuation.isDefinedAt(v) => valuation(v)
+    case i@I(_) => valuation(i)
+    case o@O(_) => valuation(o)
+    case w@W(_) => valuation(w)
+    // case v if valuation.isDefinedAt(v) => valuation(v)
     case Sum(summands) => summands.map((term: NNTerm) => eval(term)).sum
     case Prod(p1, p2) => eval(p1) * eval(p2)
     case Tanh(t) => math.tanh(eval(t))
+    case Sqr(t) => val te = eval(t); te * te
     case SumProd(prods) => prods.map(p => eval(p._1) * eval(p._2)).sum
   }
 
@@ -102,8 +104,9 @@ private class SNNCachedEvaluator(valuations: Traversable[PartialFunction[NNTerm,
 PartialFunction[NNTerm, Double]) extends SNNSimpleEvaluator(valuations, restValuation) {
 
   @volatile var cacheSNN: TreeMap[SNNTerm, Double] = TreeMap()
-  val summedEvaluators: ParSeq[NNCachedEvaluator] =
-    valuations.toArray.map(valuation => new NNCachedEvaluator(valuation orElse restValuation)).par
+  val summedEvaluators: Seq[NNCachedEvaluator] =
+    valuations.toArray.map(valuation => new NNCachedEvaluator(valuation orElse restValuation))
+  // .par
 
   override def eval(term: SNNTerm): Double = {
     val cached = cacheSNN.get(term)
