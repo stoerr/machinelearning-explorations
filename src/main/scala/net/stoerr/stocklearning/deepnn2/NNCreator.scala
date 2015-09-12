@@ -8,6 +8,7 @@ case class NNRepresentation(inputs: Vector[I], weights: Vector[W], outputs: Vect
 }
 
 /**
+ * Creates a NN with rectilinear activation function.
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
  * @since 03.09.2015
  */
@@ -24,10 +25,11 @@ object NNCreator {
       // val summands = for ((i, inum) <- in.zipWithIndex) yield i * W(num(layernum) + "-" + num(inum) + "-" + num(o))
       // Tanh(summands.reduce(_ + _))
       val summands = for ((i, inum) <- in.zipWithIndex) yield (i, W(num(layernum) + "-" + num(inum) + "-" + num(o)))
-      Tanh(sumProd(summands.toIndexedSeq))
+      RLin(sumProd(summands.toIndexedSeq))
     }
   }.toVector
 
+  /** * Creates a NN with rectilinear activation function. */
   def simpleNetwork(layers: Seq[Int]) = {
     val ins = inputs(layers.head)
     var terms = ins

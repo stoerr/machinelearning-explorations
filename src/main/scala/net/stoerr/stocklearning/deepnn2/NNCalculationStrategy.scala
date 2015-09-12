@@ -63,6 +63,8 @@ private class NNSimpleEvaluator(valuation: PartialFunction[NNTerm, Double]) {
     case Sum(summands) => summands.map((term: NNTerm) => eval(term)).sum
     case Prod(p1, p2) => eval(p1) * eval(p2)
     case Tanh(t) => math.tanh(eval(t))
+    case RLin(t) => val te = eval(t); if (te > 0) te else 0
+    case Step(t) => val te = eval(t); if (te > 0) 1 else 0
     case Sqr(t) => val te = eval(t); te * te
     case SumProd(prods) => prods.map(p => eval(p._1) * eval(p._2)).sum
   }

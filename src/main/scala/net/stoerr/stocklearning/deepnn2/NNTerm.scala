@@ -19,6 +19,8 @@ sealed trait NNTermBase {
     case O(_) => Stream(this)
     case C(_) => Stream(this)
     case Tanh(t) => this #:: t.componentStream
+    case RLin(t) => this #:: t.componentStream
+    case Step(t) => this #:: t.componentStream
     case Sqr(t) => this #:: t.componentStream
     case Sum(summands) => this #:: summands.toStream.flatMap(_.componentStream)
     case Prod(p1, p2) => this #:: p1.componentStream #::: p2.componentStream #::: Stream.empty[NNTermBase]
@@ -37,6 +39,7 @@ sealed trait NNTermBase {
 
   def weights = componentStream.filter(_.isInstanceOf[W]).map(_.asInstanceOf[NNTerm]).toSet.toArray.sorted.map(_
     .asInstanceOf[W])
+
 }
 
 sealed trait NNTerm extends NNTermBase with Ordered[NNTerm] {
@@ -83,7 +86,21 @@ sealed trait NNTerm extends NNTermBase with Ordered[NNTerm] {
     case SumProd(s) => sumDerivatives(s.flatMap(p => p._1.wDerivative.mapValues(_ * p._2)) ++
       s.flatMap(p => p._2.wDerivative.mapValues(_ * p._1)))
     case Tanh(t) => t.wDerivative.mapValues(_ * (1 - this * this))
+    case RLin(t) => t.wDerivative.mapValues(_ * Step(t))
     case Sqr(t) => t.wDerivative.mapValues(_ * t * 2)
+    case Step(t) => sys.error("Not derivable: " + this)
+  }
+
+  def subst[T1 <: NNTerm, T2 <: NNTerm](s: PartialFunction[T1, T2]): NNTerm = this match {
+    case x if s.isDefinedAt(this.asInstanceOf[T1]) => s(x.asInstanceOf[T1])
+    case W(_) | I(_) | O(_) | C(_) => this
+    case Tanh(t) => Tanh(t.subst(s))
+    case RLin(t) => RLin(t.subst(s))
+    case Step(t) => Step(t.subst(s))
+    case Sqr(t) => Sqr(t.subst(s))
+    case Sum(summands) => Sum(summands.map(_.subst(s)))
+    case Prod(p1, p2) => Prod(p1.subst(s), p2.subst(s))
+    case SumProd(prods) => SumProd(prods.map(p => (p._1.subst(s), p._2.subst(s))))
   }
 }
 
@@ -140,6 +157,16 @@ case class Tanh(t: NNTerm) extends NNTerm {
   override def toChars = "Tanh(".toIterator ++ t.toChars ++ ")".toIterator
 }
 
+/** Rectilinear */
+case class RLin(t: NNTerm) extends NNTerm {
+  override def toChars = "RLin(".toIterator ++ t.toChars ++ ")".toIterator
+}
+
+/** Derivation of rectilinear : 1 if > 0, 0 else */
+case class Step(t: NNTerm) extends NNTerm {
+  override def toChars = "Step(".toIterator ++ t.toChars ++ ")".toIterator
+}
+
 case class Sqr(t: NNTerm) extends NNTerm {
   override def toChars = "Sqr(".toIterator ++ t.toChars ++ ")".toIterator
 }
@@ -184,6 +211,13 @@ sealed trait SNNTerm extends NNTermBase with Ordered[SNNTerm] {
     case SProd(p1, p2) =>
       sumDerivatives(p1.wDerivative.mapValues(_ * p2).toSeq ++ p2.wDerivative.mapValues(_ * p1).toSeq)
     case SUMMED(t) => t.wDerivative.mapValues(SUMMED)
+  }
+
+  def subst[T1 <: NNTerm, T2 <: NNTerm](s: PartialFunction[T1, T2]): SNNTerm = this match {
+    case SC(c) => this
+    case SSum(summands) => SSum(summands.map(_.subst(s)))
+    case SProd(p1, p2) => SProd(p1.subst(s), p2.subst(s))
+    case SUMMED(t) => SUMMED(t.subst(s))
   }
 }
 
