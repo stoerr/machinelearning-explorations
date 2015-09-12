@@ -1,5 +1,6 @@
 package net.stoerr.stocklearning.deepnn2
 
+import net.stoerr.stocklearning.common.DoubleArrayVector
 import org.scalatest.FunSuite
 
 /**
@@ -27,6 +28,11 @@ class TestNNCreator extends FunSuite {
     val x2 = w2(Array(0.0, 0.0, 0.0, 0.0, 0.0, 0.0))
     println(x2)
     println(x2._2.toList)
+    val arg3 = Array(0.1, 0.2, 0.3, 0.4, 0.5, 0.6)
+    val x3 = w2(arg3)
+    println(x3)
+    println(x3._2.toList)
+    println(DoubleArrayVector.gradient(w2.andThen(_._1), arg3).toList)
   }
 
 }
