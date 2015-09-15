@@ -22,6 +22,8 @@ sealed trait NNTermBase {
     case RLin(t) => this #:: t.componentStream
     case Step(t) => this #:: t.componentStream
     case Sqr(t) => this #:: t.componentStream
+    case SoftSign(t) => this #:: t.componentStream
+    case SoftSignD(t) => this #:: t.componentStream
     case Sum(summands) => this #:: summands.toStream.flatMap(_.componentStream)
     case Prod(p1, p2) => this #:: p1.componentStream #::: p2.componentStream #::: Stream.empty[NNTermBase]
     case SumProd(s) => this #:: s.toStream.flatMap(_._1.componentStream) #::: s.toStream.flatMap(_._2.componentStream)
@@ -88,7 +90,8 @@ sealed trait NNTerm extends NNTermBase with Ordered[NNTerm] {
     case Tanh(t) => t.wDerivative.mapValues(_ * (1 - this * this))
     case RLin(t) => t.wDerivative.mapValues(_ * Step(t))
     case Sqr(t) => t.wDerivative.mapValues(_ * t * 2)
-    case Step(t) => sys.error("Not derivable: " + this)
+    case SoftSign(t) => t.wDerivative.mapValues(_ * SoftSignD(t))
+    case Step(_) | SoftSignD(_) => sys.error("Not derivable: " + this)
   }
 
   def subst[T1 <: NNTerm, T2 <: NNTerm](s: PartialFunction[T1, T2]): NNTerm = this match {
@@ -98,6 +101,8 @@ sealed trait NNTerm extends NNTermBase with Ordered[NNTerm] {
     case RLin(t) => RLin(t.subst(s))
     case Step(t) => Step(t.subst(s))
     case Sqr(t) => Sqr(t.subst(s))
+    case SoftSign(t) => SoftSign(t.subst(s))
+    case SoftSignD(t) => SoftSignD(t.subst(s))
     case Sum(summands) => Sum(summands.map(_.subst(s)))
     case Prod(p1, p2) => Prod(p1.subst(s), p2.subst(s))
     case SumProd(prods) => SumProd(prods.map(p => (p._1.subst(s), p._2.subst(s))))
@@ -112,7 +117,7 @@ object NNTerm {
 
   def sumProd(s: IndexedSeq[(NNTerm, NNTerm)]) = {
     def sort(p: (NNTerm, NNTerm)): (NNTerm, NNTerm) = if (p._1 > p._2) (p._2, p._1) else (p._1, p._2)
-    SumProd(s.map(sort).sortBy(p => p._1 * p._2))
+    SumProd(s.map(sort).sortBy(p => p._1 * p._2).toVector)
   }
 
   val ZERO = C(0)
@@ -169,6 +174,15 @@ case class Step(t: NNTerm) extends NNTerm {
 
 case class Sqr(t: NNTerm) extends NNTerm {
   override def toChars = "Sqr(".toIterator ++ t.toChars ++ ")".toIterator
+}
+
+case class SoftSign(t: NNTerm) extends NNTerm {
+  override def toChars = "SoftSign(".toIterator ++ t.toChars ++ ")".toIterator
+}
+
+/** Derivation of SoftSign */
+case class SoftSignD(t: NNTerm) extends NNTerm {
+  override def toChars = "SoftSignD(".toIterator ++ t.toChars ++ ")".toIterator
 }
 
 sealed trait SNNTerm extends NNTermBase with Ordered[SNNTerm] {

@@ -12,7 +12,7 @@ object NNSimpleCalculationStrategy extends SNNDoubleEvaluator {
     new NNSimpleEvaluator(valuation).eval
 
   def eval(valuations: Traversable[PartialFunction[NNTerm, Double]], restValuation: PartialFunction[NNTerm, Double])
-  : Function[SNNTerm, Double]
+  : SNNTerm => Double
   = new SNNSimpleEvaluator(valuations, restValuation).eval
 }
 
@@ -23,7 +23,7 @@ object NNCachedCalculationStrategy extends SNNDoubleEvaluator {
     new NNCachedEvaluator(valuation).eval
 
   def eval(valuations: Traversable[PartialFunction[NNTerm, Double]], restValuation: PartialFunction[NNTerm, Double]):
-  Function[SNNTerm, Double]
+  SNNTerm => Double
   = new SNNCachedEvaluator(valuations, restValuation).eval
 }
 
@@ -32,23 +32,44 @@ trait SNNDoubleEvaluator {
 
   /** returns function of weights to value and vector of derivative of value by weight */
   def asDerivedFunction[LDOUBLE <: Seq[Double]](term: SNNTerm, inputOutput: Traversable[(LDOUBLE, LDOUBLE)]):
-  Function[Array[Double], (Double, Array[Double])] = {
+  Array[Double] => (Double, Array[Double]) = {
     val derivative = term.wDerivative
     val weightVars = term.weights
     val valuations = inputOutput.map(values => toValuation(term.inputs, values._1) orElse toValuation(term.outputs,
       values._2))
     weights: Array[Double] => {
       val restValuation = toValuation(weightVars, weights)
-      val evalFunction: Function[SNNTerm, Double] = eval(valuations, restValuation)
+      val evalFunction: SNNTerm => Double = eval(valuations, restValuation)
       (evalFunction(term), weightVars.map(derivative).map(evalFunction))
     }
   }
 
   private def toValuation[T <: NNTerm](variables: Array[T], values: Seq[Double]):
-  PartialFunction[NNTerm, Double] = variables.zip(values).toMap
+  PartialFunction[NNTerm, Double] = {
+    require(variables.size == values.size, "vars: " + variables.toList + " , vals: " + values)
+    variables.zip(values).toMap
+  }
+
+  def asResultFunction(terms: Traversable[NNTerm], weights: Array[Double]): Array[Double] => Array[Double] = {
+    val inputVars = terms.flatMap(_.inputs).map(_.asInstanceOf[NNTerm]).toSet.toArray.sorted
+    val weightVars = terms.flatMap(_.weights).map(_.asInstanceOf[NNTerm]).toSet.toArray.sorted
+    val weightValuation = toValuation(weightVars, weights)
+    require(terms.flatMap(_.outputs).isEmpty)
+    inputs => {
+      require(inputVars.size == inputs.size, "inputVars:" + inputVars.toList + " , inputs: " + inputs.toList)
+      val func = eval(toValuation(inputVars, inputs) orElse weightValuation)
+      terms.map(func(_)).toArray
+    }
+  }
+
+  def asResultFunction(term: NNTerm, weights: Array[Double]): Array[Double] => Double = asResultFunction(List(term),
+    weights)
+    .andThen(_(0))
 
   def eval(valuations: Traversable[PartialFunction[NNTerm, Double]], restValuation: PartialFunction[NNTerm, Double]):
-  Function[SNNTerm, Double]
+  SNNTerm => Double
+
+  def eval(valuation: PartialFunction[NNTerm, Double]): Function[NNTerm, Double]
 
 }
 
@@ -66,6 +87,8 @@ private class NNSimpleEvaluator(valuation: PartialFunction[NNTerm, Double]) {
     case RLin(t) => val te = eval(t); if (te > 0) te else 0
     case Step(t) => val te = eval(t); if (te > 0) 1 else 0
     case Sqr(t) => val te = eval(t); te * te
+    case SoftSign(t) => val te = eval(t); te / (1 + math.abs(te))
+    case SoftSignD(t) => val tex = 1 + math.abs(eval(t)); 1 / (tex * tex)
     case SumProd(prods) => prods.map(p => eval(p._1) * eval(p._2)).sum
   }
 

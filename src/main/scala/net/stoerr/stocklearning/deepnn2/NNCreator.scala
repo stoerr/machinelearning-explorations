@@ -24,8 +24,8 @@ object NNCreator {
     for (o <- 1 to numOut) yield {
       // val summands = for ((i, inum) <- in.zipWithIndex) yield i * W(num(layernum) + "-" + num(inum) + "-" + num(o))
       // Tanh(summands.reduce(_ + _))
-      val summands = for ((i, inum) <- in.zipWithIndex) yield (i, W(num(layernum) + "-" + num(inum) + "-" + num(o)))
-      RLin(sumProd(summands.toIndexedSeq))
+      val summands = for ((i, inum) <- in.zipWithIndex) yield (i, W(num(layernum) + "-" + num(o) + "-" + num(inum)))
+      SoftSign(sumProd(summands.toVector :+(C(1.0), W(num(layernum) + "-" + num(o)))))
     }
   }.toVector
 
