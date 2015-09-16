@@ -4,6 +4,7 @@ import net.stoerr.stocklearning.common.{DoubleArrayVector, RProp}
 import DoubleArrayVector._
 import org.scalatest.FunSuite
 
+import collection.immutable.TreeSet
 import util.Random
 
 /**
@@ -18,6 +19,27 @@ class TestNNCreator extends FunSuite {
     (List(1.0, 0.0), List(0.5)),
     (List(1.0, 1.0), List(-0.5))
   )
+
+  def nnterms(terms: Seq[NNTermBase]): Array[NNTerm] = terms.filter(_.isInstanceOf[NNTerm]).map(_
+    .asInstanceOf[NNTerm]).toArray
+
+  def uniqsize(terms: Seq[NNTerm]) = (new TreeSet[NNTerm]() ++ terms).size
+
+  test("complexities 1") {
+    val nn = NNCreator.simpleNetwork(List(2, 5, 1))
+    println("2,5,1: " + nnterms(List(nn.evaluationTerm)).size + " / " + uniqsize(nnterms(List(nn.evaluationTerm))))
+    val allcomponents = nnterms(nn.evaluationTerm.componentStream ++ nn.evaluationTerm.wDerivative.values.flatMap(_
+      .componentStream))
+    println("2,5,1 deriv: " + allcomponents.size + " / " + uniqsize(allcomponents))
+  }
+
+  test("complexities 2") {
+    val nn = NNCreator.simpleNetwork(List(2, 5, 5, 1))
+    println("2,5,5,1: " + nnterms(List(nn.evaluationTerm)).size + " / " + uniqsize(nnterms(List(nn.evaluationTerm))))
+    val allcomponents = nnterms(nn.evaluationTerm.componentStream ++ nn.evaluationTerm.wDerivative.values.flatMap(_
+      .componentStream))
+    println("2,5,5,1 deriv: " + allcomponents.size + " / " + uniqsize(allcomponents))
+  }
 
   test("roughCheckSimpleNetwork") {
     def nn22 = NNCreator.simpleNetwork(List(2, 2, 2, 1))
@@ -42,7 +64,7 @@ class TestNNCreator extends FunSuite {
   }
 
   test("Learn XOR") {
-    def nn2331 = NNCreator.simpleNetwork(List(2, 7, 1))
+    def nn2331 = NNCreator.simpleNetwork(List(2, 5, 5, 1))
     val wfunc: Array[Double] => (Double, Array[Double]) = NNCachedCalculationStrategy.asDerivedFunction(nn2331
       .evaluationTerm, xorExample)
     val startWeights = nn2331.weights.indices.map(_ => Random.nextGaussian()).toArray

@@ -41,7 +41,6 @@ sealed trait NNTermBase {
 
   def weights = componentStream.filter(_.isInstanceOf[W]).map(_.asInstanceOf[NNTerm]).toSet.toArray.sorted.map(_
     .asInstanceOf[W])
-
 }
 
 sealed trait NNTerm extends NNTermBase with Ordered[NNTerm] {

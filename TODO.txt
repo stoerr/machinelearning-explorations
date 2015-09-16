@@ -15,3 +15,8 @@ CalculationCompiler:
 - how to do derivations?
 - how to construct NN
 - (Very much later): how to do this with the GPU?
+
+
+AparApi
+http://mvnrepository.com/artifact/org.abstractmeta/compilation-toolbox/0.3.3
+http://unkrig.de/w/Janino
