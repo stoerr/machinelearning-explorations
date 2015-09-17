@@ -20,27 +20,7 @@ sealed trait NNTermBase {
   /** Immediate subterms */
   def subterms: Seq[TermComponent]
 
-  def componentStream: Stream[TermComponent] = this #:: subterms.toStream
-
-  /** def componentStreamOld: Stream[NNTermBase] = this match {
-    case W(_) => Stream(this)
-    case I(_) => Stream(this)
-    case O(_) => Stream(this)
-    case C(_) => Stream(this)
-    case Tanh(t) => this #:: t.componentStream
-    case RLin(t) => this #:: t.componentStream
-    case Step(t) => this #:: t.componentStream
-    case Sqr(t) => this #:: t.componentStream
-    case SoftSign(t) => this #:: t.componentStream
-    case SoftSignD(t) => this #:: t.componentStream
-    case Sum(summands) => this #:: summands.toStream.flatMap(_.componentStream)
-    case Prod(p1, p2) => this #:: p1.componentStream #::: p2.componentStream #::: Stream.empty[NNTermBase]
-    case SumProd(s) => this #:: s.toStream.flatMap(_._1.componentStream) #::: s.toStream.flatMap(_._2.componentStream)
-    case SC(_) => Stream(this)
-    case SSum(summands) => this #:: summands.toStream.flatMap(_.componentStream)
-    case SProd(p1, p2) => this #:: p1.componentStream #::: p2.componentStream #::: Stream.empty[NNTermBase]
-    case SUMMED(t) => Stream(this) ++ t.componentStream
-  } */
+  def componentStream: Stream[NNTermBase] = this #:: subterms.toStream.flatMap(_.componentStream)
 
   def inputs = componentStream.filter(_.isInstanceOf[I]).map(_.asInstanceOf[NNTerm]).toSet.toArray.sorted.map(_
     .asInstanceOf[I])
@@ -55,7 +35,9 @@ sealed trait NNTermBase {
 
   override def toString = toChars.mkString
 
-  override def hashCode = ???
+  protected val theHashCode: Int
+
+  override final def hashCode: Int = theHashCode
 
   def compare(o: TermComponent): Int = {
     val (it1, it2) = (this.toChars, o.toChars)
@@ -65,7 +47,6 @@ sealed trait NNTermBase {
     }
     if (it1.hasNext) 1 else if (it2.hasNext) -1; else 0
   }
-
 }
 
 sealed trait NNTerm extends NNTermBase with Ordered[NNTerm] {
@@ -94,36 +75,8 @@ sealed trait NNTerm extends NNTermBase with Ordered[NNTerm] {
 
   def wDerivative: Map[W, NNTerm]
 
-  /* = this match {
-    case C(_) | I(_) | O(_) => Map()
-    case t@W(_) => Map(t -> ONE)
-    case Sum(summands) => sumDerivatives(summands.flatMap(_.wDerivative))
-    case Prod(p1, p2) =>
-      sumDerivatives(p1.wDerivative.mapValues(_ * p2).toSeq ++ p2.wDerivative.mapValues(_ * p1).toSeq)
-    case SumProd(s) => sumDerivatives(s.flatMap(p => p._1.wDerivative.mapValues(_ * p._2)) ++
-      s.flatMap(p => p._2.wDerivative.mapValues(_ * p._1)))
-    case Tanh(t) => t.wDerivative.mapValues(_ * (1 - this * this))
-    case RLin(t) => t.wDerivative.mapValues(_ * Step(t))
-    case Sqr(t) => t.wDerivative.mapValues(_ * t * 2)
-    case SoftSign(t) => t.wDerivative.mapValues(_ * SoftSignD(t))
-    case Step(_) | SoftSignD(_) => sys.error("Not derivable: " + this)
-  } */
-
   def subst(s: PartialFunction[NNTerm, NNTerm]): NNTerm
 
-  /* = this match {
-    case x if s.isDefinedAt(this.asInstanceOf[T1]) => s(x.asInstanceOf[T1])
-    case W(_) | I(_) | O(_) | C(_) => this
-    case Tanh(t) => Tanh(t.subst(s))
-    case RLin(t) => RLin(t.subst(s))
-    case Step(t) => Step(t.subst(s))
-    case Sqr(t) => Sqr(t.subst(s))
-    case SoftSign(t) => SoftSign(t.subst(s))
-    case SoftSignD(t) => SoftSignD(t.subst(s))
-    case Sum(summands) => Sum(summands.map(_.subst(s)))
-    case Prod(p1, p2) => Prod(p1.subst(s), p2.subst(s))
-    case SumProd(prods) => SumProd(prods.map(p => (p._1.subst(s), p._2.subst(s))))
-  } */
 }
 
 object NNTerm {
@@ -141,7 +94,7 @@ object NNTerm {
   val ONE = C(1)
 }
 
-abstract class ConstantNNTerm(name: String) extends NNTerm {
+protected abstract class ConstantNNTerm(name: String) extends NNTerm {
 
   override def subst(s: PartialFunction[NNTerm, NNTerm]): NNTerm = if (s.isDefinedAt(this)) s(this) else this
 
@@ -151,7 +104,7 @@ abstract class ConstantNNTerm(name: String) extends NNTerm {
 
   override def toChars = name.iterator
 
-  override def hashCode: Int = finalizeHash(mix(stringHash(getClass.getName), stringHash(name)), 0)
+  protected val theHashCode = finalizeHash(mix(stringHash(getClass.getName), stringHash(name)), 0)
 
 }
 
@@ -176,7 +129,7 @@ case class Sum(summands: Seq[NNTerm]) extends NNTerm {
   override def toChars = "(".toIterator ++ summands.toIterator.map(_.toChars).reduce(_ ++ " + ".toIterator ++ _) ++
     ")".toIterator
 
-  override val hashCode = finalizeHash(mix(stringHash(getClass.getName), seqHash(summands)), 0)
+  override protected val theHashCode = finalizeHash(mix(stringHash(getClass.getName), seqHash(summands)), 0)
 
 }
 
@@ -189,12 +142,12 @@ case class SumProd(summands: IndexedSeq[(NNTerm, NNTerm)]) extends NNTerm {
     sumDerivatives(summands.flatMap(p => p._1.wDerivative.mapValues(_ * p._2)) ++
       summands.flatMap(p => p._2.wDerivative.mapValues(_ * p._1)))
 
-  override def subterms: Seq[TermComponent] = summands.flatten
+  override def subterms: Seq[TermComponent] = summands.flatMap(p => Seq(p._1, p._2))
 
   override def toChars = "(".toIterator ++ summands.toIterator.map(s => s._1.toChars ++ " * ".toIterator ++ s._2
     .toChars).reduce(_ ++ " + ".toIterator ++ _) ++ ")".toIterator
 
-  override val hashCode = finalizeHash(mix(stringHash(getClass.getName), seqHash(summands)), 0)
+  override protected val theHashCode = finalizeHash(mix(stringHash(getClass.getName), seqHash(summands)), 0)
 }
 
 case class Prod(p1: NNTerm, p2: NNTerm) extends NNTerm {
@@ -207,19 +160,15 @@ case class Prod(p1: NNTerm, p2: NNTerm) extends NNTerm {
 
   override def toChars = p1.toChars ++ " * ".toIterator ++ p2.toChars
 
-  override val hashCode = finalizeHash(mix(stringHash(getClass.getName), mix(p1.hashCode, p2.hashCode)), 0)
+  override protected val theHashCode = finalizeHash(mix(stringHash(getClass.getName), mix(p1.hashCode, p2.hashCode)), 0)
 }
 
-abstract class FunctionNNTerm(argument: NNTerm) extends NNTerm {
-  // override def subst(s: PartialFunction[NNTerm, NNTerm]): NNTerm
-  // override def wDerivative: Map[W, NNTerm] = Map()
-
+protected abstract class FunctionNNTerm(argument: NNTerm) extends NNTerm {
   override def subterms: Seq[TermComponent] = Stream(argument)
 
   override def toChars = (getClass.getSimpleName + "(").toIterator ++ argument.toChars ++ ")".toIterator
 
-  override val hashCode: Int = finalizeHash(mix(stringHash(getClass.getName), argument.hashCode), 0)
-
+  override protected val theHashCode = finalizeHash(mix(stringHash(getClass.getName), argument.hashCode), 0)
 }
 
 case class Tanh(t: NNTerm) extends FunctionNNTerm(t) {
@@ -294,23 +243,12 @@ sealed trait SNNTerm extends NNTermBase with Ordered[SNNTerm] {
     if (it1.hasNext) 1; else if (it2.hasNext) -1; else 0
   }
 
-  private def sumDerivatives(derivatives: Traversable[(W, SNNTerm)]): Map[W, SNNTerm] =
+  protected def sumDerivatives(derivatives: Traversable[(W, SNNTerm)]): Map[W, SNNTerm] =
     derivatives.groupBy(_._1).mapValues(_.map(_._2)).mapValues(_.reduce(_ + _))
 
-  def wDerivative: Map[W, SNNTerm] = this match {
-    case SC(_) => Map()
-    case SSum(summands) => sumDerivatives(summands.flatMap(_.wDerivative))
-    case SProd(p1, p2) =>
-      sumDerivatives(p1.wDerivative.mapValues(_ * p2).toSeq ++ p2.wDerivative.mapValues(_ * p1).toSeq)
-    case SUMMED(t) => t.wDerivative.mapValues(SUMMED)
-  }
+  def wDerivative: Map[W, SNNTerm]
 
-  def subst(s: PartialFunction[NNTerm, NNTerm]): SNNTerm = this match {
-    case SC(c) => this
-    case SSum(summands) => SSum(summands.map(_.subst(s)))
-    case SProd(p1, p2) => SProd(p1.subst(s), p2.subst(s))
-    case SUMMED(t) => SUMMED(t.subst(s))
-  }
+  def subst(s: PartialFunction[NNTerm, NNTerm]): SNNTerm
 }
 
 object SNNTerm {
@@ -326,12 +264,24 @@ case class SUMMED(t: NNTerm) extends SNNTerm {
   override def toChars = "SUMMED(".toIterator ++ t.toChars ++ ")".toIterator
 
   override def subterms: Seq[TermComponent] = Seq(t)
+
+  override def wDerivative: Map[W, SNNTerm] = t.wDerivative.mapValues(SUMMED)
+
+  override def subst(s: PartialFunction[NNTerm, NNTerm]): SNNTerm = SUMMED(t.subst(s))
+
+  override protected val theHashCode = finalizeHash(mix(stringHash(getClass.getName), t.hashCode), 0)
 }
 
 case class SC(value: Double) extends SNNTerm {
   override def toChars = value.toString.iterator
 
   override def subterms: Seq[TermComponent] = Seq()
+
+  override def wDerivative: Map[W, SNNTerm] = Map()
+
+  override def subst(s: PartialFunction[NNTerm, NNTerm]): SNNTerm = this
+
+  override protected val theHashCode = finalizeHash(mix(stringHash(getClass.getName), value.hashCode), 0)
 }
 
 case class SSum(summands: IndexedSeq[SNNTerm]) extends SNNTerm {
@@ -339,10 +289,23 @@ case class SSum(summands: IndexedSeq[SNNTerm]) extends SNNTerm {
     ")".toIterator
 
   override def subterms: Seq[TermComponent] = summands
+
+  override def wDerivative: Map[W, SNNTerm] = sumDerivatives(summands.flatMap(_.wDerivative))
+
+  override def subst(s: PartialFunction[NNTerm, NNTerm]): SNNTerm = SSum(summands.map(_.subst(s)))
+
+  override protected val theHashCode = finalizeHash(mix(stringHash(getClass.getName), seqHash(summands)), 0)
 }
 
 case class SProd(p1: SNNTerm, p2: SNNTerm) extends SNNTerm {
   override def toChars = p1.toChars ++ " * ".toIterator ++ p2.toChars
 
   override def subterms: Seq[TermComponent] = Seq(p1, p2)
+
+  override def wDerivative: Map[W, SNNTerm] =
+    sumDerivatives(p1.wDerivative.mapValues(_ * p2).toSeq ++ p2.wDerivative.mapValues(_ * p1).toSeq)
+
+  override def subst(s: PartialFunction[NNTerm, NNTerm]): SNNTerm = SProd(p1.subst(s), p2.subst(s))
+
+  override protected val theHashCode = finalizeHash(mix(stringHash(getClass.getName), mix(p1.hashCode, p2.hashCode)), 0)
 }

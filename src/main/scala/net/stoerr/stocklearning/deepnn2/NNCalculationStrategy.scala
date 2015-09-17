@@ -1,6 +1,7 @@
 package net.stoerr.stocklearning.deepnn2
 
 import collection.immutable.TreeMap
+import collection.parallel.ParSeq
 
 /**
  * Reference calculation strategy - not particularily efficient
@@ -27,7 +28,6 @@ object NNCachedCalculationStrategy extends SNNDoubleEvaluator {
   = new SNNCachedEvaluator(valuations, restValuation).eval
 }
 
-
 trait SNNDoubleEvaluator {
 
   /** returns function of weights to value and vector of derivative of value by weight */
@@ -46,7 +46,7 @@ trait SNNDoubleEvaluator {
 
   private def toValuation[T <: NNTerm](variables: Array[T], values: Seq[Double]):
   PartialFunction[NNTerm, Double] = {
-    require(variables.size == values.size, "vars: " + variables.toList + " , vals: " + values)
+    require(variables.length == values.length, "vars: " + variables.toList + " , vals: " + values)
     variables.zip(values).toMap
   }
 
@@ -56,7 +56,7 @@ trait SNNDoubleEvaluator {
     val weightValuation = toValuation(weightVars, weights)
     require(terms.flatMap(_.outputs).isEmpty)
     inputs => {
-      require(inputVars.size == inputs.size, "inputVars:" + inputVars.toList + " , inputs: " + inputs.toList)
+      require(inputVars.length == inputs.length, "inputVars:" + inputVars.toList + " , inputs: " + inputs.toList)
       val func = eval(toValuation(inputVars, inputs) orElse weightValuation)
       terms.map(func(_)).toArray
     }
@@ -100,8 +100,7 @@ PartialFunction[NNTerm, Double]) {
   def eval(valuation: PartialFunction[NNTerm, Double])(term: NNTerm): Double =
     new NNSimpleEvaluator(valuation).eval(term)
 
-  def eval(term: SNNTerm): Double
-  = term match {
+  def eval(term: SNNTerm): Double = term match {
     case SC(v) => v
     case SSum(summands) => summands.map((term: SNNTerm) => eval(term)).sum
     case SProd(p1, p2) => eval(p1) * eval(p2)
@@ -129,9 +128,8 @@ private class SNNCachedEvaluator(valuations: Traversable[PartialFunction[NNTerm,
 PartialFunction[NNTerm, Double]) extends SNNSimpleEvaluator(valuations, restValuation) {
 
   @volatile var cacheSNN: TreeMap[SNNTerm, Double] = TreeMap()
-  val summedEvaluators: Seq[NNCachedEvaluator] =
-    valuations.toArray.map(valuation => new NNCachedEvaluator(valuation orElse restValuation))
-  // .par
+  val summedEvaluators: ParSeq[NNCachedEvaluator] = valuations.toArray.map(valuation => new NNCachedEvaluator
+  (valuation orElse restValuation)).par
 
   override def eval(term: SNNTerm): Double = {
     val cached = cacheSNN.get(term)
