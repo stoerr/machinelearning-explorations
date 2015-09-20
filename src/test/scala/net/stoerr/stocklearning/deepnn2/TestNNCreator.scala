@@ -27,18 +27,18 @@ class TestNNCreator extends FunSuite {
 
   test("complexities 1") {
     val nn = NNCreator.simpleNetwork(List(2, 5, 1))
-    println("2,5,1: " + nnterms(List(nn.evaluationTerm)).size + " / " + uniqsize(nnterms(List(nn.evaluationTerm))))
+    println("2,5,1: " + nnterms(List(nn.evaluationTerm)).length + " / " + uniqsize(nnterms(List(nn.evaluationTerm))))
     val allcomponents = nnterms(nn.evaluationTerm.componentStream ++ nn.evaluationTerm.wDerivative.values.flatMap(_
       .componentStream))
-    println("2,5,1 deriv: " + allcomponents.size + " / " + uniqsize(allcomponents))
+    println("2,5,1 deriv: " + allcomponents.length + " / " + uniqsize(allcomponents))
   }
 
   test("complexities 2") {
     val nn = NNCreator.simpleNetwork(List(2, 5, 5, 1))
-    println("2,5,5,1: " + nnterms(List(nn.evaluationTerm)).size + " / " + uniqsize(nnterms(List(nn.evaluationTerm))))
+    println("2,5,5,1: " + nnterms(List(nn.evaluationTerm)).length + " / " + uniqsize(nnterms(List(nn.evaluationTerm))))
     val allcomponents = nnterms(nn.evaluationTerm.componentStream ++ nn.evaluationTerm.wDerivative.values.flatMap(_
       .componentStream))
-    println("2,5,5,1 deriv: " + allcomponents.size + " / " + uniqsize(allcomponents))
+    println("2,5,5,1 deriv: " + allcomponents.length + " / " + uniqsize(allcomponents))
   }
 
   test("roughCheckSimpleNetwork") {
@@ -48,7 +48,7 @@ class TestNNCreator extends FunSuite {
     println(nn22.evaluationTerm.outputs.toList)
     println(nn22.evaluationTerm.weights.toList)
     val w1 = NNCachedCalculationStrategy.asDerivedFunction(nn22.evaluationTerm, xorExample)
-    val arg = (1 to nn22.evaluationTerm.weights.size).toArray.map(_ / 50.0)
+    val arg = (1 to nn22.evaluationTerm.weights.length).toArray.map(_ / 50.0)
     val x1 = w1(arg)
     println(x1)
     println(x1._2.toList)
@@ -67,14 +67,14 @@ class TestNNCreator extends FunSuite {
     def nn2331 = NNCreator.simpleNetwork(List(2, 5, 5, 1))
     val wfunc: Array[Double] => (Double, Array[Double]) = NNCachedCalculationStrategy.asDerivedFunction(nn2331
       .evaluationTerm, xorExample)
-    val startWeights = nn2331.weights.indices.map(_ => Random.nextGaussian()).toArray
+    val startWeights = nn2331.weights.indices.map(_ => Random.nextGaussian() / 20).toArray
     val rprop = new RProp(wfunc.andThen(_._1), wfunc, 100, startWeights)
     val result = rprop.descent()
     println(result)
     val weights = result._1
     println(weights.toList)
     assert(nn2331.outputCalculations.size == 1)
-    val nnfunc = NNCachedCalculationStrategy.asResultFunction(nn2331.outputCalculations(0), weights)
+    val nnfunc = NNCachedCalculationStrategy.asResultFunction(nn2331.outputCalculations.head, weights)
     for (example <- xorExample) {
       println(example._1 + ":" + nnfunc(example._1.toArray) + " for " + example._2)
     }

@@ -84,8 +84,8 @@ private class NNSimpleEvaluator(valuation: PartialFunction[NNTerm, Double]) {
     case Sum(summands) => summands.map((term: NNTerm) => eval(term)).sum
     case Prod(p1, p2) => eval(p1) * eval(p2)
     case Tanh(t) => math.tanh(eval(t))
-    case RLin(t) => val te = eval(t); if (te > 0) 2 * te else te / 2 // XXX if (te > 0) te else 0
-    case Step(t) => val te = eval(t); if (te > 0) 2 else 0.5 // XXX if (te > 0) 1 else 0
+    case RLin(t) => val te = eval(t); if (te > 0) te else 0 // XXX if (te > 0) te else 0
+    case Step(t) => val te = eval(t); if (te > 0) 1 else 0 // XXX if (te > 0) 1 else 0
     case Sqr(t) => val te = eval(t); te * te
     case SoftSign(t) => val te = eval(t); te / (1 + math.abs(te))
     case SoftSignD(t) => val tex = 1 + math.abs(eval(t)); 1 / (tex * tex)

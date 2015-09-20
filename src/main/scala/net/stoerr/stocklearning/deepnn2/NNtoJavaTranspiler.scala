@@ -22,13 +22,14 @@ object NNtoJavaTranspiler {
 class NNtoJavaTranspiler(terms: Set[NNTerm]) {
 
   val ordered: Vector[Vector[NNTerm]] = {
-    val variables: Set[NNTerm] = terms.flatMap(_.inputs).toSet[NNTerm] ++ terms.flatMap(_.outputs) ++ terms.flatMap(_.weights)
+    val variables: Set[NNTerm] = terms.flatMap(_.inputs).toSet[NNTerm] ++ terms.flatMap(_.outputs) ++ terms.flatMap(_
+      .weights)
     NNtoJavaTranspiler.orderCalculation(terms).map(_.filterNot(variables.contains)).filterNot(_.isEmpty)
   }
 
   case class Calculation(terms: Vector[NNTerm], allocationBefore: Map[NNTerm, Int], allocationAfter: Map[NNTerm, Int]) {
     private val allocationAfterKeys: Set[NNTerm] = allocationAfter.keys.toSet
-    require(terms.forall(allocationAfterKeys.contains))
+    require(terms.forall(t => allocationAfterKeys.contains(t) || terms.contains(t)))
     require(allocationBefore.values.size == allocationBefore.values.toSet.size, allocationBefore) // no duplicates
     require(allocationAfter.values.size == allocationAfter.values.toSet.size, allocationAfter) // no duplicates
   }
@@ -45,14 +46,49 @@ class NNtoJavaTranspiler(terms: Set[NNTerm]) {
     freeVariableIndices = unusedAllocationKeys ++: freeVariableIndices
     currentAllocation = currentAllocation -- unusedAllocations.keys
 
-    val newVariableIndices = freeVariableIndices.take(stage.size).toVector
-    freeVariableIndices = freeVariableIndices.drop(stage.size)
+    val stageWithoutResults = stage.filterNot(terms)
+    val newVariableIndices = freeVariableIndices.take(stageWithoutResults.size).toVector
+    freeVariableIndices = freeVariableIndices.drop(stageWithoutResults.size)
 
     val previousAllocation = currentAllocation
     currentAllocation = currentAllocation ++ stage.zip(newVariableIndices)
     Calculation(stage, previousAllocation, currentAllocation)
   }
 
-  calculations foreach println
+  val inputnumber = terms.flatMap(_.inputs).toArray[NNTerm].sorted.zipWithIndex.toMap
+  val outputnumber = terms.flatMap(_.outputs).toArray[NNTerm].sorted.zipWithIndex.toMap
+  val weightnumber = terms.flatMap(_.weights).toArray[NNTerm].sorted.zipWithIndex.toMap
+  val resultnumber = terms.toArray[NNTerm].sorted.zipWithIndex.toMap
 
+  val code = new StringBuilder
+
+  /** We use arrays in for inputs, out for outputs, w for weights, mem for intermediate results, res for results. */
+  for (calculation <- calculations; term <- calculation.terms) {
+    def input(term: NNTerm) = if (calculation.allocationBefore.contains(term)) "mem[" +
+      calculation.allocationBefore(term) + "]"
+    else term match {
+      case i@I(_) => "in[" + inputnumber(i) + "]"
+      case o@O(_) => "out[" + outputnumber(o) + "]"
+      case w@W(_) => "w[" + weightnumber(w) + "]"
+      case C(v) => v.toString
+      case other => sys.error("Can't find " + other)
+    }
+    def result(term: NNTerm) = if (terms.contains(term)) "res[" + resultnumber(term) + "]"
+    else "mem[" + calculation.allocationAfter(term) + "]"
+
+    term match {
+      case Prod(p1, p2) => code ++= result(term) + " = " + input(p1) + " * " + input(p2) + ";\n"
+      case Sum(summands) => code ++= result(term) + " = " + summands.map(input).mkString(" + ") + ";\n"
+      case SumProd(summands) => code ++= result(term) + " = " + summands.map(p => input(p._1) + "*" + input(p._2))
+        .mkString(" + ") + ";\n"
+      case Tanh(t) => code ++= result(term) + " = tanh(" + input(t) + ");\n"
+      case RLin(t) => code ++= result(term) + " = " + input(t) + " < 0 ? " + 0 + " : " + input(t) + ";\n"
+      case Step(t) => code ++= result(term) + " = " + input(t) + " < 0 ? " + 0 + " : 1);\n"
+      case SoftSign(t) => code ++= result(term) + " = " + input(t) + " / (1 + abs(" + input(t) + "));\n"
+      case SoftSignD(t) => code ++= result(term) + " = 1 / ((1 + abs(" + input(t) + ")) * (1 + abs(" + input(t) + "))" +
+        ");\n"
+    }
+  }
+
+  println(code)
 }
