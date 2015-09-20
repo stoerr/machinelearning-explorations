@@ -27,6 +27,14 @@ class TestNNtoJavaTranspiler extends FunSuite {
 
   test("Transpiler") {
     new NNtoJavaTranspiler(Set(c1, c2))
+    println()
+    val nn = NNCreator.simpleNetwork(List(2, 5, 5, 1))
+    val evalterm = nn.evaluationTerm
+    val derivs = evalterm.wDerivative
+    new NNtoJavaTranspiler(evalterm.toplevelNnSubterms.toSet)
+    println()
+    val toplevelterms = (Set(evalterm) ++ derivs.values).flatMap(_.toplevelNnSubterms.toSet)
+    new NNtoJavaTranspiler(toplevelterms)
   }
 
 }

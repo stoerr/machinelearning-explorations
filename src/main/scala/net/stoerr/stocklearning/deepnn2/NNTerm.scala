@@ -249,6 +249,11 @@ sealed trait SNNTerm extends NNTermBase with Ordered[SNNTerm] {
   def wDerivative: Map[W, SNNTerm]
 
   def subst(s: PartialFunction[NNTerm, NNTerm]): SNNTerm
+
+  def toplevelNnSubterms: Seq[NNTerm] = subterms flatMap {
+    case t: NNTerm => Seq[NNTerm](t)
+    case t: SNNTerm => t.toplevelNnSubterms
+  }
 }
 
 object SNNTerm {

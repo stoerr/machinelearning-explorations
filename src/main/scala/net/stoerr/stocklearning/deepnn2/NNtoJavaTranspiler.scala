@@ -83,10 +83,12 @@ class NNtoJavaTranspiler(terms: Set[NNTerm]) {
         .mkString(" + ") + ";\n"
       case Tanh(t) => code ++= result(term) + " = tanh(" + input(t) + ");\n"
       case RLin(t) => code ++= result(term) + " = " + input(t) + " < 0 ? " + 0 + " : " + input(t) + ";\n"
-      case Step(t) => code ++= result(term) + " = " + input(t) + " < 0 ? " + 0 + " : 1);\n"
+      case Step(t) => code ++= result(term) + " = " + input(t) + " < 0 ? " + 0 + " : 1;\n"
+      case Sqr(t) => code ++= result(term) + " = " + input(t) + "*" + input(t) + ";\n"
       case SoftSign(t) => code ++= result(term) + " = " + input(t) + " / (1 + abs(" + input(t) + "));\n"
       case SoftSignD(t) => code ++= result(term) + " = 1 / ((1 + abs(" + input(t) + ")) * (1 + abs(" + input(t) + "))" +
         ");\n"
+      case other => code ++= result(term) + " = " + input(other) + ";\n"
     }
   }
 
