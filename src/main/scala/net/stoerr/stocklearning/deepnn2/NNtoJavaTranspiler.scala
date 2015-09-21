@@ -1,5 +1,8 @@
 package net.stoerr.stocklearning.deepnn2
 
+import net.stoerr.stocklearning.java.deepnn2.AbstractNNJavaEvaluator
+import org.codehaus.janino.{SimpleCompiler, JavaSourceClassLoader}
+
 /**
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
  * @since 18.09.2015
@@ -61,6 +64,22 @@ class NNtoJavaTranspiler(terms: Set[NNTerm]) {
   val resultnumber = terms.toArray[NNTerm].sorted.zipWithIndex.toMap
 
   val code = new StringBuilder
+  private val classname = s"NNJavaEvaluator${math.abs(terms.hashCode())}"
+  private val packagename = "generated.deepnn2"
+  private val fullclassname = s"$packagename.$classname"
+  code ++= s"""
+      |package generated.deepnn2;
+      |import net.stoerr.stocklearning.java.deepnn2.AbstractNNJavaEvaluator;
+      |import java.lang.Math.*;
+      |public class ${classname} extends AbstractNNJavaEvaluator {
+      |    public void run() {
+      |        int id = getGlobalId();
+      |        double in[] = allInputs[id];
+      |        double out[] = allOutputs[id];
+      |        double res[] = allRes[id];
+      |        double mem[] = new double[memLength];
+      |
+      |""".stripMargin
 
   /** We use arrays in for inputs, out for outputs, w for weights, mem for intermediate results, res for results. */
   for (calculation <- calculations; term <- calculation.terms) {
@@ -92,5 +111,26 @@ class NNtoJavaTranspiler(terms: Set[NNTerm]) {
     }
   }
 
-  println(code)
+  val maxmemlength = calculations.map(_.allocationAfter.values.max).max
+
+  code ++=
+    """
+      |    }
+      |}
+    """.stripMargin
+
+  // println(code)
+
+  private val evaluatorclass : Class[AbstractNNJavaEvaluator] = {
+    val compiler = new SimpleCompiler()
+    compiler.cook(code.toString())
+    compiler.getClassLoader.loadClass(fullclassname).asInstanceOf[Class[AbstractNNJavaEvaluator]]
+  }
+
+  def makeEvaluator() : AbstractNNJavaEvaluator = {
+    val evaluator = evaluatorclass.newInstance()
+    evaluator.memLength = maxmemlength
+    evaluator
+  }
+
 }
