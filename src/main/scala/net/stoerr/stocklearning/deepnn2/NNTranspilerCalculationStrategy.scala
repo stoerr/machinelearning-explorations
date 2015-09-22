@@ -17,6 +17,7 @@ class NNTranspilerCalculationStrategy(terms: Traversable[NNTerm]) extends SNNDou
     evaluator.w = toArray(valuation, transpiler.weightnumber)
     evaluator.allRes = Array(Array.ofDim[Double](transpiler.resultnumber.size))
     evaluator.execute(1)
+    evaluator.dispose()
     t => evaluator.allRes(0)(transpiler.resultnumber(t))
   }
 
@@ -31,6 +32,8 @@ class NNTranspilerCalculationStrategy(terms: Traversable[NNTerm]) extends SNNDou
       evaluator.w = toArray(restValuation, transpiler.weightnumber)
       evaluator.allRes = Array.ofDim[Double](valuations.size, transpiler.resultnumber.size)
       evaluator.execute(valuations.size)
+      println("Execution mode = "+evaluator.getExecutionMode)
+      evaluator.dispose()
       val results = evaluator.allRes.transpose.map(_.sum)
       transpiler.resultnumber.mapValues(results)
     }

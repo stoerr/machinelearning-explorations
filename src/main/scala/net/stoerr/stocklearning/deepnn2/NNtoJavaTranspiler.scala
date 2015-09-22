@@ -71,7 +71,6 @@ class NNtoJavaTranspiler(terms: Set[NNTerm]) {
   code ++= s"""
               |package generated.deepnn2;
               |import net.stoerr.stocklearning.java.deepnn2.AbstractNNJavaEvaluator;
-              |import static java.lang.Math.*;
               |public class $classname extends AbstractNNJavaEvaluator {
                                         | public void run() {
                                         |     int id = getGlobalId();
@@ -129,6 +128,7 @@ class NNtoJavaTranspiler(terms: Set[NNTerm]) {
     compiler.getClassLoader.loadClass(fullclassname).asInstanceOf[Class[AbstractNNJavaEvaluator]]
   }
 
+  /** Don't forget to do .dispose! */
   def makeEvaluator(): AbstractNNJavaEvaluator = {
     val evaluator = evaluatorclass.newInstance()
     evaluator.memLength = maxmemlength
