@@ -2,7 +2,10 @@ package net.stoerr.stocklearning.java.deepnn2;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * Something vaguely like Aparapi
@@ -28,20 +31,23 @@ public abstract class PseudoKernel {
     }
 
     public void execute(int maxId) throws Throwable {
+        /* for (int i = 0; i < maxId; ++i) {
+            currentId.set(i);
+            run();
+            currentId.remove();
+        } */
+
         List<Future<Void>> results = new ArrayList<>();
         for (int i = 0; i < maxId; ++i) {
             final int theId = i; // Java is stooopid.
-            results.add(LazyInit.executor.submit(new Callable<Void>() {
-                @Override
-                public Void call() throws Exception {
-                    currentId.set(theId);
-                    try {
-                        run();
-                    } finally {
-                        currentId.remove();
-                    }
-                    return null;
+            results.add(LazyInit.executor.submit(() -> {
+                currentId.set(theId);
+                try {
+                    run();
+                } finally {
+                    currentId.remove();
                 }
+                return null;
             }));
         }
         try {

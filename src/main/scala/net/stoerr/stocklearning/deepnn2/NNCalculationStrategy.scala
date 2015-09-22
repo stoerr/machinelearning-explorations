@@ -1,7 +1,7 @@
 package net.stoerr.stocklearning.deepnn2
 
-import collection.immutable.TreeMap
-import collection.parallel.ParSeq
+import scala.collection.mutable
+import scala.collection.parallel.ParSeq
 
 /**
  * Reference calculation strategy - not particularily efficient
@@ -73,7 +73,7 @@ trait SNNDoubleEvaluator {
 
 }
 
-private class NNSimpleEvaluator(valuation: PartialFunction[NNTerm, Double]) {
+class NNSimpleEvaluator(valuation: PartialFunction[NNTerm, Double]) {
 
   def eval(term: NNTerm): Double = term match {
     case C(v) => v
@@ -94,7 +94,7 @@ private class NNSimpleEvaluator(valuation: PartialFunction[NNTerm, Double]) {
 
 }
 
-private class SNNSimpleEvaluator(valuations: Traversable[PartialFunction[NNTerm, Double]], restValuation:
+class SNNSimpleEvaluator(valuations: Traversable[PartialFunction[NNTerm, Double]], restValuation:
 PartialFunction[NNTerm, Double]) {
 
   def eval(valuation: PartialFunction[NNTerm, Double])(term: NNTerm): Double =
@@ -109,8 +109,9 @@ PartialFunction[NNTerm, Double]) {
 
 }
 
-private class NNCachedEvaluator(valuation: PartialFunction[NNTerm, Double]) extends NNSimpleEvaluator(valuation) {
-  @volatile var cacheNN: TreeMap[NNTerm, Double] = TreeMap()
+/** Threadsafe. */
+class NNCachedEvaluator(valuation: PartialFunction[NNTerm, Double]) extends NNSimpleEvaluator(valuation) {
+  @volatile var cacheNN: Map[NNTerm, Double] = Map()
 
   override def eval(term: NNTerm): Double = {
     val cached = cacheNN.get(term)
@@ -124,22 +125,19 @@ private class NNCachedEvaluator(valuation: PartialFunction[NNTerm, Double]) exte
 
 }
 
-private class SNNCachedEvaluator(valuations: Traversable[PartialFunction[NNTerm, Double]], restValuation:
+/** Not threadsafe! */
+class SNNCachedEvaluator(valuations: Traversable[PartialFunction[NNTerm, Double]], restValuation:
 PartialFunction[NNTerm, Double]) extends SNNSimpleEvaluator(valuations, restValuation) {
 
-  @volatile var cacheSNN: TreeMap[SNNTerm, Double] = TreeMap()
+  val cacheSNN: mutable.Map[SNNTerm, Double] = mutable.HashMap()
   val summedEvaluators: ParSeq[NNCachedEvaluator] = valuations.toArray.map(valuation => new NNCachedEvaluator
   (valuation orElse restValuation)).par
 
-  override def eval(term: SNNTerm): Double = {
-    val cached = cacheSNN.get(term)
-    if (cached.isDefined) cached.get
-    else term match {
-      case SUMMED(t) => summedEvaluators.map(_.eval(t)).sum
-      case _ =>
-        val value = super.eval(term)
-        cacheSNN = cacheSNN.updated(term, value)
-        value
-    }
-  }
+  override def eval(term: SNNTerm): Double =
+    cacheSNN.getOrElseUpdate(term,
+      term match {
+        case SUMMED(t) => summedEvaluators.map(_.eval(t)).sum
+        case _ => super.eval(term)
+      }
+    )
 }

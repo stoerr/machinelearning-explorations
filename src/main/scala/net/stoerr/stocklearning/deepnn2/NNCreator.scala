@@ -1,10 +1,12 @@
 package net.stoerr.stocklearning.deepnn2
 
-import NNTerm._
-
 case class NNRepresentation(inputs: Vector[I], weights: Vector[W], outputs: Vector[O],
                             outputCalculations: Vector[NNTerm], evaluationTerm: SNNTerm) {
   override def toString = s"NNRepresentation(\n$inputs, \n$outputs,\n$outputCalculations,\n$evaluationTerm)"
+
+  lazy val usedToplevelNNTerms: Set[NNTerm] = (
+    evaluationTerm.toplevelNnSubterms ++ evaluationTerm.wDerivative.values.flatMap(_.toplevelNnSubterms)
+    ).toSet
 }
 
 /**
@@ -22,15 +24,15 @@ object NNCreator {
 
   def wireup(in: Seq[NNTerm], numOut: Int, layernum: Int): Vector[NNTerm] = {
     for (o <- 1 to numOut) yield {
-      // val summands = for ((i, inum) <- in.zipWithIndex) yield i * W(num(layernum) + "-" + num(inum) + "-" + num(o))
-      // Tanh(summands.reduce(_ + _))
-      val summands = for ((i, inum) <- in.zipWithIndex) yield (i, W(num(layernum) + "-" + num(o) + "-" + num(inum)))
-      RLin(sumProd(summands.toVector :+(C(1.0), W(num(layernum) + "-" + num(o)))))
+      val summands = for ((i, inum) <- in.zipWithIndex) yield i * W(num(layernum) + "-" + num(inum) + "-" + num(o))
+      Tanh(summands.reduce(_ + _))
+      // val summands = for ((i, inum) <- in.zipWithIndex) yield (i, W(num(layernum) + "-" + num(o) + "-" + num(inum)))
+      // RLin(sumProd(summands.toVector :+(C(1.0), W(num(layernum) + "-" + num(o)))))
     }
   }.toVector
 
   /** * Creates a NN with rectilinear activation function. */
-  def simpleNetwork(layers: Seq[Int]) = {
+  def simpleNetwork(layers: Seq[Int]): NNRepresentation = {
     val ins = inputs(layers.head)
     var terms = ins
     for ((width, layernum) <- layers.zipWithIndex.tail) terms = wireup(terms, width, layernum)

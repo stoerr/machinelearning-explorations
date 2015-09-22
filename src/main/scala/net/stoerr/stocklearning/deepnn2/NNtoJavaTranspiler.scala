@@ -1,7 +1,7 @@
 package net.stoerr.stocklearning.deepnn2
 
 import net.stoerr.stocklearning.java.deepnn2.AbstractNNJavaEvaluator
-import org.codehaus.janino.{SimpleCompiler, JavaSourceClassLoader}
+import org.codehaus.janino.SimpleCompiler
 
 /**
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
@@ -41,22 +41,23 @@ class NNtoJavaTranspiler(terms: Set[NNTerm]) {
 
   var currentAllocation: Map[NNTerm, Int] = Map()
 
-  val calculations = for (restStages: Vector[Vector[NNTerm]] <- ordered.tails;
-                          stage: Vector[NNTerm] <- restStages.headOption) yield {
-    val subtermsNeededLater = restStages.flatMap(_.flatMap(_.subterms)).toSet
-    val unusedAllocations = currentAllocation.filterKeys(term => !subtermsNeededLater.contains(term))
-    val unusedAllocationKeys = unusedAllocations.values.toArray.sorted
-    freeVariableIndices = unusedAllocationKeys ++: freeVariableIndices
-    currentAllocation = currentAllocation -- unusedAllocations.keys
+  val calculations: Seq[Calculation] =
+    for (restStages: Vector[Vector[NNTerm]] <- ordered.tails.toSeq;
+         stage: Vector[NNTerm] <- restStages.headOption) yield {
+      val subtermsNeededLater = restStages.flatMap(_.flatMap(_.subterms)).toSet
+      val unusedAllocations = currentAllocation.filterKeys(term => !subtermsNeededLater.contains(term))
+      val unusedAllocationKeys = unusedAllocations.values.toArray.sorted
+      freeVariableIndices = unusedAllocationKeys ++: freeVariableIndices
+      currentAllocation = currentAllocation -- unusedAllocations.keys
 
-    val stageWithoutResults = stage.filterNot(terms)
-    val newVariableIndices = freeVariableIndices.take(stageWithoutResults.size).toVector
-    freeVariableIndices = freeVariableIndices.drop(stageWithoutResults.size)
+      val stageWithoutResults = stage.filterNot(terms)
+      val newVariableIndices = freeVariableIndices.take(stageWithoutResults.size).toVector
+      freeVariableIndices = freeVariableIndices.drop(stageWithoutResults.size)
 
-    val previousAllocation = currentAllocation
-    currentAllocation = currentAllocation ++ stage.zip(newVariableIndices)
-    Calculation(stage, previousAllocation, currentAllocation)
-  }
+      val previousAllocation = currentAllocation
+      currentAllocation = currentAllocation ++ stage.zip(newVariableIndices)
+      Calculation(stage, previousAllocation, currentAllocation)
+    }
 
   val inputnumber = terms.flatMap(_.inputs).toArray[NNTerm].sorted.zipWithIndex.toMap
   val outputnumber = terms.flatMap(_.outputs).toArray[NNTerm].sorted.zipWithIndex.toMap
@@ -68,18 +69,18 @@ class NNtoJavaTranspiler(terms: Set[NNTerm]) {
   private val packagename = "generated.deepnn2"
   private val fullclassname = s"$packagename.$classname"
   code ++= s"""
-      |package generated.deepnn2;
-      |import net.stoerr.stocklearning.java.deepnn2.AbstractNNJavaEvaluator;
-      |import java.lang.Math.*;
-      |public class ${classname} extends AbstractNNJavaEvaluator {
-      |    public void run() {
-      |        int id = getGlobalId();
-      |        double in[] = allInputs[id];
-      |        double out[] = allOutputs[id];
-      |        double res[] = allRes[id];
-      |        double mem[] = new double[memLength];
-      |
-      |""".stripMargin
+              |package generated.deepnn2;
+              |import net.stoerr.stocklearning.java.deepnn2.AbstractNNJavaEvaluator;
+              |import static java.lang.Math.*;
+              |public class $classname extends AbstractNNJavaEvaluator {
+                                        | public void run() {
+                                        |     int id = getGlobalId();
+                                        |     double in[] = allInputs[id];
+                                        |     double out[] = allOutputs[id];
+                                        |     double res[] = allRes[id];
+                                        |     double mem[] = new double[memLength];
+                                        |
+                                        |""".stripMargin
 
   /** We use arrays in for inputs, out for outputs, w for weights, mem for intermediate results, res for results. */
   for (calculation <- calculations; term <- calculation.terms) {
@@ -111,7 +112,7 @@ class NNtoJavaTranspiler(terms: Set[NNTerm]) {
     }
   }
 
-  val maxmemlength = calculations.map(_.allocationAfter.values.max).max
+  val maxmemlength = calculations.filterNot(_.allocationAfter.isEmpty).map(_.allocationAfter.values.max).max + 1
 
   code ++=
     """
@@ -119,18 +120,22 @@ class NNtoJavaTranspiler(terms: Set[NNTerm]) {
       |}
     """.stripMargin
 
-  // println(code)
+  // code.toString().split("\n").zipWithIndex.foreach(l => println(l._2 + " : " + l._1))
 
-  private val evaluatorclass : Class[AbstractNNJavaEvaluator] = {
+  private val evaluatorclass: Class[AbstractNNJavaEvaluator] = {
     val compiler = new SimpleCompiler()
+    compiler.setDebuggingInformation(true, true, true)
     compiler.cook(code.toString())
     compiler.getClassLoader.loadClass(fullclassname).asInstanceOf[Class[AbstractNNJavaEvaluator]]
   }
 
-  def makeEvaluator() : AbstractNNJavaEvaluator = {
+  def makeEvaluator(): AbstractNNJavaEvaluator = {
     val evaluator = evaluatorclass.newInstance()
     evaluator.memLength = maxmemlength
     evaluator
   }
+
+  println("Subterms: " + terms.flatMap(_.componentStream).size)
+  println("Operations: " + calculations.map(_.terms.size).sum)
 
 }
