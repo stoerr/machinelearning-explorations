@@ -15,15 +15,15 @@ class NNTranspilerCalculationStrategy(terms: Traversable[NNTerm]) extends SNNDou
     evaluator.allInputs = Array(toArray(valuation, transpiler.inputnumber))
     evaluator.allOutputs = Array(toArray(valuation, transpiler.outputnumber))
     evaluator.w = toArray(valuation, transpiler.weightnumber)
-    evaluator.allRes = Array(Array.ofDim[Double](transpiler.resultnumber.size))
-    evaluator.allMem = Array(Array.ofDim[Double](transpiler.maxmemlength))
+    evaluator.allRes = Array(Array.ofDim[Float](transpiler.resultnumber.size))
+    evaluator.allMem = Array(Array.ofDim[Float](transpiler.maxmemlength))
     evaluator.execute(1)
     evaluator.dispose()
     t => evaluator.allRes(0)(transpiler.resultnumber(t))
   }
 
-  private def toArray(valuation: PartialFunction[NNTerm, Double], termmap: Map[NNTerm, Int]) =
-    termmap.toArray.sortBy(_._2).map(p => valuation(p._1))
+  private def toArray(valuation: PartialFunction[NNTerm, Double], termmap: Map[NNTerm, Int]): Array[Float] =
+    termmap.toArray.sortBy(_._2).map(p => valuation(p._1).toFloat)
 
   override def eval(valuations: Traversable[PartialFunction[NNTerm, Double]], restValuation: PartialFunction[NNTerm, Double]): (SNNTerm) => Double = {
     val summedTerms: Map[NNTerm, Double] = {
@@ -31,13 +31,13 @@ class NNTranspilerCalculationStrategy(terms: Traversable[NNTerm]) extends SNNDou
       evaluator.allInputs = valuations.toArray.map(toArray(_, transpiler.inputnumber))
       evaluator.allOutputs = valuations.toArray.map(toArray(_, transpiler.outputnumber))
       evaluator.w = toArray(restValuation, transpiler.weightnumber)
-      evaluator.allRes = Array.ofDim[Double](valuations.size, transpiler.resultnumber.size)
-      evaluator.allMem = Array.ofDim[Double](valuations.size, transpiler.maxmemlength)
+      evaluator.allRes = Array.ofDim[Float](valuations.size, transpiler.resultnumber.size)
+      evaluator.allMem = Array.ofDim[Float](valuations.size, transpiler.maxmemlength)
       evaluator.execute(valuations.size)
       println("Execution mode = "+evaluator.getExecutionMode)
       evaluator.dispose()
       val results = evaluator.allRes.transpose.map(_.sum)
-      transpiler.resultnumber.mapValues(results)
+      transpiler.resultnumber.mapValues(r => results(r).toDouble)
     }
 
     val snnEvaluator = new SNNSimpleEvaluator(valuations, restValuation) {

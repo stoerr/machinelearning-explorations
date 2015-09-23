@@ -76,10 +76,10 @@ class NNtoJavaTranspiler(terms: Set[NNTerm]) {
               |public class $classname extends AbstractNNJavaEvaluator {
                                         | public void run() {
                                         |     int id = getGlobalId();
-                                        |     double in[] = allInputs[id];
-                                        |     double out[] = allOutputs[id];
-                                        |     double res[] = allRes[id];
-                                        |     double mem[] = allMem[id];
+                                        |     float in[] = allInputs[id];
+                                        |     float out[] = allOutputs[id];
+                                        |     float res[] = allRes[id];
+                                        |     float mem[] = allMem[id];
                                         |
                                         |""".stripMargin
 
@@ -91,7 +91,7 @@ class NNtoJavaTranspiler(terms: Set[NNTerm]) {
       case i@I(_) => "in[" + inputnumber(i) + "]"
       case o@O(_) => "out[" + outputnumber(o) + "]"
       case w@W(_) => "w[" + weightnumber(w) + "]"
-      case C(v) => v.toString
+      case C(v) => v.toString + "f"
       case other => sys.error("Can't find " + other)
     }
     def result(term: NNTerm) = if (terms.contains(term)) "res[" + resultnumber(term) + "]"
@@ -122,6 +122,7 @@ class NNtoJavaTranspiler(terms: Set[NNTerm]) {
     """.stripMargin
 
   // code.toString().split("\n").zipWithIndex.foreach(l => println(l._2 + " : " + l._1))
+  // println(code)
 
   private val evaluatorclass: Class[AbstractNNJavaEvaluator] = {
     val compiler = new SimpleCompilerWithResourceLoad()

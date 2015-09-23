@@ -38,9 +38,23 @@ public class TryAparapi {
             System.out.printf("%6.2f + %6.2f = %8.2f\n", a[i], b[i], sum[i]);
         }
 
-        System.out.println("Execution mode = "+kernel.getExecutionMode());
+        System.out.println("Execution mode = " + kernel.getExecutionMode());
 
         kernel.dispose();
+
+        ExampleNNJavaEvaluator ev = new ExampleNNJavaEvaluator();
+        ev.allInputs = new float[100][];
+        ev.allInputs[0] = new float[100];
+        ev.allMem = new float[100][];
+        ev.allMem[0] = new float[100];
+        ev.allOutputs = new float[100][];
+        ev.allOutputs[0] = new float[100];
+        ev.allRes = new float[100][];
+        ev.allRes[0] = new float[100];
+        ev.w = new float[100];
+        ev.execute(1);
+        System.out.println("Execution mode = "+kernel.getExecutionMode());
+        ev.dispose();
     }
 
 }

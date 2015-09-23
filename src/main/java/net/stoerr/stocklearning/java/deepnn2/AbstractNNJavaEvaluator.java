@@ -7,10 +7,10 @@ import com.amd.aparapi.Kernel;
  */
 public abstract class AbstractNNJavaEvaluator extends Kernel {
 
-    public double allInputs[][];
-    public double allOutputs[][];
-    public double w[];
-    public double allRes[][];
-    public double allMem[][];
+    public float allInputs[][];
+    public float allOutputs[][];
+    public float w[];
+    public float allRes[][];
+    public float allMem[][];
 
 }
