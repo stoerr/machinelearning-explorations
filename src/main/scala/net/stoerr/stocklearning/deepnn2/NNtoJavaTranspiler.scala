@@ -79,7 +79,7 @@ class NNtoJavaTranspiler(terms: Set[NNTerm]) {
                                         |     double in[] = allInputs[id];
                                         |     double out[] = allOutputs[id];
                                         |     double res[] = allRes[id];
-                                        |     double mem[] = new double[memLength];
+                                        |     double mem[] = allMem[id];
                                         |
                                         |""".stripMargin
 
@@ -131,11 +131,7 @@ class NNtoJavaTranspiler(terms: Set[NNTerm]) {
   }
 
   /** Don't forget to do .dispose! */
-  def makeEvaluator(): AbstractNNJavaEvaluator = {
-    val evaluator = evaluatorclass.newInstance()
-    evaluator.memLength = maxmemlength
-    evaluator
-  }
+  def makeEvaluator(): AbstractNNJavaEvaluator = evaluatorclass.newInstance()
 
   println("Subterms: " + terms.flatMap(_.componentStream).size)
   println("Operations: " + calculations.map(_.terms.size).sum)

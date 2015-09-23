@@ -13,7 +13,7 @@ public class ExampleNNJavaEvaluator extends AbstractNNJavaEvaluator {
         double in[] = allInputs[id];
         double out[] = allOutputs[id];
         double res[] = allRes[id];
-        double mem[] = new double[memLength];
+        double mem[] = allMem[id];
 
         // now comes the generated code
         mem[0] = in[0] + in[1];

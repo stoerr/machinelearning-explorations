@@ -11,10 +11,6 @@ public abstract class AbstractNNJavaEvaluator extends Kernel {
     public double allOutputs[][];
     public double w[];
     public double allRes[][];
-
-    /**
-     * Required size of local memory mem[]
-     */
-    public int memLength;
+    public double allMem[][];
 
 }
