@@ -26,21 +26,28 @@
 
 package net.stoerr.stocklearning.java.deepnn2.janinoext;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Map;
 
-/** This {@link ClassLoader} allows for the loading of a set of Java&trade; classes provided in class file format. */
-@SuppressWarnings({ "rawtypes", "unchecked" }) public
-class ByteArrayClassLoaderWithResourceLoad extends ClassLoader {
+/**
+ * This {@link ClassLoader} allows for the loading of a set of Java&trade; classes provided in class file format.
+ */
+@SuppressWarnings({"rawtypes", "unchecked"})
+public class ByteArrayClassLoaderWithResourceLoad extends ClassLoader {
 
     /**
      * The given {@link Map} of classes must not be modified afterwards.
      *
      * @param classes String className => byte[] data
      */
-    public ByteArrayClassLoaderWithResourceLoad(Map<String /*className*/, byte[] /*data*/> classes) { this.classes = classes; }
+    public ByteArrayClassLoaderWithResourceLoad(Map<String /*className*/, byte[] /*data*/> classes) {
+        this.classes = classes;
+    }
 
-    /** @see #ByteArrayClassLoaderWithResourceLoad(Map) */
+    /**
+     * @see #ByteArrayClassLoaderWithResourceLoad(Map)
+     */
     public ByteArrayClassLoaderWithResourceLoad(Map<String /*className*/, byte[] /*data*/> classes, ClassLoader parent) {
         super(parent);
         this.classes = classes;
@@ -53,7 +60,8 @@ class ByteArrayClassLoaderWithResourceLoad extends ClassLoader {
      * method, because {@link ClassLoader#loadClass(java.lang.String)} is
      * <code>synchronized</code>.
      */
-    @Override protected Class
+    @Override
+    protected Class
     findClass(String name) throws ClassNotFoundException {
         byte[] data = (byte[]) this.classes.get(name);
         if (data == null) throw new ClassNotFoundException(name);
@@ -63,9 +71,9 @@ class ByteArrayClassLoaderWithResourceLoad extends ClassLoader {
         //     http://jira.codehaus.org/browse/JANINO-104
         //     http://www.nabble.com/-Help-jel--java.security.AccessControlException-to13073723.html
         return super.defineClass(
-            name,                                 // name
-            data, 0, data.length,                 // b, off, len
-            this.getClass().getProtectionDomain() // protectionDomain
+                name,                                 // name
+                data, 0, data.length,                 // b, off, len
+                this.getClass().getProtectionDomain() // protectionDomain
         );
     }
 
@@ -73,6 +81,10 @@ class ByteArrayClassLoaderWithResourceLoad extends ClassLoader {
 
     @Override
     public InputStream getResourceAsStream(String name) {
+        String classname = name.replaceAll("/", ".").replaceFirst(".class$", "");
+        if (classes.containsKey(classname)) {
+            return new ByteArrayInputStream(classes.get(classname));
+        }
         return super.getResourceAsStream(name);
     }
 }
