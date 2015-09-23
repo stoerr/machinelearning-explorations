@@ -1,6 +1,8 @@
 package net.stoerr.stocklearning.deepnn2
 
+import com.amd.aparapi.internal.model.ClassModel
 import net.stoerr.stocklearning.java.deepnn2.AbstractNNJavaEvaluator
+import net.stoerr.stocklearning.java.deepnn2.janinoext.SimpleCompilerWithResourceLoad
 import org.codehaus.janino.SimpleCompiler
 
 /**
@@ -122,7 +124,7 @@ class NNtoJavaTranspiler(terms: Set[NNTerm]) {
   // code.toString().split("\n").zipWithIndex.foreach(l => println(l._2 + " : " + l._1))
 
   private val evaluatorclass: Class[AbstractNNJavaEvaluator] = {
-    val compiler = new SimpleCompiler()
+    val compiler = new SimpleCompilerWithResourceLoad()
     compiler.setDebuggingInformation(true, true, true)
     compiler.cook(code.toString())
     compiler.getClassLoader.loadClass(fullclassname).asInstanceOf[Class[AbstractNNJavaEvaluator]]
@@ -137,5 +139,7 @@ class NNtoJavaTranspiler(terms: Set[NNTerm]) {
 
   println("Subterms: " + terms.flatMap(_.componentStream).size)
   println("Operations: " + calculations.map(_.terms.size).sum)
+
+  new ClassModel(evaluatorclass)
 
 }
