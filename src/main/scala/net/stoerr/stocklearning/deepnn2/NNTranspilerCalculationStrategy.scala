@@ -12,14 +12,19 @@ class NNTranspilerCalculationStrategy(terms: Traversable[NNTerm]) extends SNNDou
   /** Special case for only one valuation - doesn't make much sense in general. */
   def eval(valuation: PartialFunction[NNTerm, Double]): Function[NNTerm, Double] = {
     val evaluator = transpiler.makeEvaluator()
-    evaluator.allInputs = Array(toArray(valuation, transpiler.inputnumber))
-    evaluator.allOutputs = Array(toArray(valuation, transpiler.outputnumber))
+    evaluator.inSubSize = transpiler.inputnumber.size
+    evaluator.outSubSize = transpiler.outputnumber.size
+    evaluator.memSubSize = transpiler.maxmemlength
+    evaluator.resSubSize = transpiler.resultnumber.size
+    evaluator.in = toArray(valuation, transpiler.inputnumber)
+    evaluator.out = toArray(valuation, transpiler.outputnumber)
     evaluator.w = toArray(valuation, transpiler.weightnumber)
-    evaluator.allRes = Array(Array.ofDim[Float](transpiler.resultnumber.size))
-    evaluator.allMem = Array(Array.ofDim[Float](transpiler.maxmemlength))
+    evaluator.res = Array.ofDim[Float](transpiler.resultnumber.size)
+    evaluator.mem = Array.ofDim[Float](transpiler.maxmemlength)
+    evaluator.sanityCheck(1)
     evaluator.execute(1)
     evaluator.dispose()
-    t => evaluator.allRes(0)(transpiler.resultnumber(t))
+    t => evaluator.res(transpiler.resultnumber(t))
   }
 
   private def toArray(valuation: PartialFunction[NNTerm, Double], termmap: Map[NNTerm, Int]): Array[Float] =
@@ -28,15 +33,20 @@ class NNTranspilerCalculationStrategy(terms: Traversable[NNTerm]) extends SNNDou
   override def eval(valuations: Traversable[PartialFunction[NNTerm, Double]], restValuation: PartialFunction[NNTerm, Double]): (SNNTerm) => Double = {
     val summedTerms: Map[NNTerm, Double] = {
       val evaluator = transpiler.makeEvaluator()
-      evaluator.allInputs = valuations.toArray.map(toArray(_, transpiler.inputnumber))
-      evaluator.allOutputs = valuations.toArray.map(toArray(_, transpiler.outputnumber))
+      evaluator.inSubSize = transpiler.inputnumber.size
+      evaluator.outSubSize = transpiler.outputnumber.size
+      evaluator.memSubSize = transpiler.maxmemlength
+      evaluator.resSubSize = transpiler.resultnumber.size
+      evaluator.in = valuations.toArray.flatMap(toArray(_, transpiler.inputnumber))
+      evaluator.out = valuations.toArray.flatMap(toArray(_, transpiler.outputnumber))
       evaluator.w = toArray(restValuation, transpiler.weightnumber)
-      evaluator.allRes = Array.ofDim[Float](valuations.size, transpiler.resultnumber.size)
-      evaluator.allMem = Array.ofDim[Float](valuations.size, transpiler.maxmemlength)
+      evaluator.res = Array.ofDim[Float](valuations.size * transpiler.resultnumber.size)
+      evaluator.mem = Array.ofDim[Float](valuations.size * transpiler.maxmemlength)
+      evaluator.sanityCheck(valuations.size)
       evaluator.execute(valuations.size)
       println("Execution mode = "+evaluator.getExecutionMode)
       evaluator.dispose()
-      val results = evaluator.allRes.transpose.map(_.sum)
+      val results = evaluator.res.grouped(transpiler.resultnumber.size).toArray.transpose.map(_.sum)
       transpiler.resultnumber.mapValues(r => results(r).toDouble)
     }
 

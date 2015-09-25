@@ -3,8 +3,6 @@ package net.stoerr.stocklearning.java.deepnn2;
 import com.amd.aparapi.Kernel;
 import com.amd.aparapi.Range;
 
-import java.io.File;
-
 /**
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
  * @since 22.09.2015
@@ -43,14 +41,10 @@ public class TryAparapi {
         kernel.dispose();
 
         ExampleNNJavaEvaluator ev = new ExampleNNJavaEvaluator();
-        ev.allInputs = new float[100][];
-        ev.allInputs[0] = new float[100];
-        ev.allMem = new float[100][];
-        ev.allMem[0] = new float[100];
-        ev.allOutputs = new float[100][];
-        ev.allOutputs[0] = new float[100];
-        ev.allRes = new float[100][];
-        ev.allRes[0] = new float[100];
+        ev.in = new float[100];
+        ev.mem = new float[100];
+        ev.out = new float[100];
+        ev.res = new float[100];
         ev.w = new float[100];
         ev.execute(1);
         System.out.println("Execution mode = "+kernel.getExecutionMode());

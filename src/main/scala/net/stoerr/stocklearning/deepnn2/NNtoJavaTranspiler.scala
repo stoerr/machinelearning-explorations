@@ -3,7 +3,6 @@ package net.stoerr.stocklearning.deepnn2
 import com.amd.aparapi.internal.model.ClassModel
 import net.stoerr.stocklearning.java.deepnn2.AbstractNNJavaEvaluator
 import net.stoerr.stocklearning.java.deepnn2.janinoext.SimpleCompilerWithResourceLoad
-import org.codehaus.janino.SimpleCompiler
 
 /**
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
@@ -25,6 +24,8 @@ object NNtoJavaTranspiler {
 }
 
 class NNtoJavaTranspiler(terms: Set[NNTerm]) {
+
+  private val begintime = System.currentTimeMillis()
 
   val ordered: Vector[Vector[NNTerm]] = {
     val variables: Set[NNTerm] = terms.flatMap(_.inputs).toSet[NNTerm] ++ terms.flatMap(_.outputs) ++ terms.flatMap(_
@@ -74,28 +75,28 @@ class NNtoJavaTranspiler(terms: Set[NNTerm]) {
               |package generated.deepnn2;
               |import net.stoerr.stocklearning.java.deepnn2.AbstractNNJavaEvaluator;
               |public class $classname extends AbstractNNJavaEvaluator {
-                                        | public void run() {
-                                        |     int id = getGlobalId();
-                                        |     float in[] = allInputs[id];
-                                        |     float out[] = allOutputs[id];
-                                        |     float res[] = allRes[id];
-                                        |     float mem[] = allMem[id];
+                                                    |  public void run() {
+                                                    |      final int id = getGlobalId();
+                                                    |      final int inOffset = id*inSubSize;
+                                                    |      final int outOffset = id*outSubSize;
+                                                    |      final int memOffset = id*memSubSize;
+                                                    |      final int resOffset = id*resSubSize;
                                         |
                                         |""".stripMargin
 
   /** We use arrays in for inputs, out for outputs, w for weights, mem for intermediate results, res for results. */
   for (calculation <- calculations; term <- calculation.terms) {
-    def input(term: NNTerm) = if (calculation.allocationBefore.contains(term)) "mem[" +
+    def input(term: NNTerm) = if (calculation.allocationBefore.contains(term)) "mem[memOffset + " +
       calculation.allocationBefore(term) + "]"
     else term match {
-      case i@I(_) => "in[" + inputnumber(i) + "]"
-      case o@O(_) => "out[" + outputnumber(o) + "]"
+      case i@I(_) => "in[inOffset + " + inputnumber(i) + "]"
+      case o@O(_) => "out[outOffset + " + outputnumber(o) + "]"
       case w@W(_) => "w[" + weightnumber(w) + "]"
       case C(v) => v.toString + "f"
       case other => sys.error("Can't find " + other)
     }
-    def result(term: NNTerm) = if (terms.contains(term)) "res[" + resultnumber(term) + "]"
-    else "mem[" + calculation.allocationAfter(term) + "]"
+    def result(term: NNTerm) = if (terms.contains(term)) "res[resOffset + " + resultnumber(term) + "]"
+    else "mem[memOffset + " + calculation.allocationAfter(term) + "]"
 
     term match {
       case Prod(p1, p2) => code ++= result(term) + " = " + input(p1) + " * " + input(p2) + ";\n"
@@ -122,7 +123,7 @@ class NNtoJavaTranspiler(terms: Set[NNTerm]) {
     """.stripMargin
 
   // code.toString().split("\n").zipWithIndex.foreach(l => println(l._2 + " : " + l._1))
-  // println(code)
+  println(code)
 
   private val evaluatorclass: Class[AbstractNNJavaEvaluator] = {
     val compiler = new SimpleCompilerWithResourceLoad()
@@ -138,5 +139,7 @@ class NNtoJavaTranspiler(terms: Set[NNTerm]) {
   println("Operations: " + calculations.map(_.terms.size).sum)
 
   new ClassModel(evaluatorclass)
+
+  println("Transpiler time " + (System.currentTimeMillis() - begintime) + " ms.")
 
 }
