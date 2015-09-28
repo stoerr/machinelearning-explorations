@@ -1,7 +1,8 @@
-package net.stoerr.stocklearning.java.deepnn2;
+package net.stoerr.stocklearning.java.deepnn2.aparapi;
 
 import com.amd.aparapi.Kernel;
 import com.amd.aparapi.Range;
+import net.stoerr.stocklearning.java.deepnn2.ExampleNNJavaEvaluator;
 
 /**
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>

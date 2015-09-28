@@ -7,11 +7,16 @@ import com.amd.aparapi.Kernel;
  */
 public abstract class AbstractNNJavaEvaluator extends Kernel {
 
-    public int inSubSize;
+    @OpenCLMapping(mapTo = "tanh")
+    protected float tanh(float _f) {
+        return (float) Math.tanh(_f);
+    }
+
+    @Constant public int inSubSize;
     public float in[];
     public int outSubSize;
     public float out[];
-    public float w[];
+    @Constant public float w[];
     public int resSubSize;
     public float res[];
     public int memSubSize;
