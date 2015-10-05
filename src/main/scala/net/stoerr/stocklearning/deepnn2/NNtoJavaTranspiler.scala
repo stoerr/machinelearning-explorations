@@ -1,8 +1,7 @@
 package net.stoerr.stocklearning.deepnn2
 
 import com.amd.aparapi.internal.model.ClassModel
-import net.stoerr.stocklearning.java.deepnn2.AbstractNNJavaEvaluator
-import net.stoerr.stocklearning.java.deepnn2.janinoext.SimpleCompilerWithResourceLoad
+import net.stoerr.stocklearning.java.deepnn2.{AbstractNNJavaEvaluator, JavaCompilerWithResourceLoad}
 
 /**
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
@@ -75,12 +74,12 @@ class NNtoJavaTranspiler(terms: Set[NNTerm]) {
               |package generated.deepnn2;
               |import net.stoerr.stocklearning.java.deepnn2.AbstractNNJavaEvaluator;
               |public class $classname extends AbstractNNJavaEvaluator {
-                                                    |  public void run() {
-                                                    |      final int id = getGlobalId();
-                                                    |      final int inOffset = id*inSubSize;
-                                                    |      final int outOffset = id*outSubSize;
-                                                    |      final int memOffset = id*memSubSize;
-                                                    |      final int resOffset = id*resSubSize;
+                                                    |public void run() {
+                                                    |   final int id = getGlobalId();
+                                                    |   final int inOffset = id*inSubSize;
+                                                    |   final int outOffset = id*outSubSize;
+                                                    |   final int memOffset = id*memSubSize;
+                                                    |   final int resOffset = id*resSubSize;
                                         |
                                         |""".stripMargin
 
@@ -125,12 +124,8 @@ class NNtoJavaTranspiler(terms: Set[NNTerm]) {
   // code.toString().split("\n").zipWithIndex.foreach(l => println(l._2 + " : " + l._1))
   println(code)
 
-  private val evaluatorclass: Class[AbstractNNJavaEvaluator] = {
-    val compiler = new SimpleCompilerWithResourceLoad()
-    compiler.setDebuggingInformation(true, true, true)
-    compiler.cook(code.toString())
-    compiler.getClassLoader.loadClass(fullclassname).asInstanceOf[Class[AbstractNNJavaEvaluator]]
-  }
+  private val evaluatorclass: Class[AbstractNNJavaEvaluator] =
+    JavaCompilerWithResourceLoad.compile(fullclassname, code.toString())
 
   /** Don't forget to do .dispose! */
   def makeEvaluator(): AbstractNNJavaEvaluator = evaluatorclass.newInstance()

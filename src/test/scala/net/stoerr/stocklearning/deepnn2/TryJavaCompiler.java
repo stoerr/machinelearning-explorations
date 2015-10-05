@@ -1,11 +1,10 @@
-package net.stoerr.stocklearning.java.deepnn2.janinoext;
+package net.stoerr.stocklearning.deepnn2;
 
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 import java.io.File;
-import java.lang.reflect.Array;
 import java.util.Arrays;
 
 /**
