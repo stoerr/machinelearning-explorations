@@ -9,14 +9,17 @@ public abstract class AbstractNNJavaEvaluator extends Kernel {
 
     @OpenCLMapping(mapTo = "tanh")
     protected float tanh(float _f) {
-        return (float) Math.tanh(_f);
+        float ex = exp(2 * _f);
+        return (ex - 1) / (ex + 1);
     }
 
-    @Constant public int inSubSize;
+    @Constant
+    public int inSubSize;
     public float in[];
     public int outSubSize;
     public float out[];
-    @Constant public float w[];
+    @Constant
+    public float w[];
     public int resSubSize;
     public float res[];
     public int memSubSize;
