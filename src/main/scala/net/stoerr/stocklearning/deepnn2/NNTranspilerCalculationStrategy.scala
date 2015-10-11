@@ -1,6 +1,8 @@
 package net.stoerr.stocklearning.deepnn2
 
-import scala.collection.mutable
+import net.stoerr.stocklearning.java.deepnn2.AbstractNNJavaEvaluator
+
+import collection.{JavaConversions, mutable}
 
 /**
  * Calculation strategy that works only for the given terms by compiling them to Java.
@@ -30,7 +32,8 @@ class NNTranspilerCalculationStrategy(terms: Traversable[NNTerm]) extends SNNDou
   private def toArray(valuation: PartialFunction[NNTerm, Double], termmap: Map[NNTerm, Int]): Array[Float] =
     termmap.toArray.sortBy(_._2).map(p => valuation(p._1).toFloat)
 
-  override def eval(valuations: Traversable[PartialFunction[NNTerm, Double]], restValuation: PartialFunction[NNTerm, Double]): (SNNTerm) => Double = {
+  override def eval(valuations: Traversable[PartialFunction[NNTerm, Double]], restValuation: PartialFunction[NNTerm,
+    Double]): (SNNTerm) => Double = {
     val summedTerms: Map[NNTerm, Double] = {
       val evaluator = transpiler.makeEvaluator()
       evaluator.inSubSize = transpiler.inputnumber.size
@@ -44,7 +47,8 @@ class NNTranspilerCalculationStrategy(terms: Traversable[NNTerm]) extends SNNDou
       evaluator.mem = Array.ofDim[Float](valuations.size * transpiler.maxmemlength)
       evaluator.sanityCheck(valuations.size)
       evaluator.execute(valuations.size)
-      println("Execution mode = "+evaluator.getExecutionMode)
+      println("Execution mode = " + evaluator.getExecutionMode)
+      printstats(evaluator)
       evaluator.dispose()
       val results = evaluator.res.grouped(transpiler.resultnumber.size).toArray.transpose.map(_.sum)
       transpiler.resultnumber.mapValues(r => results(r).toDouble)
@@ -62,10 +66,16 @@ class NNTranspilerCalculationStrategy(terms: Traversable[NNTerm]) extends SNNDou
           }
         )
 
-      override def eval(valuation: PartialFunction[NNTerm, Double])(term: NNTerm): Double = sys.error("should be unused")
+      override def eval(valuation: PartialFunction[NNTerm, Double])(term: NNTerm): Double = sys.error("should be " +
+        "unused")
     }
 
     snnTerm => snnEvaluator.eval(snnTerm)
+  }
+
+  def printstats(evaluator: AbstractNNJavaEvaluator) = {
+    val profileInfos = JavaConversions.asScalaIterator(evaluator.getProfileInfo.iterator()).toArray
+    profileInfos.foreach(println)
   }
 
 }

@@ -1,6 +1,7 @@
 package net.stoerr.stocklearning.java.deepnn2;
 
 import com.amd.aparapi.Kernel;
+import com.amd.aparapi.Range;
 
 /**
  * Base class for evaluation of neural networks.
@@ -33,6 +34,13 @@ public abstract class AbstractNNJavaEvaluator extends Kernel {
         if (out.length != outSubSize * range) throw new IllegalStateException("out length broken.");
         if (res.length != resSubSize * range) throw new IllegalStateException("res length broken.");
         if (mem.length != memSubSize * range) throw new IllegalStateException("mem length broken.");
+    }
+
+    @Override
+    public synchronized Kernel execute(String _entrypoint, Range _range, int _passes) {
+        setExplicit(true);
+        this.put(in).put(w).put(out);
+        return super.execute(_entrypoint, _range, _passes).get(res);
     }
 
 }
