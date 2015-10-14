@@ -2,7 +2,7 @@ package net.stoerr.stocklearning.deepnn2
 
 import net.stoerr.stocklearning.java.deepnn2.AbstractNNJavaEvaluator
 
-import collection.{JavaConversions, mutable}
+import scala.collection.{JavaConversions, mutable}
 
 /**
  * Calculation strategy that works only for the given terms by compiling them to Java.
@@ -74,8 +74,8 @@ class NNTranspilerCalculationStrategy(terms: Traversable[NNTerm]) extends SNNDou
   }
 
   def printstats(evaluator: AbstractNNJavaEvaluator) = {
-    val profileInfos = JavaConversions.asScalaIterator(evaluator.getProfileInfo.iterator()).toArray
-    profileInfos.foreach(println)
+    val profileInfo = evaluator.getProfileInfo
+    if (null != profileInfo) JavaConversions.asScalaIterator(profileInfo.iterator()).toArray.foreach(println)
   }
 
 }
