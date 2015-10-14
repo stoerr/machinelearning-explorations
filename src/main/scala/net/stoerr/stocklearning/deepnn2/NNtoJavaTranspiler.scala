@@ -77,15 +77,16 @@ class NNtoJavaTranspiler(terms: Set[NNTerm]) {
                                                     |   final int id = getGlobalId();
                                                     |   final int inOffset = id*inSubSize;
                                                     |   final int outOffset = id*outSubSize;
-                                                    |   final int memOffset = id*memSubSize;
                                                     |   final int resOffset = id*resSubSize;
                                         |
                                         |""".stripMargin
 
-  /** We use arrays in for inputs, out for outputs, w for weights, mem for intermediate results, res for results. */
+  /** We use arrays in for inputs, out for outputs, w for weights, variables memXXXX for intermediate results, res for results. */
+  val maxmemlength = calculations.filterNot(_.allocationAfter.isEmpty).map(_.allocationAfter.values.max).max + 1
+  code ++= Range(0, maxmemlength).map(i => "float mem" + i + ";").mkString("\n") + "\n"
+
   for (calculation <- calculations; term <- calculation.terms) {
-    def input(term: NNTerm) = if (calculation.allocationBefore.contains(term)) "mem[memOffset + " +
-      calculation.allocationBefore(term) + "]"
+    def input(term: NNTerm) = if (calculation.allocationBefore.contains(term)) "mem" + calculation.allocationBefore(term)
     else term match {
       case i@I(_) => "in[inOffset + " + inputnumber(i) + "]"
       case o@O(_) => "out[outOffset + " + outputnumber(o) + "]"
@@ -94,7 +95,7 @@ class NNtoJavaTranspiler(terms: Set[NNTerm]) {
       case other => sys.error("Can't find " + other)
     }
     def result(term: NNTerm) = if (terms.contains(term)) "res[resOffset + " + resultnumber(term) + "]"
-    else "mem[memOffset + " + calculation.allocationAfter(term) + "]"
+    else "mem" + calculation.allocationAfter(term)
 
     term match {
       case Prod(p1, p2) => code ++= result(term) + " = " + input(p1) + " * " + input(p2) + ";\n"
@@ -111,8 +112,6 @@ class NNtoJavaTranspiler(terms: Set[NNTerm]) {
       case other => code ++= result(term) + " = " + input(other) + ";\n"
     }
   }
-
-  val maxmemlength = calculations.filterNot(_.allocationAfter.isEmpty).map(_.allocationAfter.values.max).max + 1
 
   code ++=
     """

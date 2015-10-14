@@ -2,7 +2,7 @@ package net.stoerr.stocklearning.deepnn2
 
 import net.stoerr.stocklearning.java.deepnn2.AbstractNNJavaEvaluator
 
-import collection.{JavaConversions, mutable}
+import scala.collection.{JavaConversions, mutable}
 
 /**
  * Calculation strategy that works only for the given terms by compiling them to Java.
@@ -16,13 +16,11 @@ class NNTranspilerCalculationStrategy(terms: Traversable[NNTerm]) extends SNNDou
     val evaluator = transpiler.makeEvaluator()
     evaluator.inSubSize = transpiler.inputnumber.size
     evaluator.outSubSize = transpiler.outputnumber.size
-    evaluator.memSubSize = transpiler.maxmemlength
     evaluator.resSubSize = transpiler.resultnumber.size
     evaluator.in = toArray(valuation, transpiler.inputnumber)
     evaluator.out = toArray(valuation, transpiler.outputnumber)
     evaluator.w = toArray(valuation, transpiler.weightnumber)
     evaluator.res = Array.ofDim[Float](transpiler.resultnumber.size)
-    evaluator.mem = Array.ofDim[Float](transpiler.maxmemlength)
     evaluator.sanityCheck(1)
     evaluator.execute(1)
     evaluator.dispose()
@@ -38,13 +36,11 @@ class NNTranspilerCalculationStrategy(terms: Traversable[NNTerm]) extends SNNDou
       val evaluator = transpiler.makeEvaluator()
       evaluator.inSubSize = transpiler.inputnumber.size
       evaluator.outSubSize = transpiler.outputnumber.size
-      evaluator.memSubSize = transpiler.maxmemlength
       evaluator.resSubSize = transpiler.resultnumber.size
       evaluator.in = valuations.toArray.flatMap(toArray(_, transpiler.inputnumber))
       evaluator.out = valuations.toArray.flatMap(toArray(_, transpiler.outputnumber))
       evaluator.w = toArray(restValuation, transpiler.weightnumber)
       evaluator.res = Array.ofDim[Float](valuations.size * transpiler.resultnumber.size)
-      evaluator.mem = Array.ofDim[Float](valuations.size * transpiler.maxmemlength)
       evaluator.sanityCheck(valuations.size)
       evaluator.execute(valuations.size)
       println("Execution mode = " + evaluator.getExecutionMode)
@@ -74,8 +70,8 @@ class NNTranspilerCalculationStrategy(terms: Traversable[NNTerm]) extends SNNDou
   }
 
   def printstats(evaluator: AbstractNNJavaEvaluator) = {
-    val profileInfos = JavaConversions.asScalaIterator(evaluator.getProfileInfo.iterator()).toArray
-    profileInfos.foreach(println)
+    val profileInfo = evaluator.getProfileInfo
+    if (null != profileInfo) JavaConversions.asScalaIterator(profileInfo.iterator()).toArray.foreach(println)
   }
 
 }

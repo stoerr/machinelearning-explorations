@@ -23,4 +23,5 @@ http://unkrig.de/w/Janino
 
 Aparapi Debug Args:
 
--Djava.library.path=C:\workspace\stocklearning\lib -Dcom.amd.aparapi.enableShowGeneratedOpenCL=false -Dcom.amd.aparapi.logLevel=INFO -Dcom.amd.aparapi.executionMode=GPU -Dcom.amd.aparapi.enableVerboseJNI=true
+-Djava.library.path=lib -Dcom.amd.aparapi.enableShowGeneratedOpenCL=false -Dcom.amd.aparapi.logLevel=INFO -Dcom.amd.aparapi.executionMode=GPU -Dcom.amd.aparapi.enableVerboseJNI=true
+

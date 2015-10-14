@@ -38,11 +38,11 @@ under those regulations, please refer to the U.S. Bureau of Industry and Securit
 
 package net.stoerr.stocklearning.java.deepnn2.aparapi;
 
-import java.util.List;
-
 import com.amd.aparapi.device.Device;
 import com.amd.aparapi.device.OpenCLDevice;
 import com.amd.aparapi.internal.opencl.OpenCLPlatform;
+
+import java.util.List;
 
 public class OpenCLInfo{
    public static void main(String[] _args) {
@@ -60,6 +60,7 @@ public class OpenCLInfo{
          int devicec = 0;
          for (OpenCLDevice device : devices) {
             System.out.println("   Device " + devicec + "{");
+            System.out.println("       ID                    : " + device.getDeviceId());
             System.out.println("       Type                  : " + device.getType());
             System.out.println("       GlobalMemSize         : " + device.getGlobalMemSize());
             System.out.println("       LocalMemSize          : " + device.getLocalMemSize());
@@ -73,17 +74,19 @@ public class OpenCLInfo{
          platformc++;
       }
 
-      Device bestDevice = OpenCLDevice.best();
+      OpenCLDevice bestDevice = (OpenCLDevice) OpenCLDevice.best();
       if (bestDevice == null) {
          System.out.println("OpenCLDevice.best() returned null!");
       } else {
          System.out.println("OpenCLDevice.best() returned { ");
+         System.out.println("   ID                    : " + bestDevice.getDeviceId());
+         System.out.println("   Platform              : " + bestDevice.getOpenCLPlatform());
          System.out.println("   Type                  : " + bestDevice.getType());
-         System.out.println("   GlobalMemSize         : " + ((OpenCLDevice) bestDevice).getGlobalMemSize());
-         System.out.println("   LocalMemSize          : " + ((OpenCLDevice) bestDevice).getLocalMemSize());
-         System.out.println("   MaxComputeUnits       : " + ((OpenCLDevice) bestDevice).getMaxComputeUnits());
-         System.out.println("   MaxWorkGroupSizes     : " + ((OpenCLDevice) bestDevice).getMaxWorkGroupSize());
-         System.out.println("   MaxWorkItemDimensions : " + ((OpenCLDevice) bestDevice).getMaxWorkItemDimensions());
+         System.out.println("   GlobalMemSize         : " + bestDevice.getGlobalMemSize());
+         System.out.println("   LocalMemSize          : " + bestDevice.getLocalMemSize());
+         System.out.println("   MaxComputeUnits       : " + bestDevice.getMaxComputeUnits());
+         System.out.println("   MaxWorkGroupSizes     : " + bestDevice.getMaxWorkGroupSize());
+         System.out.println("   MaxWorkItemDimensions : " + bestDevice.getMaxWorkItemDimensions());
          System.out.println("}");
       }
 
@@ -96,22 +99,24 @@ public class OpenCLInfo{
          System.out.println("   GlobalMemSize         : " + ((OpenCLDevice) firstCPU).getGlobalMemSize());
          System.out.println("   LocalMemSize          : " + ((OpenCLDevice) firstCPU).getLocalMemSize());
          System.out.println("   MaxComputeUnits       : " + ((OpenCLDevice) firstCPU).getMaxComputeUnits());
-         System.out.println("   MaxWorkGroupSizes     : " + ((OpenCLDevice) firstCPU).getMaxWorkGroupSize());
-         System.out.println("   MaxWorkItemDimensions : " + ((OpenCLDevice) firstCPU).getMaxWorkItemDimensions());
+         System.out.println("   MaxWorkGroupSizes     : " + firstCPU.getMaxWorkGroupSize());
+         System.out.println("   MaxWorkItemDimensions : " + firstCPU.getMaxWorkItemDimensions());
          System.out.println("}");
       }
 
-      Device firstGPU = OpenCLDevice.firstGPU();
+      OpenCLDevice firstGPU = (OpenCLDevice) OpenCLDevice.firstGPU();
       if (firstGPU == null) {
          System.out.println("OpenCLDevice.firstGPU() returned null!");
       } else {
          System.out.println("OpenCLDevice.firstGPU() returned { ");
          System.out.println("   Type                  : " + firstGPU.getType());
-         System.out.println("   GlobalMemSize         : " + ((OpenCLDevice) firstGPU).getGlobalMemSize());
-         System.out.println("   LocalMemSize          : " + ((OpenCLDevice) firstGPU).getLocalMemSize());
-         System.out.println("   MaxComputeUnits       : " + ((OpenCLDevice) firstGPU).getMaxComputeUnits());
-         System.out.println("   MaxWorkGroupSizes     : " + ((OpenCLDevice) firstGPU).getMaxWorkGroupSize());
-         System.out.println("   MaxWorkItemDimensions : " + ((OpenCLDevice) firstGPU).getMaxWorkItemDimensions());
+         System.out.println("   Platform              : " + firstGPU.getOpenCLPlatform());
+         System.out.println("   Type                  : " + firstGPU.getType());
+         System.out.println("   GlobalMemSize         : " + firstGPU.getGlobalMemSize());
+         System.out.println("   LocalMemSize          : " + firstGPU.getLocalMemSize());
+         System.out.println("   MaxComputeUnits       : " + firstGPU.getMaxComputeUnits());
+         System.out.println("   MaxWorkGroupSizes     : " + firstGPU.getMaxWorkGroupSize());
+         System.out.println("   MaxWorkItemDimensions : " + firstGPU.getMaxWorkItemDimensions());
          System.out.println("}");
       }
 

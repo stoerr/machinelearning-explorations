@@ -14,9 +14,9 @@ import scala.util.Random
 class TestNNCreator extends FunSuite {
 
   val xorExample = List(
-    (List(0.0, 0.0), List(-0.5)),
-    (List(0.0, 1.0), List(0.5)),
-    (List(1.0, 0.0), List(0.5)),
+    (List(-1.0, -1.0), List(-0.5)),
+    (List(-1.0, 1.0), List(0.5)),
+    (List(1.0, -1.0), List(0.5)),
     (List(1.0, 1.0), List(-0.5))
   )
 

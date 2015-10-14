@@ -43,7 +43,6 @@ public class TryAparapi {
 
         ExampleNNJavaEvaluator ev = new ExampleNNJavaEvaluator();
         ev.in = new float[100];
-        ev.mem = new float[100];
         ev.out = new float[100];
         ev.res = new float[100];
         ev.w = new float[100];
