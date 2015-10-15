@@ -10,24 +10,22 @@ import java.util.List;
 
 /*
 Run with -Djava.library.path=lib -Dcom.amd.aparapi.enableProfiling=true
+
+Home:
 ===========localTest===========
-JTP	Duration: 1.9782374 s /	1973	conv 0	JTP
-JTP	Duration: 2.0753102 s /	2075	conv 0	JTP
-GPU	Duration: 0.9123408 s /	912	conv 169	Intel(R) OpenCL|GPU
-GPU	Duration: 0.60201055 s /	602	conv 169	Intel(R) OpenCL|GPU
-GPU	Duration: 0.58698887 s /	587	conv 169	NVIDIA CUDA|GPU
-GPU	Duration: 0.60282314 s /	603	conv 169	NVIDIA CUDA|GPU
-CPU	Duration: 0.58664614 s /	587	conv 169	AMD Accelerated Parallel Processing|CPU
-CPU	Duration: 0.60254055 s /	603	conv 169	AMD Accelerated Parallel Processing|CPU
+JTP	Duration: 1.6609131 s /	1651	conv 0	JTP	99594.53
+JTP	Duration: 1.5943855 s /	1595	conv 0	JTP	99594.53
+GPU	Duration: 1.2865618 s /	1287	conv 473	AMD Accelerated Parallel Processing|GPU	99594.53
+GPU	Duration: 0.7956818 s /	796	conv 473	AMD Accelerated Parallel Processing|GPU	99594.53
+CPU	Duration: 0.7965397 s /	797	conv 473	AMD Accelerated Parallel Processing|CPU	99594.53
+CPU	Duration: 0.796763 s /	797	conv 473	AMD Accelerated Parallel Processing|CPU	99594.53
 ===========Sum===========
-JTP	Duration: 1.1917992 s /	1192	conv 0	JTP
-JTP	Duration: 1.1325016 s /	1132	conv 0	JTP
-GPU	Duration: 0.38252094 s /	383	conv 65	Intel(R) OpenCL|GPU
-GPU	Duration: 0.29265815 s /	293	conv 65	Intel(R) OpenCL|GPU
-GPU	Duration: 0.29327065 s /	293	conv 65	NVIDIA CUDA|GPU
-GPU	Duration: 0.2965773 s /	296	conv 65	NVIDIA CUDA|GPU
-CPU	Duration: 0.2911956 s /	291	conv 65	AMD Accelerated Parallel Processing|CPU
-CPU	Duration: 0.29992723 s /	300	conv 65	AMD Accelerated Parallel Processing|CPU
+JTP	Duration: 2.2842138 s /	2284	conv 0	JTP	5242828.5
+JTP	Duration: 2.0898325 s /	2090	conv 0	JTP	5242828.5
+GPU	Duration: 0.24368921 s /	244	conv 101	AMD Accelerated Parallel Processing|GPU	5242828.5
+GPU	Duration: 0.14074527 s /	141	conv 101	AMD Accelerated Parallel Processing|GPU	5242828.5
+CPU	Duration: 0.14161092 s /	142	conv 101	AMD Accelerated Parallel Processing|CPU	5242828.5
+CPU	Duration: 0.14095102 s /	141	conv 101	AMD Accelerated Parallel Processing|CPU	5242828.5
  */
 public class AparapiSpeedCheck {
 
@@ -38,7 +36,7 @@ public class AparapiSpeedCheck {
 
     private static void localTest() throws Exception {
         int size = 1024;
-        int rounds = 10240000;
+        int rounds = 4000000;
         final float[] res = new float[size];
 
         Kernel kernel = new Kernel() {
@@ -48,10 +46,15 @@ public class AparapiSpeedCheck {
                 float sum = 0;
                 float add = 1.0f;
                 for (int i = 0; i < rounds; ++i) {
-                    add = add * 1.0001f;
+                    add = add * 0.99999f;
                     sum = sum + add;
                 }
                 res[gid] = sum;
+            }
+
+            @Override
+            public String toString() {
+                return "" + res[0];
             }
         };
 
@@ -65,7 +68,7 @@ public class AparapiSpeedCheck {
         final float[] b = new float[size];
 
         for (int i = 0; i < size; i++) {
-            a[i] = i * 0.1f;
+            a[i] = i * 0.001f;
         }
 
         Kernel kernel = new Kernel() {
@@ -77,6 +80,11 @@ public class AparapiSpeedCheck {
                     sum = sum + a[i];
                 }
                 b[gid] = sum;
+            }
+
+            @Override
+            public String toString() {
+                return "" + b[0];
             }
         };
 
@@ -117,7 +125,7 @@ public class AparapiSpeedCheck {
         Kernel.KernelState state = kernel.getKernelState();
         System.out.println(kernel.getExecutionMode() +
                 "\tDuration: " + duration + " s /\t" + kernel.getExecutionTime() +
-                "\tconv " + kernel.getConversionTime() + "\t" + deviceDescr);
+                "\tconv " + kernel.getConversionTime() + "\t" + deviceDescr + "\t" + kernel.toString());
         List<ProfileInfo> profileInfos = kernel.getProfileInfo();
         if (null != profileInfos) for (ProfileInfo info : profileInfos) {
             System.out.println(info.toString());
