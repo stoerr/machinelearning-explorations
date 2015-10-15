@@ -132,5 +132,7 @@ class NNtoJavaTranspiler(terms: Set[NNTerm]) {
   println("Operations: " + calculations.map(_.terms.size).sum)
 
   println("Transpiler time " + (System.currentTimeMillis() - begintime) + " ms.")
+  println(s"${inputnumber.size} inputs, ${outputnumber.size} outputs, ${weightnumber.size} weights, ${resultnumber
+    .size} results, $maxmemlength maxmem")
 
 }

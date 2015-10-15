@@ -14,10 +14,11 @@ public abstract class AbstractNNJavaEvaluator extends Kernel {
         return (ex - 1) / (ex + 1);
     }
 
-    @Constant
     public int inSubSize;
+    @Constant
     public float in[];
     public int outSubSize;
+    @Constant
     public float out[];
     @Constant
     public float w[];
@@ -36,8 +37,13 @@ public abstract class AbstractNNJavaEvaluator extends Kernel {
     @Override
     public synchronized Kernel execute(String _entrypoint, Range _range, int _passes) {
         setExplicit(true);
+        long begin = System.nanoTime();
         this.put(in).put(w).put(out);
-        return super.execute(_entrypoint, _range, _passes).get(res);
+        super.execute(_entrypoint, _range, _passes);
+        get(res);
+        float time = 1e-9f * (System.nanoTime() - begin);
+        System.out.println("Evaluator " + in.length + " in, " + out.length + " out, " + w.length + " w, " + res.length + " res, " + time + " s");
+        return this;
     }
 
 }

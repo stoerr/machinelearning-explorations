@@ -30,6 +30,7 @@ CPU	Duration: 0.14095102 s /	141	conv 101	AMD Accelerated Parallel Processing|CP
 public class AparapiSpeedCheck {
 
     public static void main(String[] _args) throws Exception {
+        emptyTest();
         localTest();
         sumTest();
     }
@@ -89,6 +90,26 @@ public class AparapiSpeedCheck {
         };
 
         multipleExecution("Sum", kernel, size);
+    }
+
+    private static void emptyTest() throws Exception {
+        int size = 128;
+        final float[] a = new float[size];
+
+        Kernel kernel = new Kernel() {
+            @Override
+            public void run() {
+                int gid = getGlobalId();
+                a[gid] = 3.14f;
+            }
+
+            @Override
+            public String toString() {
+                return "" + a[0];
+            }
+        };
+
+        multipleExecution("Empty", kernel, size);
     }
 
     private static void multipleExecution(String description, Kernel kernel, int size) throws Exception {

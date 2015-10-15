@@ -75,7 +75,8 @@ class TestNNCreator extends FunSuite {
     println(x1)
     println(x1._2.toList)
 
-    val w2 = new NNTranspilerCalculationStrategy(nn22.usedToplevelNNTerms).asDerivedFunction(nn22.evaluationTerm, xorExample)
+    val w2 = new NNTranspilerCalculationStrategy(nn22.usedToplevelNNTerms).asDerivedFunction(nn22.evaluationTerm,
+      xorExample)
     val x2 = w2(arg)
     println(x2)
     println(x2._2.toList)
@@ -108,7 +109,8 @@ class TestNNCreator extends FunSuite {
 
   test("Learn XOR Transpiler") {
     def nn2331 = NNCreator.simpleNetwork(List(2, 9, 9, 1))
-    val wfunc: Array[Double] => (Double, Array[Double]) = new NNTranspilerCalculationStrategy(nn2331.usedToplevelNNTerms)
+    val wfunc: Array[Double] => (Double, Array[Double]) = new NNTranspilerCalculationStrategy(nn2331
+      .usedToplevelNNTerms)
       .asDerivedFunction(nn2331.evaluationTerm, xorExample)
     val startWeights = nn2331.weights.indices.map(_ => Random.nextGaussian() / 20).toArray
     val rprop = new RProp(wfunc.andThen(_._1), wfunc, 100, startWeights)
