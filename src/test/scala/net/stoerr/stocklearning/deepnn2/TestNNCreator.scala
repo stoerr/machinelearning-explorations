@@ -13,12 +13,14 @@ import scala.util.Random
  */
 class TestNNCreator extends FunSuite {
 
-  val xorExample = List(
-    (List(-1.0, -1.0), List(-0.5)),
-    (List(-1.0, 1.0), List(0.5)),
-    (List(1.0, -1.0), List(0.5)),
-    (List(1.0, 1.0), List(-0.5))
-  )
+  val xorExample: List[(List[Double], List[Double])] =
+    Range(0, 2).toList.flatMap(i =>
+      List(
+        (List(-1.0, -1.0), List(-0.5)),
+        (List(-1.0, 1.0), List(0.5)),
+        (List(1.0, -1.0), List(0.5)),
+        (List(1.0, 1.0), List(-0.5))
+      ))
 
   def nnterms(terms: Seq[NNTermBase]): Array[NNTerm] = terms.filter(_.isInstanceOf[NNTerm]).map(_
     .asInstanceOf[NNTerm]).toArray
