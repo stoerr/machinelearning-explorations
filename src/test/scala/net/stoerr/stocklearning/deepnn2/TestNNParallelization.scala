@@ -1,10 +1,8 @@
 package net.stoerr.stocklearning.deepnn2
 
-import net.stoerr.stocklearning.common.DoubleArrayVector._
-import net.stoerr.stocklearning.common.{DoubleArrayVector, RProp}
+import net.stoerr.stocklearning.common.RProp
 import org.scalatest.FunSuite
 
-import scala.collection.immutable.TreeSet
 import scala.util.Random
 
 /**
@@ -14,7 +12,8 @@ import scala.util.Random
   */
 class TestNNParallelization extends FunSuite {
 
-  import Math.{sin, cos}
+  import Math.{cos, sin}
+
   import Random._
 
   val numExamples = 1000
@@ -36,7 +35,7 @@ class TestNNParallelization extends FunSuite {
       }
     }
 
-  if (numExamples <= 1000) test("Learn XOR Cached") {
+  if (numExamples <= 1000) ignore("Learn XOR Cached") {
     def nn = NNCreator.simpleNetwork(List(exampleLength, 7, 7, 1))
     val wfunc: Array[Double] => (Double, Array[Double]) = NNCachedCalculationStrategy.asDerivedFunction(nn
       .evaluationTerm, examples)
@@ -56,7 +55,7 @@ class TestNNParallelization extends FunSuite {
     } */
   }
 
-  test("Learn XOR Transpiler") {
+  ignore("Learn XOR Transpiler") {
     def nn = NNCreator.simpleNetwork(List(exampleLength, 7, 7, 1))
     val wfunc: Array[Double] => (Double, Array[Double]) = new NNTranspilerCalculationStrategy(nn
       .usedToplevelNNTerms)

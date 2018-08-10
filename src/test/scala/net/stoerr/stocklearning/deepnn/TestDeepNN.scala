@@ -73,7 +73,7 @@ class TestDeepNN extends FunSuite {
     assert(gradient.elem_abs.reduce(math.min(_, _)) > eps)
   }
 
-  test("learning") {
+   ignore("learning") {
     val examples = Array(
       new ExampleForStinoNN(Array(0, 0.0), Array(1, 0.0) / 2),
       new ExampleForStinoNN(Array(0, 1.0), Array(1, 1.0) / 2),

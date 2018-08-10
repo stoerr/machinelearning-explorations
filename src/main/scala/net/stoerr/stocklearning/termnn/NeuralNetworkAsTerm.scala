@@ -2,8 +2,6 @@ package net.stoerr.stocklearning.termnn
 
 import net.stoerr.stocklearning.calculationcompiler._
 
-import scala.collection.immutable.IndexedSeq
-
 /**
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
  * @since 20.01.2015

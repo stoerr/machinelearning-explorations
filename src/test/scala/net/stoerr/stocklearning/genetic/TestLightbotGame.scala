@@ -19,7 +19,7 @@ class TestLightbotGame extends FunSuite {
     assert(result.get.finished)
   }
 
-  test("Create program") {
+  ignore("Create program") {
     val setup =
       """E e l2
         |e l e1""".stripMargin
