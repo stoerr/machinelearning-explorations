@@ -11,17 +11,20 @@ class TestCGPGene extends FunSuite {
     val res = gene.calculate(Array(0.1, 0.2))
     assert(res.length == 1)
     assert(Math.abs(res(0) - 0.15) < 0.00001)
+    println(gene.formula())
+    assert("o0 = c0\nc0 = Add(in0, in1, 0.7)\n" == gene.formula())
   }
 
   test("Approximate xor") {
     val examples: Seq[(Array[Double], Double)] = Seq(Array(0.0, 0.0) -> 0.0, Array(0.0, 1.0) -> 1.0, Array(1.0, 0.0) -> 1.0, Array(1.0, 1.0) -> 0.0)
       .map(p => (p._1, p._2))
-    val evolution = CGPEvolution(100, 2, 1, CGPEvolution.approximationFitness(examples))
+    val evolution = CGPEvolution(5, 2, 1, CGPEvolution.approximationFitness(examples))
     println(evolution.best._2)
     0 until 1000 foreach (_ => evolution.step())
     println(evolution.best._2)
     val approxfunc: Array[Double] => Array[Double] = evolution.best._1.calculate _
-    examples foreach (e => println( e._1.toList + " : " + e._2 + " vs. " + approxfunc(e._1).toList ))
+    examples foreach (e => println(e._1.toList + " : " + e._2 + " vs. " + approxfunc(e._1).toList))
+    println(evolution.best._1.formula())
   }
 
 }

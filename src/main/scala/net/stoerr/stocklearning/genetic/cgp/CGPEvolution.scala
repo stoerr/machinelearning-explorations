@@ -1,13 +1,13 @@
 package net.stoerr.stocklearning.genetic.cgp
 
-case class CGPEvolution(numparm: Int, numin: Int, numout: Int, fitness: (Array[Double] => Array[Double]) => Double) {
+case class CGPEvolution(numcalc: Int, numin: Int, numout: Int, fitness: (Array[Double] => Array[Double]) => Double) {
 
   val keepBest = 1
   val createMutations = 4
 
   /** current population, ordered by fitness from best to least */
   var population: Seq[(CGPGene, Double)] = 0.until(keepBest + createMutations)
-    .map(_ => new CGPGene(numparm, numin, numout))
+    .map(_ => new CGPGene(numcalc, numin, numout))
     .map(addfitness).sortBy(_._2)
 
   protected def addfitness(g: CGPGene): (CGPGene, Double) = (g, fitness(g.calculate))
