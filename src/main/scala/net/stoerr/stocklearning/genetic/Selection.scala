@@ -2,13 +2,15 @@ package net.stoerr.stocklearning.genetic
 
 import net.stoerr.stocklearning.common.ProbabilityDistributionGenerator
 
+import scala.collection.parallel.immutable.ParVector
+
 /**
  * Genetic altgorithm: selection
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
  * @since 25.01.2015
  */
 case class Selection[COMPETITOR](domain: SelectionDomain[COMPETITOR], populationSize: Int,
-                                 freshRatio: Double, mutationRatio: Double, crossoverRatio: Double) {
+                                 freshRatio: Double, mutationRatio: Double, crossoverRatio: Double = 0.0) {
 
   case class Competitor(c: COMPETITOR, fitness: Double) {
     def this(c: COMPETITOR) = this(c, domain.fitness(c))
@@ -30,7 +32,7 @@ case class Selection[COMPETITOR](domain: SelectionDomain[COMPETITOR], population
     val xover = Vector.fill(part(crossoverRatio))(
       domain.crossover(xoverDistribution.draw(), xoverDistribution.draw())
     )
-    val newpopulation = (fresh ++ mutated ++ xover).par.map(new Competitor(_))
+    val newpopulation: ParVector[Competitor] = (fresh ++ mutated ++ xover).par.map(new Competitor(_))
     population = (population ++ newpopulation) sortBy (-_.fitness) take populationSize
   }
 
@@ -43,7 +45,7 @@ trait SelectionDomain[COMPETITOR] {
 
   def mutate(c: COMPETITOR): COMPETITOR
 
-  def crossover(c1: COMPETITOR, c2: COMPETITOR): COMPETITOR
+  def crossover(c1: COMPETITOR, c2: COMPETITOR): COMPETITOR = sys.error("Unimplemented.")
 }
 
 
