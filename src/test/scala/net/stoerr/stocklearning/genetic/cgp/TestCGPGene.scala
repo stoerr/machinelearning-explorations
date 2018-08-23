@@ -1,5 +1,6 @@
 package net.stoerr.stocklearning.genetic.cgp
 
+import net.stoerr.stocklearning.data.CryptoData
 import org.scalatest.FunSuite
 
 class TestCGPGene extends FunSuite {
@@ -25,6 +26,12 @@ class TestCGPGene extends FunSuite {
     val approxfunc: Array[Double] => Array[Double] = evolution.best._1.calculate _
     examples foreach (e => println(e._1.toList + " : " + e._2 + " vs. " + approxfunc(e._1).toList))
     println(evolution.best._1.formula())
+  }
+
+  test("read file") {
+    println(
+    CryptoData.btcusd.data.take(10).foreach(println)
+    )
   }
 
 }
