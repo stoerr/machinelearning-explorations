@@ -1,6 +1,6 @@
 package net.stoerr.stocklearning.genetic.cgp
 
-import net.stoerr.stocklearning.data.CryptoData
+import net.stoerr.stocklearning.data.{BuySimulator, CryptoData}
 import org.scalatest.FunSuite
 
 class TestCGPGene extends FunSuite {
@@ -30,8 +30,18 @@ class TestCGPGene extends FunSuite {
 
   test("read file") {
     println(
-    CryptoData.btcusd.data.take(10).foreach(println)
+      CryptoData.btcusd.data.take(10).foreach(println)
     )
+  }
+
+  test("buysimulator") {
+    assertResult((200, 0))(BuySimulator.step(100, 200, 2, 1))
+    assertResult((100, 200))(BuySimulator.step(100, 200, 2, 0.5))
+    assertResult((0, 400))(BuySimulator.step(100, 200, 2, 0))
+
+    assertResult((199, 0))(BuySimulator.stepWithFee(100, 200, 2, 1))
+    assertResult((100, 200))(BuySimulator.step(100, 200, 2, 0.5))
+    assertResult((0, 398))(BuySimulator.stepWithFee(100, 200, 2, 0))
   }
 
 }
