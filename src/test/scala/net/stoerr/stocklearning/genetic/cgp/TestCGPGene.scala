@@ -5,6 +5,19 @@ import org.scalatest.FunSuite
 
 class TestCGPGene extends FunSuite {
 
+  test("read file") {
+    CryptoData.btcusd.data.take(10).foreach(println)
+    // println("fibonaccisample")
+    // CryptoData.btcusd.fibonacciSample(CryptoData.btcusd.data).foreach(println)
+    // println("fibonaccisample XXXX")
+    // CryptoData.btcusd.data.tails.foreach(t =>
+      // println(t.take(5).toList)
+      // println(CryptoData.btcusd.fibonacciSample(t).take(10).toList)
+    // )
+    // println("Done fibonaccisample")
+    CryptoData.btcusd.fibonaccisampled(10).map(_.toList).foreach(println)
+  }
+
   test("Function calculation") {
     val gene = CGPGene(
       Array(0.001, 0.002, 0.503, 0.7, 0.8), 2, 1
@@ -26,12 +39,6 @@ class TestCGPGene extends FunSuite {
     val approxfunc: Array[Double] => Array[Double] = evolution.best._1.calculate _
     examples foreach (e => println(e._1.toList + " : " + e._2 + " vs. " + approxfunc(e._1).toList))
     println(evolution.best._1.formula())
-  }
-
-  test("read file") {
-    println(
-      CryptoData.btcusd.data.take(10).foreach(println)
-    )
   }
 
   test("buysimulator") {
