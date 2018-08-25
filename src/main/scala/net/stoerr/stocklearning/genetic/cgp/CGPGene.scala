@@ -150,3 +150,7 @@ case object Min extends CGPFunction {
   override def apply(x: => Double, y: => Double, p: Double): Double = min(x, y)
 }
 
+case object Log extends CGPFunction {
+  override def apply(x: => Double, y: => Double, p: Double): Double = log(x)
+}
+

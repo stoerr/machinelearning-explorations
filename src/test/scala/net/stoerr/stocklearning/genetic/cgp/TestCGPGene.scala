@@ -11,11 +11,11 @@ class TestCGPGene extends FunSuite {
     // CryptoData.btcusd.fibonacciSample(CryptoData.btcusd.data).foreach(println)
     // println("fibonaccisample XXXX")
     // CryptoData.btcusd.data.tails.foreach(t =>
-      // println(t.take(5).toList)
-      // println(CryptoData.btcusd.fibonacciSample(t).take(10).toList)
+    // println(t.take(5).toList)
+    // println(CryptoData.btcusd.fibonacciSample(t).take(10).toList)
     // )
     // println("Done fibonaccisample")
-    CryptoData.btcusd.fibonaccisampled(10).map(_.toList).foreach(println)
+    CryptoData.btcusd.fibonacciNrmSampled(10).map(_.toList).foreach(println)
   }
 
   test("Function calculation") {
@@ -39,16 +39,17 @@ class TestCGPGene extends FunSuite {
     val approxfunc: Array[Double] => Array[Double] = evolution.best._1.calculate _
     examples foreach (e => println(e._1.toList + " : " + e._2 + " vs. " + approxfunc(e._1).toList))
     println(evolution.best._1.formula())
+    assert(Math.abs(evolution.best._2) < 0.01)
   }
 
   test("buysimulator") {
-    assertResult((200, 0))(BuySimulator.step(100, 200, 2, 1))
-    assertResult((100, 200))(BuySimulator.step(100, 200, 2, 0.5))
-    assertResult((0, 400))(BuySimulator.step(100, 200, 2, 0))
+    assertResult((200, 0))(BuySimulator.step(100, 200, 2, 1000))
+    assertResult((100, 200))(BuySimulator.step(100, 200, 2, 0))
+    assertResult((0, 400))(BuySimulator.step(100, 200, 2, -1000))
 
-    assertResult((199, 0))(BuySimulator.stepWithFee(100, 200, 2, 1))
-    assertResult((100, 200))(BuySimulator.step(100, 200, 2, 0.5))
-    assertResult((0, 398))(BuySimulator.stepWithFee(100, 200, 2, 0))
+    assertResult((199, 0))(BuySimulator.stepWithFee(0.01)(100, 200, 2, 1000))
+    assertResult((100, 200))(BuySimulator.stepWithFee(0.01)(100, 200, 2, 0))
+    assertResult((0, 398))(BuySimulator.stepWithFee(0.01)(100, 200, 2, -1000))
   }
 
 }
