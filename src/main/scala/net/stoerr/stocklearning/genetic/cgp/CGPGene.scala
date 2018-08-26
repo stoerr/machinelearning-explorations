@@ -95,15 +95,15 @@ object CGPFunction {
 }
 
 case object Add extends CGPFunction {
-  override def apply(x: => Double, y: => Double, p: Double): Double = (x + y) / 2
+  override def apply(x: => Double, y: => Double, p: Double): Double = expandP(p) * (x + y) / 2
 }
 
 case object AMinus extends CGPFunction {
-  override def apply(x: => Double, y: => Double, p: Double): Double = abs(x - y) / 2
+  override def apply(x: => Double, y: => Double, p: Double): Double = expandP(p) * abs(x - y) / 2
 }
 
 case object Mult extends CGPFunction {
-  override def apply(x: => Double, y: => Double, p: Double): Double = x * y
+  override def apply(x: => Double, y: => Double, p: Double): Double = expandP(p) * x * y
 }
 
 case object Cmult extends CGPFunction {
@@ -111,15 +111,15 @@ case object Cmult extends CGPFunction {
 }
 
 case object Inv extends CGPFunction {
-  override def apply(x: => Double, y: => Double, p: Double): Double = if (x != 0) 1 / x else 0
+  override def apply(x: => Double, y: => Double, p: Double): Double = expandP(p) * (if (x != 0) 1 / x else 0)
 }
 
 case object Abs extends CGPFunction {
-  override def apply(x: => Double, y: => Double, p: Double): Double = abs(x)
+  override def apply(x: => Double, y: => Double, p: Double): Double = expandP(p) * abs(x)
 }
 
 case object Sqrt extends CGPFunction {
-  override def apply(x: => Double, y: => Double, p: Double): Double = sqrt(abs(x))
+  override def apply(x: => Double, y: => Double, p: Double): Double = expandP(p) * sqrt(abs(x))
 }
 
 case object CPow extends CGPFunction {
@@ -127,11 +127,11 @@ case object CPow extends CGPFunction {
 }
 
 case object YPow extends CGPFunction {
-  override def apply(x: => Double, y: => Double, p: Double): Double = pow(abs(x), abs(y))
+  override def apply(x: => Double, y: => Double, p: Double): Double = expandP(p) * pow(abs(x), abs(y))
 }
 
 case object ExpX extends CGPFunction {
-  override def apply(x: => Double, y: => Double, p: Double): Double = (exp(x) - 1) / (E - 1)
+  override def apply(x: => Double, y: => Double, p: Double): Double = expandP(p) * (exp(x) - 1) / (E - 1)
 }
 
 case object Sin extends CGPFunction {
@@ -139,13 +139,13 @@ case object Sin extends CGPFunction {
 }
 
 case object SqrtXY extends CGPFunction {
-  override def apply(x: => Double, y: => Double, p: Double): Double = sqrt(x * x + y * y) / sqrt(2)
+  override def apply(x: => Double, y: => Double, p: Double): Double = expandP(p) * sqrt(x * x + y * y) / sqrt(2)
 }
 
 case object Max extends CGPFunction {
-  override def apply(x: => Double, y: => Double, p: Double): Double = max(x, y)
+  override def apply(x: => Double, y: => Double, p: Double): Double = expandP(p) * max(x, y)
 }
 
 case object Min extends CGPFunction {
-  override def apply(x: => Double, y: => Double, p: Double): Double = min(x, y)
+  override def apply(x: => Double, y: => Double, p: Double): Double = expandP(p) * min(x, y)
 }

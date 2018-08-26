@@ -17,7 +17,7 @@ case class CGPEvolution(numcalc: Int, numin: Int, numout: Int, fitness: (Array[D
     val fresh = bests.flatMap(gene =>
       0.until(createMutations).map(_ => gene._1.mutate()).map(addfitness)
     )
-    population = (fresh ++ bests).sortBy(_._2)
+    population = (fresh ++ bests).sortBy(-_._2)
   }
 
   def best: (CGPGene, Double) = population.head
@@ -28,7 +28,6 @@ object CGPEvolution {
   def approximationFitness(examples: Seq[(Array[Double], Double)]): (Array[Double] => Array[Double]) => Double = { func =>
     def sqr(x: Double) = x * x
 
-    Math.sqrt(examples.par.map(e => sqr(func(e._1)(0) - e._2)).sum / examples.size)
+    -Math.sqrt(examples.par.map(e => sqr(func(e._1)(0) - e._2)).sum / examples.size)
   }
-
 }
