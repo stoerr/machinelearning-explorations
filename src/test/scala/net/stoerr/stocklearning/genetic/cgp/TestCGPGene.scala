@@ -15,7 +15,7 @@ class TestCGPGene extends FunSuite {
     // println(CryptoData.btcusd.fibonacciSample(t).take(10).toList)
     // )
     // println("Done fibonaccisample")
-    CryptoData.btcusd.fibonacciNrmSampled(10).map(_.toList).foreach(println)
+    CryptoData.btcusd.fibonacciNrmSampled(10).map(_._2.toList).foreach(println)
   }
 
   test("Function calculation") {
@@ -43,13 +43,13 @@ class TestCGPGene extends FunSuite {
   }
 
   test("buysimulator") {
-    assertResult((200, 0))(BuySimulator.step(100, 200, 2, 1000))
-    assertResult((100, 200))(BuySimulator.step(100, 200, 2, 0))
-    assertResult((0, 400))(BuySimulator.step(100, 200, 2, -1000))
+    assertResult((200, 0))(BuySimulator.step((100, 200), 2, 1000))
+    assertResult((100, 200))(BuySimulator.step((100, 200), 2, 0))
+    assertResult((0, 400))(BuySimulator.step((100, 200), 2, -1000))
 
-    assertResult((199, 0))(BuySimulator.stepWithFee(0.01)(100, 200, 2, 1000))
-    assertResult((100, 200))(BuySimulator.stepWithFee(0.01)(100, 200, 2, 0))
-    assertResult((0, 398))(BuySimulator.stepWithFee(0.01)(100, 200, 2, -1000))
+    assertResult((199, 0))(BuySimulator.stepWithFee(0.01)((100, 200), 2, 1000))
+    assertResult((100, 200))(BuySimulator.stepWithFee(0.01)((100, 200), 2, 0))
+    assertResult((0, 398))(BuySimulator.stepWithFee(0.01)((100, 200), 2, -1000))
   }
 
 }

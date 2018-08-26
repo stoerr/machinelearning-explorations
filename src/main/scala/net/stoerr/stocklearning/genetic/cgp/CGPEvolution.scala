@@ -31,5 +31,4 @@ object CGPEvolution {
     Math.sqrt(examples.par.map(e => sqr(func(e._1)(0) - e._2)).sum / examples.size)
   }
 
-
 }

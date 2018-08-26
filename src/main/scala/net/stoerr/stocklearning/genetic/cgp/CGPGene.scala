@@ -33,7 +33,7 @@ case class CGPGene(param: Array[Double], numin: Int, numout: Int) {
   }
 
   def formula(): String = {
-    val stringBuilder = new mutable.StringBuilder();
+    val stringBuilder = new mutable.StringBuilder()
     val calc = new Calculator(Array.fill(numin)(0))
     0.until(numout).foreach { o =>
       calc.calculate(param(parms - numout + o), parms - numout)
@@ -149,8 +149,3 @@ case object Max extends CGPFunction {
 case object Min extends CGPFunction {
   override def apply(x: => Double, y: => Double, p: Double): Double = min(x, y)
 }
-
-case object Log extends CGPFunction {
-  override def apply(x: => Double, y: => Double, p: Double): Double = log(x)
-}
-
