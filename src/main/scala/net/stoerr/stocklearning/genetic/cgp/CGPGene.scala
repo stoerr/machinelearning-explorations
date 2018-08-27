@@ -109,7 +109,7 @@ case class CGPGene(param: Array[Double], numin: Int, numout: Int) {
 sealed trait CGPFunction {
   def apply(x: => Double, y: => Double, p: Double): Double
 
-  protected def expandP(p: Double): Double = 4 * p - 1
+  protected def expandP(p: Double): Double = 4 * p - 2
 }
 
 object CGPFunction {
