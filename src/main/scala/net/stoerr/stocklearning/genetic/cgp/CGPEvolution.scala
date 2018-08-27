@@ -15,7 +15,7 @@ case class CGPEvolution(numcalc: Int, numin: Int, numout: Int, fitness: (Array[D
   def step(): Unit = {
     val bests = population.take(keepBest)
     val fresh = bests.flatMap(gene =>
-      0.until(createMutations).map(_ => gene._1.mutate()).map(addfitness)
+      0.until(createMutations).map(_ => gene._1.mutateUntilVisible()).map(addfitness)
     )
     population = (fresh ++ bests).sortBy(-_._2)
   }

@@ -2,28 +2,51 @@ package net.stoerr.stocklearning.genetic.cgp
 
 import java.lang.Math._
 
-import CGPGene.fieldHasParameters
+import CGPGene._
 
 import scala.collection.mutable
 import scala.util.Random
 
 object CGPGene {
   val fieldHasParameters = 4
+  val outputMutationProbability = 0.06
 }
 
 /** CGP "individual". Parameters are all in [0,1). There are four parameters per item, x, y, p, f.
-  * The last numout parameters signify the outputs. */
+  * The last numout parameters signify the outputs.
+  *
+  * @param parameters : calculations ( fieldHasParameters values each ) and then numout output selectors */
 case class CGPGene(param: Array[Double], numin: Int, numout: Int) {
   def this(numcalc: Int, numin: Int, numout: Int) = this(
     0.until(numcalc * fieldHasParameters).map(_ => Random.nextDouble()).toArray, numin, numout
   )
 
+  /** Number of parameters, including outputs */
   protected val parms: Int = param.length
 
-
-  def mutate(): CGPGene = {
+  def mutateRandom(): CGPGene = {
     val paramCopy = param.clone()
     paramCopy(Random.nextInt(paramCopy.length)) = Random.nextDouble()
+    if (Random.nextDouble() < outputMutationProbability)
+      paramCopy(Random.nextInt(numout) + numout) = Random.nextDouble()
+    this.copy(param = paramCopy)
+  }
+
+  def mutateUntilVisible(): CGPGene = {
+    val calc = new Calculator(Array.fill(numin)(1 / PI))
+    0.until(numout).map(o => calc.calculate(param(parms - numout + o), parms - numout)).toArray
+    val paramCopy = param.clone()
+    if (Random.nextDouble() < outputMutationProbability)
+      paramCopy(Random.nextInt(numout) + numout) = Random.nextDouble()
+    else if (!calc.calculated.isEmpty) {
+      var visibleMutation = false
+      while (!visibleMutation) {
+        val nextmutation = Random.nextInt(paramCopy.length)
+        paramCopy(nextmutation) = Random.nextDouble()
+        visibleMutation = nextmutation > parms - numout ||
+          calc.calculated.contains(nextmutation / fieldHasParameters * fieldHasParameters)
+      }
+    }
     this.copy(param = paramCopy)
   }
 
@@ -45,9 +68,10 @@ case class CGPGene(param: Array[Double], numin: Int, numout: Int) {
 
   protected class Calculator(in: Array[Double]) {
 
-    protected val calculated: mutable.Map[Int, Double] = mutable.Map[Int, Double]()
+    /** Maps cell start index to it's result, if already calculated. */
+    val calculated: mutable.Map[Int, Double] = mutable.Map[Int, Double]()
 
-    /** Left means input, Right means cell */
+    /** Left means input number, Right means cell start index */
     protected def map(d: Double, maxl: Int): Either[Int, Int] = {
       val idx = Math.floor(d * (maxl + numin) - numin).toInt
       if (idx < 0) Left(idx + numin) else Right(idx / fieldHasParameters * fieldHasParameters)
@@ -85,7 +109,7 @@ case class CGPGene(param: Array[Double], numin: Int, numout: Int) {
 sealed trait CGPFunction {
   def apply(x: => Double, y: => Double, p: Double): Double
 
-  protected def expandP(p: Double): Double = 2 * p - 1
+  protected def expandP(p: Double): Double = 4 * p - 1
 }
 
 object CGPFunction {
