@@ -43,13 +43,16 @@ class TestCGPGene extends FunSuite {
   }
 
   test("buysimulator") {
-    assertResult((200, 0))(BuySimulator.step((100, 200), 2, 1000))
-    assertResult((100, 200))(BuySimulator.step((100, 200), 2, 0))
-    assertResult((0, 400))(BuySimulator.step((100, 200), 2, -1000))
+    var buy = BuySimulator()
+    assertResult((200, 0))(buy((100, 200), 2, 1000))
+    assertResult((100, 200))(buy((100, 200), 2, 0))
+    assertResult((0, 400))(buy((100, 200), 2, -1000))
 
-    assertResult((199, 0))(BuySimulator.stepWithFee(0.01)((100, 200), 2, 1000))
-    assertResult((100, 200))(BuySimulator.stepWithFee(0.01)((100, 200), 2, 0))
-    assertResult((0, 398))(BuySimulator.stepWithFee(0.01)((100, 200), 2, -1000))
+    buy = BuySimulator(0.01, 0.05)
+    assertResult((199, 0))(buy((100, 200), 2, 1000))
+    assertResult((100, 200))(buy((100, 200), 2, 0))
+    assertResult((0, 398))(buy((100, 200), 2, -1000))
+    assertResult((100, 200))(buy((100, 200), 2, 0.02))
   }
 
 }
