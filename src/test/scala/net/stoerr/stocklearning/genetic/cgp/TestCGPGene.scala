@@ -32,14 +32,14 @@ class TestCGPGene extends FunSuite {
   test("Approximate xor") {
     val examples: Seq[(Array[Double], Double)] = Seq(Array(0.0, 0.0) -> 0.0, Array(0.0, 1.0) -> 1.0, Array(1.0, 0.0) -> 1.0, Array(1.0, 1.0) -> 0.0)
       .map(p => (p._1, p._2))
-    val evolution = CGPEvolution(5, 2, 1, CGPEvolution.approximationFitness(examples))
+    val evolution = CGPEvolution(50, 2, 1, CGPEvolution.approximationFitness(examples))
     println(evolution.best._2)
-    0 until 1000 foreach (_ => evolution.step())
+    0 until 10000 foreach (_ => if (Math.abs(evolution.best._2) >= 0.05) evolution.step())
     println(evolution.best._2)
     val approxfunc: Array[Double] => Array[Double] = evolution.best._1.calculate _
     examples foreach (e => println(e._1.toList + " : " + e._2 + " vs. " + approxfunc(e._1).toList))
     println(evolution.best._1.formula())
-    assert(Math.abs(evolution.best._2) < 0.01)
+    assert(Math.abs(evolution.best._2) < 0.05)
   }
 
   test("buysimulator") {
@@ -48,11 +48,10 @@ class TestCGPGene extends FunSuite {
     assertResult((100, 200))(buy((100, 200), 2, 0))
     assertResult((0, 400))(buy((100, 200), 2, -1000))
 
-    buy = BuySimulator(0.01, 0.05)
+    buy = BuySimulator(0.01)
     assertResult((199, 0))(buy((100, 200), 2, 1000))
     assertResult((100, 200))(buy((100, 200), 2, 0))
     assertResult((0, 398))(buy((100, 200), 2, -1000))
-    assertResult((100, 200))(buy((100, 200), 2, 0.02))
   }
 
 }
