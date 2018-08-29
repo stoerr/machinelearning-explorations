@@ -27,7 +27,7 @@ class TestTerm extends FunSuite {
     val func: (Array[Double]) => Double = f.asFunction(variables)
     // println(func(v))
     assertAlmostEqual(func(v), expectedFunc)
-    val grad: Array[Double] = gradient(func, v)
+    val grad: Array[Double] = gradient(func)(v)
     val gradSymbolic = variables.map(deriv(_).asFunction(variables)(v))
     // println(grad.toList)
     // println(gradSymbolic.toList)

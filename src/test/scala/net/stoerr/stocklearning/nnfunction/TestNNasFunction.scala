@@ -41,11 +41,11 @@ class TestNNasFunction extends FunSuite {
     val weightFunction = nn.weightFunction(ex)
     val realgradient = 0.until(nn.sizeWeights).map { i =>
       val fprojected = base.baseFunction(i) andThen (weightFunction)
-      derivation(fprojected, 0)
+      derivation(fprojected)(0)
     }
     val (value, gradient) = nn.weightFunctionWithGradient(ex)(base)
     val quotients: IndexedSeq[Double] = (realgradient, gradient).zipped.map(_ / _)
-    val maxdifference = quotients.map(math.log).map(math.abs).reduce(math.max(_, _))
+    val maxdifference = quotients.map(math.log).map(math.abs).max
     assert(maxdifference < eps)
   }
 

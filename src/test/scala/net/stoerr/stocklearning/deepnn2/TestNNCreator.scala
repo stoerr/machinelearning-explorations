@@ -25,7 +25,7 @@ class TestNNCreator extends FunSuite {
   def nnterms(terms: Seq[NNTermBase]): Array[NNTerm] = terms.filter(_.isInstanceOf[NNTerm]).map(_
     .asInstanceOf[NNTerm]).toArray
 
-  def uniqsize(terms: Seq[NNTerm]) = (new TreeSet[NNTerm]() ++ terms).size
+  def uniqsize(terms: Seq[NNTerm]): Int = (new TreeSet[NNTerm]() ++ terms).size
 
   test("complexities 1") {
     val nn = NNCreator.simpleNetwork(List(2, 5, 1))
@@ -59,7 +59,7 @@ class TestNNCreator extends FunSuite {
     println(x2)
     println(x2._2.toList)
 
-    val dif = (DoubleArrayVector.gradient(w1.andThen(_._1), arg) - x1._2).abs
+    val dif = (DoubleArrayVector.gradient(w1.andThen(_._1))(arg) - x1._2).abs
     println(dif)
     assert(dif < eps)
     assert(math.abs(x1._1 - x2._1) < eps)
@@ -83,7 +83,7 @@ class TestNNCreator extends FunSuite {
     println(x2)
     println(x2._2.toList)
 
-    val dif = (DoubleArrayVector.gradient(w1.andThen(_._1), arg) - x1._2).abs
+    val dif = (DoubleArrayVector.gradient(w1.andThen(_._1))(arg) - x1._2).abs
     println(dif)
     assert(dif < eps)
     assert(math.abs(x1._1 - x2._1) < eps)
