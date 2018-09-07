@@ -2,6 +2,7 @@ package net.stoerr.stocklearning.common
 
 import scala.collection.GenTraversableOnce
 import scala.language.implicitConversions
+import scala.util.Random
 
 object DoubleArrayVector {
   implicit def doubleArrayVector(v: Array[Double]): DoubleArrayVector = new DoubleArrayVector(v)
@@ -17,6 +18,8 @@ object DoubleArrayVector {
   }.toArray
 
   def apply(v: GenTraversableOnce[Double]): DoubleArrayVector = doubleArrayVector(v.toArray)
+
+  def randomVector(dim: Int): Array[Double] = 0.until(dim).map(_ => Random.nextGaussian()).toArray
 
 }
 
