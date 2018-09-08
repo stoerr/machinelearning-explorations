@@ -15,14 +15,4 @@ class TestRandomPseudoGradientDescent extends FunSuite {
     }
   }
 
-  test("randomdescent100") {
-    val domain = FunctionMinimizationTestFunction(100)
-
-    val stepper = RandomPseudoGradientDescent(domain, domain.dimensions, Array.fill(domain.dimensions)(0.5))
-
-    0.until(1000).foreach { _ =>
-      stepper.step()
-    }
-  }
-
 }

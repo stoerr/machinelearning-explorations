@@ -1,17 +1,15 @@
 package net.stoerr.stocklearning.common
 
-import java.lang.Math._
-
 import net.stoerr.stocklearning.common.DoubleArrayVector._
 
 /** We try to approximate gradient descent without calculating the gradient: in each step, the previous direction
   * is corrected by a random vector, and then a step in the resulting maximum slope direction is quadratically
   * approximated. */
-case class RandomPseudoGradientDescent(f: Array[Double] => Double, dim: Int, var x: Array[Double]) {
+case class RandomPseudoGradientDescent(f: Vec => Double, dim: Int, var x: Vec) {
 
-  def this(f: Array[Double] => Double, dim: Int) = this(f, dim, randomVector(dim))
+  def this(f: Vec => Double, dim: Int) = this(f, dim, randomVector(dim))
 
-  var laststep: Array[Double] = randomVector(dim).normalize * eps
+  var laststep: Vec = randomVector(dim).normalize * eps
 
   def step() = {
     val y = f(x)
@@ -19,13 +17,10 @@ case class RandomPseudoGradientDescent(f: Array[Double] => Double, dim: Int, var
     println("y: " + y)
 
     val yld = f(laststep * 0.25 + x)
-    var random = randomVector(dim).normalize
-    random = (random - laststep.normalize * (laststep.normalize * random)).normalize
-    assert(abs(random * laststep.normalize) < eps)
-    random = random * (laststep.abs)
+    val random = laststep.randomOrthogonalVector()
     val yr = f(random * 0.25 + x)
 
-    var newdirection = (laststep * (y - yld) + random * (y - yr)).normalize * laststep.abs * 0.25
+    val newdirection = (laststep * (y - yld) + random * (y - yr)).normalize * laststep.abs * 0.25
     println("angle: " + (newdirection.normalize * laststep.normalize))
 
     val y1 = f(x + newdirection)
