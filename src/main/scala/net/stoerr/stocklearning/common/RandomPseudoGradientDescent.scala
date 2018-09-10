@@ -11,7 +11,7 @@ case class RandomPseudoGradientDescent(f: Vec => Double, dim: Int, var x: Vec) {
 
   var laststep: Vec = randomVector(dim).normalize * eps
 
-  def step() = {
+  def step(): Unit = {
     val y = f(x)
     println()
     println("y: " + y)
@@ -25,7 +25,7 @@ case class RandomPseudoGradientDescent(f: Vec => Double, dim: Int, var x: Vec) {
 
     val y1 = f(x + newdirection)
     val y2 = f(x + newdirection * 2)
-    var factor = GradientDescent.interpolatedMinimum(0, y, 1, y1, 2, y2)
+    var factor = NumericalMinimumFinder.interpolatedMinimum(0, y, 1, y1, 2, y2)
     println("factor: " + factor)
     factor = if (factor > 16) 16 else if (factor < -8) -8 else factor
 

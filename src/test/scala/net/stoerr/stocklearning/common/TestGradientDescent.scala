@@ -42,7 +42,7 @@ class TestGradientDescent extends FunSuite {
       def f(x: Double) = 2.6 * (x - m) * (x - m)
 
       for ((x0, x1, x2) <- Array((2, 5, 7), (1, 2, 3))) {
-        val min = GradientDescent.interpolatedMinimum(x0, f(x0), x1, f(x1), x2, f(x2))
+        val min = NumericalMinimumFinder.interpolatedMinimum(x0, f(x0), x1, f(x1), x2, f(x2))
         assert(math.abs(min - m) < eps)
       }
     }

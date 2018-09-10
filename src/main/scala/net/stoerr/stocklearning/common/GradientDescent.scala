@@ -9,14 +9,6 @@ import net.stoerr.stocklearning.common.DoubleArrayVector._
  */
 object GradientDescent {
 
-  /** Find minimum by quadratical interpolation, solved by http://www.mathics.net/ <br/>
-    * {{x->x02y1-x02y2-x12y0+x12y2+x22y0-x22y12(x0y1-x0y2-x1y0+x1y2+x2y0-x2y1)}}
-    */
-  def interpolatedMinimum(x0: Double, y0: Double, x1: Double, y1: Double, x2: Double, y2: Double): Double =
-    if (x0 == x1 && x1 == x2) x1
-    else (x0 * x0 * (y1 - y2) + x1 * x1 * (y2 - y0) + x2 * x2 * (y0 - y1)) / 2 /
-      (x0 * y1 - x0 * y2 - x1 * y0 + x1 * y2 + x2 * y0 - x2 * y1)
-
   /** Numerically finds a rough approximation of the minimum of f near 0 with first step length eps. <br/>
     * Optimized for what we need in gradient descent: We assume the sign of eps is into the direction of the minimum
     * and f goes downward into that direction. If this doesn't nold, the algorithm might not terminate.
@@ -57,7 +49,7 @@ object GradientDescent {
       // println(((x0, x1, x2), (y0, y1, y2)))
       if (math.abs(x2) > 1e6 || math.abs(x2) < 1e-6 || y2.isInfinite || y2.isNaN) return 0
     }
-    val min = interpolatedMinimum(x0, y0, x1, y1, x2, y2)
+    val min = NumericalMinimumFinder.interpolatedMinimum(x0, y0, x1, y1, x2, y2)
     assert((min >= x0) && (min <= x2) || (min <= x0) && (min >= x2), (x0, y0) + "\t" +(x1, y1) + "\t" +(x2, y2) + "\t" + min)
     min
   }
@@ -67,9 +59,9 @@ object GradientDescent {
 abstract class AbstractGradientDescent(val f: Array[Double] => Double, val fgrad: Array[Double] => (Double, Array[Double]),
                                        val maxSteps: Int, x0: Array[Double], eps0: Double = -1.0) {
   // println("-- descent")
-  var lastY = Double.MaxValue
-  var eps = eps0
-  var x = x0
+  var lastY: Double = Double.MaxValue
+  var eps: Double = eps0
+  var x: Array[Double] = x0
   var ygrad: (Double, Array[Double]) = fgrad(x)
 
   def descent(): (Array[Double], Double, Double) = {
