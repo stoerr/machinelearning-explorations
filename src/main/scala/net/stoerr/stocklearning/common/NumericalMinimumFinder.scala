@@ -23,7 +23,7 @@ object NumericalMinimumFinder {
   }
 
   /** Search for minimum in several steps; we start with x=0,1,2 */
-  def secondorderMinimumSearch(f: Double => Double, maxstep: Double = 4, maxiter: Int = 5, eps: Double = 1e-6): (Double, Double) = {
+  def secondorderMinimumSearch(f: Double => Double, maxstep: Double = 16, maxiter: Int = 5, eps: Double = 1e-6): (Double, Double) = {
     var Array(xy0, xy1, xy2) = Array((0.0, f(0.0)), (1.0, f(1.0)), (2.0, f(2.0)))
     for (_ <- 0 until maxiter if (xy2._1 - xy0._1 > eps)) {
       val xmin = interpolatedMinimumStep(xy0, xy1, xy2, maxstep)
