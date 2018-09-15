@@ -27,10 +27,8 @@ case class RandomPseudoGradientDescent(f: Vec => Double, dim: Int, var x: Vec) {
 
     val y1 = f(x + newdirection)
     val y2 = f(x + newdirection * 2)
-    var factor = NumericalMinimumFinder.interpolatedMinimum(0, y, 1, y1, 2, y2)
-    println("factor: " + factor)
-    factor = if (factor > 256) 256 else if (factor < -128) -128 else factor
-
+    val (factor, yn) = NumericalMinimumFinder.interpolatedMinimumStep(xp => f(x + newdirection * xp), (0, y), (1, y1), (2, y2), 16)
+    println("factor: "+ factor)
     laststep = newdirection * factor
     x = x + laststep
   }
@@ -44,6 +42,9 @@ case class RandomPseudoGradientDescent(f: Vec => Double, dim: Int, var x: Vec) {
     def fstep(xs: Double): Double = f(fdir(xs))
 
     val (xn, yn) = NumericalMinimumFinder.secondorderMinimumSearch(fstep)
+    if (xn == 0) {
+      NumericalMinimumFinder.secondorderMinimumSearch(fstep)
+    }
     println(s"y: $yn, xs: $xn ($numstep)")
     laststep = fdir(xn) - x
     x = fdir(xn)

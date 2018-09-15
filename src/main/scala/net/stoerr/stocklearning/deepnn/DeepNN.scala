@@ -6,9 +6,9 @@ import net.stoerr.stocklearning.nnfunction.Example
 case class GradInfo(inputGradient: Array[Double], weightGradient: Array[Double])
 
 /**
- * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
- * @since 22.12.2014
- */
+  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
+  * @since 22.12.2014
+  */
 trait DeepNN {
 
   val sizeInputs: Int
@@ -39,6 +39,8 @@ trait DeepNN {
   }
 
   def fCombined(examples: Seq[Example])(weights: Array[Double]): Double = fgradCombined(examples)(weights)._1
+
+  override def toString: String = s"$sizeInputs($sizeWeights)$sizeOutputs"
 }
 
 object DeepNN {
@@ -51,8 +53,8 @@ object DeepNN {
     override val sizeOutputs: Int = n.sizeOutputs
 
     override def fg(inputs: Array[Double])(weights: Array[Double]): (Array[Double], Array[Double] => GradInfo) = {
-      assert(m.sizeInputs == inputs.size)
-      assert(sizeWeights == weights.size)
+      assert(m.sizeInputs == inputs.size, s"${m.sizeInputs} == ${inputs.size}")
+      assert(sizeWeights == weights.size, s"$sizeWeights == ${weights.size}")
       val (my, mg) = m.fg(inputs)(weights.slice(0, m.sizeWeights))
       val (ny, ng) = n.fg(my)(weights.slice(m.sizeWeights, sizeWeights))
       (ny, outputGradient => {
@@ -61,6 +63,8 @@ object DeepNN {
         GradInfo(inputGradient = mginfo.inputGradient, weightGradient = mginfo.weightGradient ++ nginfo.weightGradient)
       })
     }
+
+    // override def toString() = m.toString + " | " + n.toString
   }
 
 }
