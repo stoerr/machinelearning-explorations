@@ -9,7 +9,7 @@ class TestNumericalMinimumFinder extends FunSuite {
   test("secondordermin") {
     def f(x: Double) = cosh(x - PI)
 
-    val (x, y) = NumericalMinimumFinder.secondorderMinimumSearch2(f, 5, 10)
+    val (x, y) = NumericalMinimumFinder.secondorderMinimumSearch(f, 10)
     println((x, y))
     assert(abs(x - PI) < 1e-6)
   }

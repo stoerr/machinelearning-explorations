@@ -18,18 +18,19 @@ case class RandomPseudoGradientDescent(f: Vec => Double, dim: Int, var x: Vec) {
     println()
     println(s"y: $y ($numstep)")
 
-    val yld = f(laststep * 0.25 + x)
+    val yforw = f(laststep * 0.25 + x)
+    val yback = f(laststep * -0.25 + x)
     val random = laststep.randomOrthogonalVector()
-    val yr = f(random * 0.25 + x)
+    val yright = f(random * 0.25 + x)
+    val yleft = f(random * -0.25 + x)
 
-    val newdirection = (laststep * (y - yld) + random * (y - yr)).normalize * laststep.abs * 0.25
-    println("angle: " + (newdirection.normalize * laststep.normalize))
+    val newdirection = (laststep * (yforw - yback) + random * (yright - yleft)).normalize * laststep.abs * 0.25
 
     val y1 = f(x + newdirection)
     val y2 = f(x + newdirection * 2)
-    val (factor, yn) = NumericalMinimumFinder.interpolatedMinimumStep(xp => f(x + newdirection * xp), (0, y), (1, y1), (2, y2), 16)
-    println("factor: "+ factor)
+    val (factor, yn) = NumericalMinimumFinder.singleStep(xp => f(x + newdirection * xp), (0, y), (1, y1), (2, y2))
     laststep = newdirection * factor
+    println(s"angle:${newdirection.normalize * laststep.normalize} factor: ${factor} step: ${laststep.abs}")
     x = x + laststep
   }
 
@@ -42,10 +43,7 @@ case class RandomPseudoGradientDescent(f: Vec => Double, dim: Int, var x: Vec) {
     def fstep(xs: Double): Double = f(fdir(xs))
 
     val (xn, yn) = NumericalMinimumFinder.secondorderMinimumSearch(fstep)
-    if (xn == 0) {
-      NumericalMinimumFinder.secondorderMinimumSearch(fstep)
-    }
-    println(s"y: $yn, xs: $xn ($numstep)")
+    println(s"y: $yn, xs: $xn ($numstep) ${laststep.abs}")
     laststep = fdir(xn) - x
     x = fdir(xn)
   }
