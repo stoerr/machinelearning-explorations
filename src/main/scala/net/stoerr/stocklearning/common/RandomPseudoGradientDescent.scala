@@ -24,13 +24,23 @@ case class RandomPseudoGradientDescent(f: Vec => Double, dim: Int, var x: Vec) {
     val yright = f(random * 0.25 + x)
     val yleft = f(random * -0.25 + x)
 
-    val newdirection = (laststep * (yforw - yback) + random * (yright - yleft)).normalize * laststep.abs * 0.25
+    val newdirection = (laststep * (yback - yforw) + random * (yleft - yright)).normalize * laststep.abs
 
-    val y1 = f(x + newdirection)
-    val y2 = f(x + newdirection * 2)
-    val (factor, yn) = NumericalMinimumFinder.singleStep(xp => f(x + newdirection * xp), (0, y), (1, y1), (2, y2))
+    val y1 = f(x + newdirection * 0.5)
+    val y2 = f(x + newdirection)
+    val (factor, yn) = NumericalMinimumFinder.singleStep(xp => f(x + newdirection * xp), (0, y), (0.5, y1), (1, y2))
+
+    /* for (t <- 0 until 5) {
+      val xx = t * 0.5 - 1
+      println(s"r(${xx})=${f(x + random * xx) - y}")
+    }
+    for (t <- 0 until 5) {
+      val xx = t * 0.5
+      println(s"f(${xx})=${f(x + newdirection * xx) - y}")
+    } */
+
+    println(s"angle:${newdirection.normalize * laststep.normalize} angler:${newdirection.normalize * random.normalize} factor: ${factor} step: ${newdirection.abs * factor}")
     laststep = newdirection * factor
-    println(s"angle:${newdirection.normalize * laststep.normalize} factor: ${factor} step: ${laststep.abs}")
     x = x + laststep
   }
 
