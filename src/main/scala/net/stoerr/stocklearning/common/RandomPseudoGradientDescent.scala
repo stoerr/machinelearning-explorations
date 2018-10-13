@@ -12,6 +12,7 @@ case class RandomPseudoGradientDescent(f: Vec => Double, dim: Int, var x: Vec) {
   var laststep: Vec = randomVector(dim).normalize * eps
   var numstep = 0
 
+  @Deprecated
   def step(): Unit = {
     numstep = numstep + 1
     val y = f(x)
@@ -39,7 +40,7 @@ case class RandomPseudoGradientDescent(f: Vec => Double, dim: Int, var x: Vec) {
       println(s"f(${xx})=${f(x + newdirection * xx) - y}")
     } */
 
-    println(s"angle:${newdirection.normalize * laststep.normalize} angler:${newdirection.normalize * random.normalize} factor: ${factor} step: ${newdirection.abs * factor}")
+    // println(s"angle:${newdirection.normalize * laststep.normalize} angler:${newdirection.normalize * random.normalize} factor: ${factor} step: ${newdirection.abs * factor}")
     laststep = newdirection * factor
     x = x + laststep
   }
