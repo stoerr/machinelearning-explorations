@@ -19,7 +19,7 @@ class TestRandomPseudoGradientDescent extends FunSuite {
     println(nn)
 
     val stepper = RandomPseudoGradientDescent(f, nn.sizeWeights, startvec)
-    for (i <- 0 until 1000 if i < 100 || stepper.laststep.abs > 1e-8 && f(stepper.laststep) > 1e-4 ) {
+    for (i <- 0 until 1000 if i < 100 || stepper.laststep.abs > 1e-8 && f(stepper.x) > 1e-4 ) {
       stepper.step()
     }
     examples.foreach(e => println(s"${e._1.toList} : ${nn.f(e._1)(stepper.x).toList} for ${e._2}"))
@@ -30,7 +30,7 @@ class TestRandomPseudoGradientDescent extends FunSuite {
     println(nn)
 
     val stepper = RandomPseudoGradientDescent(f, nn.sizeWeights, startvec)
-    for (i <- 0 until 1000 if i < 100 || stepper.laststep.abs > 1e-8 && f(stepper.laststep) > 1e-4) {
+    for (i <- 0 until 1000 if i < 100 || stepper.laststep.abs > 1e-8 && f(stepper.x) > 1e-4) {
       stepper.stepOrthogonalRandom()
     }
     examples.foreach(e => println(s"${e._1.toList} : ${nn.f(e._1)(stepper.x).toList} for ${e._2}"))

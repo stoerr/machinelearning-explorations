@@ -45,7 +45,7 @@ case class RandomPseudoGradientDescent(f: Vec => Double, dim: Int, var x: Vec) {
     x = x + laststep
   }
 
-  def stepOrthogonalRandom(): Unit = {
+  def stepOrthogonalRandom(): Double = {
     numstep = numstep + 1
     val newdirection = laststep.randomOrthogonalVector()
 
@@ -55,8 +55,14 @@ case class RandomPseudoGradientDescent(f: Vec => Double, dim: Int, var x: Vec) {
 
     val (xn, yn) = NumericalMinimumFinder.secondorderMinimumSearch(fstep)
     println(s"y: $yn, xs: $xn ($numstep) ${laststep.abs}")
+    if (xn == 0) {
+      println("[" + x.mkString(",") + "]")
+      println("[" + laststep.mkString(",") + "]")
+      println("[" + newdirection.mkString(",") + "]")
+    }
     laststep = fdir(xn) - x
     x = fdir(xn)
+    yn
   }
 
 }
