@@ -38,7 +38,7 @@ case class CGPGene(param: Array[Double], numin: Int, numout: Int) {
     val paramCopy = param.clone()
     if (Random.nextDouble() < outputMutationProbability)
       paramCopy(Random.nextInt(numout) + numout) = Random.nextDouble()
-    else if (!calc.calculated.isEmpty) {
+    else if (calc.calculated.nonEmpty) {
       var visibleMutation = false
       while (!visibleMutation) {
         val nextmutation = Random.nextInt(paramCopy.length)
@@ -57,6 +57,7 @@ case class CGPGene(param: Array[Double], numin: Int, numout: Int) {
 
   def formula(): String = {
     val stringBuilder = new mutable.StringBuilder()
+    stringBuilder.append(param.mkString(",")).append("\n")
     val calc = new Calculator(Array.fill(numin)(0))
     0.until(numout).foreach { o =>
       calc.calculate(param(parms - numout + o), parms - numout)

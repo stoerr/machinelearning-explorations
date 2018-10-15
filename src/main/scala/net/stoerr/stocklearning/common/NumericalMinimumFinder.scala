@@ -98,6 +98,11 @@ case class Stepper(var xy0: (Double, Double), var xy1: (Double, Double), var xy2
       var yest = f(xest)
       if (yest < max(y0, y1)) {
         // println("interpol -> " + xest)
+        if (xest == 0.0) {
+          print("!!!!!!!!!! 0.0")
+          xest = -0.123
+          yest = f(xest)
+        }
         return (xest, yest)
       } else {
         // println("interpol TOO HIGH - " + (xest, yest))
