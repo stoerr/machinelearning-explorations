@@ -6,7 +6,7 @@
     <version>1.0-SNAPSHOT</version>
     <inceptionYear>2008</inceptionYear>
     <properties>
-        <scala.version>2.12.6</scala.version>
+        <scala.version>2.11.12</scala.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
@@ -39,14 +39,14 @@
         <!-- https://mvnrepository.com/artifact/org.scalatest/scalatest -->
         <dependency>
             <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_2.12</artifactId>
+            <artifactId>scalatest_2.11</artifactId>
             <version>3.0.5</version>
             <scope>test</scope>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.log4s/log4s -->
         <dependency>
             <groupId>org.log4s</groupId>
-            <artifactId>log4s_2.12</artifactId>
+            <artifactId>log4s_2.11</artifactId>
             <version>1.6.1</version>
         </dependency>
         <dependency>
@@ -60,6 +60,12 @@
             <version>1.0.0-SNAPSHOT</version>
             <scope>system</scope>
             <systemPath>${basedir}/lib/aparapi.jar</systemPath>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.plotly-scala/plotly-render -->
+        <dependency>
+            <groupId>org.plotly-scala</groupId>
+            <artifactId>plotly-render_2.11</artifactId>
+            <version>0.4.2</version>
         </dependency>
     </dependencies>
 

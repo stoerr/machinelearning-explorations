@@ -8,7 +8,7 @@ object SummarizeCryptoData extends App {
 
   private val path = Path(SummarizeCryptoData.getClass.getResource("/CryptoDataDownload/0pairs.txt").getFile).parent
 
-  val files = path.jfile.listFiles(_.getName.endsWith(".csv"))
+  val files = path.jfile.listFiles().filter(f => f.getName.endsWith(".csv"))
 
   val datasets = files.map(f => CryptoData(f.getPath.replaceFirst(".*/CryptoDataDownload", "CryptoDataDownload"))).sortBy(-_.data.length).sortBy(_.data(0).symbol)
 

@@ -25,8 +25,8 @@ class TestCGPGene extends FunSuite {
     val res = gene.calculate(Array(0.1, 0.2))
     assert(res.length == 1)
     assert(Math.abs(res(0) - 0.12) < 0.00001)
-    println(gene.formula())
-    assert("o0 = c0\nc0 = Add(in0, in1, 0.7)\n" == gene.formula())
+    println(gene.formula)
+    assert("o0 = c0\nc0 = Add(in0, in1, 0.7)\n" == gene.formula)
   }
 
   test("Approximate xor") {
@@ -38,7 +38,7 @@ class TestCGPGene extends FunSuite {
     println(evolution.best._2)
     val approxfunc: Array[Double] => Array[Double] = evolution.best._1.calculate _
     examples foreach (e => println(e._1.toList + " : " + e._2 + " vs. " + approxfunc(e._1).toList))
-    println(evolution.best._1.formula())
+    println(evolution.best._1.formula)
     assert(Math.abs(evolution.best._2) < 0.05)
   }
 

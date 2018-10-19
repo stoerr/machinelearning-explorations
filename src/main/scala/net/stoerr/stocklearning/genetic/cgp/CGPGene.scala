@@ -2,7 +2,7 @@ package net.stoerr.stocklearning.genetic.cgp
 
 import java.lang.Math._
 
-import CGPGene._
+import net.stoerr.stocklearning.genetic.cgp.CGPGene._
 
 import scala.collection.mutable
 import scala.util.Random
@@ -55,9 +55,10 @@ case class CGPGene(param: Array[Double], numin: Int, numout: Int) {
     0.until(numout).map(o => calc.calculate(param(parms - numout + o), parms - numout)).toArray
   }
 
-  def formula(): String = {
+  def serialized = param.mkString(",")
+
+  def formula: String = {
     val stringBuilder = new mutable.StringBuilder()
-    stringBuilder.append(param.mkString(",")).append("\n")
     val calc = new Calculator(Array.fill(numin)(0))
     0.until(numout).foreach { o =>
       calc.calculate(param(parms - numout + o), parms - numout)
