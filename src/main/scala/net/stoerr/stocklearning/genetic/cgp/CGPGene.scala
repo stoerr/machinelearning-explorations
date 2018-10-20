@@ -8,7 +8,7 @@ import scala.collection.mutable
 import scala.util.Random
 
 object CGPGene {
-  val fieldHasParameters = 4
+  val parametersPerField = 4
   val outputMutationProbability = 0.06
 }
 
@@ -16,91 +16,110 @@ object CGPGene {
   * The last numout parameters signify the outputs.
   *
   * @param parameters : calculations ( fieldHasParameters values each ) and then numout output selectors */
-case class CGPGene(param: Array[Double], numin: Int, numout: Int) {
-  def this(numcalc: Int, numin: Int, numout: Int) = this(
-    0.until(numcalc * fieldHasParameters).map(_ => Random.nextDouble()).toArray, numin, numout
+case class CGPGene(numin: Int, numcalc: Int, numout: Int, fieldParam: Array[Double], outParam: Array[Double]) {
+  def this(numin: Int, numcalc: Int, numout: Int) = this(
+    numin, numcalc, numout,
+    0.until(numcalc * parametersPerField).map(_ => Random.nextDouble()).toArray,
+    0.until(numout).map(_ => Random.nextDouble()).toArray
   )
 
-  /** Number of parameters, including outputs */
-  protected val parms: Int = param.length
+  assert(fieldParam.size == numcalc * parametersPerField)
+  assert(outParam.size == numout)
 
   def mutateRandom(): CGPGene = {
-    val paramCopy = param.clone()
+    val paramCopy = fieldParam.clone()
+    val outCopy = outParam.clone()
     paramCopy(Random.nextInt(paramCopy.length)) = Random.nextDouble()
     if (Random.nextDouble() < outputMutationProbability)
-      paramCopy(Random.nextInt(numout) + numout) = Random.nextDouble()
-    this.copy(param = paramCopy)
+      outCopy(Random.nextInt(numout)) = Random.nextDouble()
+    this.copy(fieldParam = paramCopy, outParam = outCopy)
   }
 
   def mutateUntilVisible(): CGPGene = {
     val calc = new Calculator(Array.fill(numin)(1 / PI))
-    0.until(numout).map(o => calc.calculate(param(parms - numout + o), parms - numout)).toArray
-    val paramCopy = param.clone()
+    0.until(numout).foreach(o => calc.calculate(outParam(o)))
+    val paramCopy = fieldParam.clone()
+    val outCopy = outParam.clone()
+    paramCopy(Random.nextInt(paramCopy.length)) = Random.nextDouble()
     if (Random.nextDouble() < outputMutationProbability)
-      paramCopy(Random.nextInt(numout) + numout) = Random.nextDouble()
-    else if (calc.calculated.nonEmpty) {
+      outCopy(Random.nextInt(numout)) = Random.nextDouble()
+    else if (calc.cached.nonEmpty) {
       var visibleMutation = false
       while (!visibleMutation) {
-        val nextmutation = Random.nextInt(paramCopy.length)
+        val nextmutation = Random.nextInt(numcalc * parametersPerField)
         paramCopy(nextmutation) = Random.nextDouble()
-        visibleMutation = nextmutation > parms - numout ||
-          calc.calculated.contains(nextmutation / fieldHasParameters * fieldHasParameters)
+        visibleMutation = calc.cached.contains(nextmutation / parametersPerField)
       }
     }
-    this.copy(param = paramCopy)
+    this.copy(fieldParam = paramCopy, outParam = outCopy)
   }
 
   def calculate(in: Array[Double]): Array[Double] = {
+    assert(in.length == numin)
     val calc = new Calculator(in)
-    0.until(numout).map(o => calc.calculate(param(parms - numout + o), parms - numout)).toArray
+    0.until(numout).map(o => calc.calculate(outParam(o))).toArray
   }
 
-  def serialized = param.mkString(",")
+  def serializedFull: String = s"CGPGene($numin,$numcalc,$numout, Array(${fieldParam.mkString(",")}), Array(${outParam.mkString(",")}))"
+
+  /** minimum representation of output function. */
+  def serialized: String = {
+    val calc = new Calculator(Array.fill(numin)(1 / PI))
+    0.until(numout).foreach(o => calc.calculate(outParam(o)))
+    val cleanedFieldParams = fieldParam.zipWithIndex
+      .map(p => if (calc.cached.contains(p._2 / parametersPerField)) p else (0.0, p._2)).map(_._1)
+    CGPGene(numin, numcalc, numout, cleanedFieldParams, outParam).serializedFull
+  }
 
   def formula: String = {
     val stringBuilder = new mutable.StringBuilder()
     val calc = new Calculator(Array.fill(numin)(0))
     0.until(numout).foreach { o =>
-      calc.calculate(param(parms - numout + o), parms - numout)
-      stringBuilder.append("o" + o + " = " + calc.symMap(param(parms - numout + o), parms - numout) + "\n")
+      calc.calculate(outParam(o))
+      stringBuilder.append("o" + o + " = " + calc.symMap(outParam(o)) + "\n")
     }
-    calc.appendFormulas(stringBuilder, parms - numout)
+    calc.appendFormulas(stringBuilder)
     stringBuilder.toString()
   }
 
-  protected class Calculator(in: Array[Double]) {
+  private class Calculator(in: Array[Double]) {
 
-    /** Maps cell start index to it's result, if already calculated. */
-    val calculated: mutable.Map[Int, Double] = mutable.Map[Int, Double]()
+    /** Maps field to it's result, if already calculated. */
+    val cached: mutable.Map[Int, Double] = mutable.Map[Int, Double]()
 
-    /** Left means input number, Right means cell start index */
-    protected def map(d: Double, maxl: Int): Either[Int, Int] = {
-      val idx = Math.floor(d * (maxl + numin) - numin).toInt
-      if (idx < 0) Left(idx + numin) else Right(idx / fieldHasParameters * fieldHasParameters)
+    /** Left means input number, Right means field. maxFld = the max. field (excl.) */
+    protected def map(d: Double, maxFld: Int): Either[Int, Int] = {
+      val idx = Math.floor(d * (maxFld + numin) - numin).toInt
+      assert(idx < maxFld)
+      assert(idx + numin >= 0)
+      if (idx < 0) Left(idx + numin) else Right(idx)
     }
 
-    def calculate(field: Double, maxIdx: Int): Double = map(field, maxIdx) match {
+    def calculate(field: Double, maxIdx: Int = numcalc): Double = map(field, maxIdx) match {
       case Left(input) => in(input)
-      case Right(idx) => calculated.getOrElseUpdate(idx, {
-        val function = CGPFunction(param(idx))
-        val x = calculate(param(idx + 1), idx)
-        val y = calculate(param(idx + 2), idx)
-        function(x, y, param(idx + 3))
+      case Right(idx) => cached.getOrElseUpdate(idx, {
+        val fieldIdx = idx * parametersPerField
+        val function = CGPFunction(fieldParam(fieldIdx))
+        val x = calculate(fieldParam(fieldIdx + 1), idx)
+        val y = calculate(fieldParam(fieldIdx + 2), idx)
+        function(x, y, fieldParam(fieldIdx + 3))
       }
       )
     }
 
-    def symMap(d: Double, maxl: Int): String = map(d, maxl) match {
+    def symMap(d: Double, maxFld: Int = numcalc): String = map(d, maxFld) match {
       case Left(input) => "in" + input
       case Right(idx) => "c" + idx
     }
 
-    def appendFormulas(stringBuilder: StringBuilder, maxIdx: Int): Unit = {
-      0.to(maxIdx - 1, fieldHasParameters).reverse.filter(calculated.contains) foreach { idx =>
-        val function = CGPFunction(param(idx))
+    def appendFormulas(stringBuilder: StringBuilder, maxIdx: Int = numcalc): Unit = {
+      0.to(maxIdx - 1).reverse.filter(cached.contains) foreach { idx =>
+        val fieldIdx = idx * parametersPerField
+        val function = CGPFunction(fieldParam(fieldIdx))
         stringBuilder.append(
-          "c" + (idx / fieldHasParameters) + " = " +
-            function.toString + "(" + symMap(param(idx + 1), idx) + ", " + symMap(param(idx + 2), idx) + ", " + param(idx + 3) + ")\n"
+          s"c$idx = $function(${symMap(fieldParam(fieldIdx + 1), idx)}, ${
+            symMap(fieldParam(fieldIdx + 2), idx)
+          }, ${fieldParam(fieldIdx + 3)})\n"
         )
       }
     }

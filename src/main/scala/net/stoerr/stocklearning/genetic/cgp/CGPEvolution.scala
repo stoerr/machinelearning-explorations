@@ -7,7 +7,7 @@ case class CGPEvolution(numcalc: Int, numin: Int, numout: Int, fitness: (Array[D
 
   /** current population, ordered by fitness from best to least */
   var population: Seq[(CGPGene, Double)] = 0.until(keepBest + createMutations)
-    .map(_ => new CGPGene(numcalc, numin, numout))
+    .map(_ => new CGPGene(numin, numcalc, numout))
     .map(addfitness).sortBy(_._2)
 
   protected def addfitness(g: CGPGene): (CGPGene, Double) = (g, fitness(g.calculate))
