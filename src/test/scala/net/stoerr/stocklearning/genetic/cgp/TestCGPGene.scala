@@ -46,21 +46,37 @@ class TestCGPGene extends FunSuite {
     }
   }
 
-  test ("mutateUntilVisible") {
-    val gene = new CGPGene(5, 50, 3)
-    val invec = 0.until(gene.numin).map(i => Random.nextDouble()).toArray
-    val result = gene.calculate(invec)
+  test("mutateUntilVisible") {
+    val samples = 100
+    val rounds = 100
     var count = 0
-    for (i <- 0 until 100) {
-      val mutated = gene.mutateUntilVisible()
-      val mresult = mutated.calculate(invec)
-      var different = false
-      for (o <- 0 until gene.numout)
-        different = different || result(o) != mresult(o)
-      if (different) count += 1
+    for (r <- 0 to rounds) {
+      val gene = new CGPGene(5, 100, 3)
+      val invec = 0.until(gene.numin).map(i => Random.nextDouble()).toArray
+      val result = gene.calculate(invec)
+      for (i <- 0 until samples) {
+        val mutated = gene.mutateUntilVisible()
+        val mresult = mutated.calculate(invec)
+        var different = false
+        for (o <- 0 until gene.numout)
+          different = different || result(o) != mresult(o)
+        if (different) count += 1
+      }
     }
     println(count)
-    assert(count > 30)
+    assert(count > samples * rounds / 2)
+  }
+
+  test("dependsOn") {
+    def depends(f: Double => Double): Double = Math.abs(f(Random.nextGaussian()) - f(Random.nextGaussian()))
+
+    val a1 = Stream.continually(Random.nextGaussian())
+    val a2 = Stream.continually(Random.nextGaussian())
+    for (func <- CGPFunction.values) {
+      assert(func.dependsOn(1) == (0.to(20).map(a => depends(func(_, a1(a), a2(a)))).sum > 0), s"$func - 1")
+      assert(func.dependsOn(2) == (0.to(20).map(a => depends(func(a1(a), _, a2(a)))).sum > 0), s"$func - 2")
+      assert(func.dependsOn(3) == (0.to(20).map(a => depends(func(a1(a), a2(a), _))).sum > 0), s"$func - 3")
+    }
   }
 
   test("buysimulator") {

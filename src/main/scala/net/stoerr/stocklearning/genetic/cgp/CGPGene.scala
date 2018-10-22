@@ -117,9 +117,13 @@ case class CGPGene(numin: Int, numcalc: Int, numout: Int, fieldParam: Array[Doub
         val fieldIdx = idx * parametersPerField
         val function = CGPFunction(fieldParam(fieldIdx))
         stringBuilder.append(
-          s"c$idx = $function(${symMap(fieldParam(fieldIdx + 1), idx)}, ${
-            symMap(fieldParam(fieldIdx + 2), idx)
-          }, ${fieldParam(fieldIdx + 3)})\n"
+          s"c$idx = $function(${
+            if (function.dependsOn(1)) symMap(fieldParam(fieldIdx + 1), idx) else ""
+          }, ${
+            if (function.dependsOn(2)) symMap(fieldParam(fieldIdx + 2), idx) else ""
+          }, ${
+            if (function.dependsOn(3)) fieldParam(fieldIdx + 3) else ""
+          })\n"
         )
       }
     }
@@ -131,6 +135,17 @@ sealed trait CGPFunction {
   def apply(x: => Double, y: => Double, p: Double): Double
 
   protected def expandP(p: Double): Double = 4 * p - 2
+
+  /** Whether the function uses the named argument: 1 = x, 2 = y, 3 = p . */
+  def dependsOn(arg: Int): Boolean
+}
+
+protected trait DependsOnAll extends CGPFunction {
+  def dependsOn(arg: Int): Boolean = true
+}
+
+protected trait DependsExceptY extends CGPFunction {
+  def dependsOn(arg: Int): Boolean = arg != 2
 }
 
 object CGPFunction {
@@ -139,58 +154,58 @@ object CGPFunction {
   def apply(f: Double): CGPFunction = values(Math.floor(f * values.size).toInt)
 }
 
-case object Add extends CGPFunction {
+case object Add extends CGPFunction with DependsOnAll {
   override def apply(x: => Double, y: => Double, p: Double): Double = expandP(p) * (x + y) / 2
 }
 
-case object AMinus extends CGPFunction {
+case object AMinus extends CGPFunction with DependsOnAll {
   override def apply(x: => Double, y: => Double, p: Double): Double = expandP(p) * abs(x - y) / 2
 }
 
-case object Mult extends CGPFunction {
+case object Mult extends CGPFunction with DependsOnAll {
   override def apply(x: => Double, y: => Double, p: Double): Double = expandP(p) * x * y
 }
 
-case object Cmult extends CGPFunction {
+case object Cmult extends CGPFunction with DependsExceptY {
   override def apply(x: => Double, y: => Double, p: Double): Double = expandP(p) * x
 }
 
-case object Inv extends CGPFunction {
+case object Inv extends CGPFunction with DependsExceptY {
   override def apply(x: => Double, y: => Double, p: Double): Double = expandP(p) * (if (x != 0) 1 / x else 0)
 }
 
-case object Abs extends CGPFunction {
+case object Abs extends CGPFunction with DependsExceptY {
   override def apply(x: => Double, y: => Double, p: Double): Double = expandP(p) * abs(x)
 }
 
-case object Sqrt extends CGPFunction {
+case object Sqrt extends CGPFunction with DependsExceptY {
   override def apply(x: => Double, y: => Double, p: Double): Double = expandP(p) * sqrt(abs(x))
 }
 
-case object CPow extends CGPFunction {
+case object CPow extends CGPFunction with DependsExceptY {
   override def apply(x: => Double, y: => Double, p: Double): Double = pow(abs(x), p)
 }
 
-case object YPow extends CGPFunction {
+case object YPow extends CGPFunction with DependsOnAll {
   override def apply(x: => Double, y: => Double, p: Double): Double = expandP(p) * pow(abs(x), abs(y))
 }
 
-case object ExpX extends CGPFunction {
+case object ExpX extends CGPFunction with DependsExceptY {
   override def apply(x: => Double, y: => Double, p: Double): Double = expandP(p) * (exp(x) - 1) / (E - 1)
 }
 
-case object Sin extends CGPFunction {
+case object Sin extends CGPFunction with DependsExceptY {
   override def apply(x: => Double, y: => Double, p: Double): Double = sin(2 * PI * p * x)
 }
 
-case object SqrtXY extends CGPFunction {
+case object SqrtXY extends CGPFunction with DependsOnAll {
   override def apply(x: => Double, y: => Double, p: Double): Double = expandP(p) * sqrt(x * x + y * y) / sqrt(2)
 }
 
-case object Max extends CGPFunction {
+case object Max extends CGPFunction with DependsOnAll {
   override def apply(x: => Double, y: => Double, p: Double): Double = expandP(p) * max(x, y)
 }
 
-case object Min extends CGPFunction {
+case object Min extends CGPFunction with DependsOnAll {
   override def apply(x: => Double, y: => Double, p: Double): Double = expandP(p) * min(x, y)
 }
