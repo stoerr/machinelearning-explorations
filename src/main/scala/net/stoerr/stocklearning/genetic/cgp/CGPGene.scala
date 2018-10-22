@@ -133,10 +133,10 @@ case class CGPGene(numin: Int, numcalc: Int, numout: Int, fieldParam: Array[Doub
         val function = CGPFunction(fieldParam(fieldIdx))
         stringBuilder.append(
           s"c$idx = $function(${
-            if (function.dependsOn(1)) symMap(fieldParam(fieldIdx + 1), idx) else ""
-          }, ${
-            if (function.dependsOn(2)) symMap(fieldParam(fieldIdx + 2), idx) else ""
-          }, ${
+            if (function.dependsOn(1)) symMap(fieldParam(fieldIdx + 1), idx) + ", " else ""
+          }${
+            if (function.dependsOn(2)) symMap(fieldParam(fieldIdx + 2), idx) + ", " else ""
+          }${
             if (function.dependsOn(3)) fieldParam(fieldIdx + 3) else ""
           })\n"
         )
