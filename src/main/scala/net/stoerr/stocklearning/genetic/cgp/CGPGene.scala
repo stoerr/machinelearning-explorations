@@ -15,7 +15,7 @@ object CGPGene {
 /** CGP "individual". Parameters are all in [0,1). There are four parameters per item, x, y, p, f.
   * The last numout parameters signify the outputs.
   *
-  * @param parameters : calculations ( fieldHasParameters values each ) and then numout output selectors */
+  * @param fieldParam : calculations ( fieldHasParameters values each ) */
 case class CGPGene(numin: Int, numcalc: Int, numout: Int, fieldParam: Array[Double], outParam: Array[Double]) {
   def this(numin: Int, numcalc: Int, numout: Int) = this(
     numin, numcalc, numout,
@@ -23,8 +23,8 @@ case class CGPGene(numin: Int, numcalc: Int, numout: Int, fieldParam: Array[Doub
     0.until(numout).map(_ => Random.nextDouble()).toArray
   )
 
-  assert(fieldParam.size == numcalc * parametersPerField)
-  assert(outParam.size == numout)
+  assert(fieldParam.length == numcalc * parametersPerField)
+  assert(outParam.length == numout)
 
   def mutateRandom(): CGPGene = {
     val paramCopy = fieldParam.clone()
@@ -35,7 +35,8 @@ case class CGPGene(numin: Int, numcalc: Int, numout: Int, fieldParam: Array[Doub
     this.copy(fieldParam = paramCopy, outParam = outCopy)
   }
 
-  def mutateUntilVisible(): CGPGene = {
+  @Deprecated
+  protected def mutateUntilVisibleOld(): CGPGene = {
     val calc = new Calculator(Array.fill(numin)(1 / PI))
     0.until(numout).foreach(o => calc.calculate(outParam(o)))
     val paramCopy = fieldParam.clone()
@@ -52,6 +53,20 @@ case class CGPGene(numin: Int, numcalc: Int, numout: Int, fieldParam: Array[Doub
       }
     }
     this.copy(fieldParam = paramCopy, outParam = outCopy)
+  }
+
+  def mutateUntilVisible(): CGPGene = {
+    import net.stoerr.stocklearning.common.DoubleArrayVector._
+    val samples = 0.to(20).map(_ => Stream.continually(Random.nextGaussian()).take(numin).toArray).toArray
+      .map(in => (in, calculate(in)))
+    while (true) {
+      val mutation = this.mutateRandom()
+      for (sample <- samples) {
+        val out = mutation.calculate(sample._1)
+        if ((sample._2 - out).abs > 0) return mutation
+      }
+    }
+    null // impossible
   }
 
   def calculate(in: Array[Double]): Array[Double] = {
@@ -113,7 +128,7 @@ case class CGPGene(numin: Int, numcalc: Int, numout: Int, fieldParam: Array[Doub
     }
 
     def appendFormulas(stringBuilder: StringBuilder, maxIdx: Int = numcalc): Unit = {
-      0.to(maxIdx - 1).reverse.filter(cached.contains) foreach { idx =>
+      0.until(maxIdx).reverse.filter(cached.contains) foreach { idx =>
         val fieldIdx = idx * parametersPerField
         val function = CGPFunction(fieldParam(fieldIdx))
         stringBuilder.append(
