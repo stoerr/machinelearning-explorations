@@ -1,6 +1,7 @@
 package net.stoerr.stocklearning.genetic.cgp
 
-case class CGPEvolution(numcalc: Int, numin: Int, numout: Int, fitness: (Array[Double] => Array[Double]) => Double) {
+case class CGPEvolution(numcalc: Int, numin: Int, numout: Int, fitness: (Array[Double] => Array[Double]) => Double,
+                        var init: CGPGene = null) {
 
   val keepBest = 1
   val createMutations = 4
@@ -9,6 +10,8 @@ case class CGPEvolution(numcalc: Int, numin: Int, numout: Int, fitness: (Array[D
   var population: Seq[(CGPGene, Double)] = 0.until(keepBest + createMutations)
     .map(_ => new CGPGene(numin, numcalc, numout))
     .map(addfitness).sortBy(_._2)
+
+  if (init != null) population = Seq(init).map(addfitness) ++ population.drop(1)
 
   protected def addfitness(g: CGPGene): (CGPGene, Double) = (g, fitness(g.calculate))
 
