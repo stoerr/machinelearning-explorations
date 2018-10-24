@@ -10,14 +10,14 @@ object SummarizeCryptoData extends App {
 
   val files = path.jfile.listFiles().filter(f => f.getName.endsWith(".csv"))
 
-  val datasets = files.map(f => CryptoData(f.getPath.replaceFirst(".*/CryptoDataDownload", "CryptoDataDownload"))).sortBy(-_.data.length).sortBy(_.data(0).symbol)
+  val datasets = files.map(f => CryptoData(f.getPath.replaceFirst(".*/CryptoDataDownload", "CryptoDataDownload"))).sortBy(-_.data.length).sortBy(_.data(0).symbol.name)
 
   datasets.foreach(d => {
     println(d.path)
     println(s"${d.data.length} days of ${d.currencypair}" )
     println(s"${d.data.map(_.date).min} to ${d.data.map(_.date).max}")
     println(s"price from ${d.data.map(_.med).min} to ${d.data.map(_.med).max}")
-    println(s"Sum volume from ${d.data.map(_.volumeTo).sum} , volume to ${d.data.map(_.volumeTo).sum}")
+    println(s"Sum volume from ${d.data.map(_.volume).sum} , volume to ${d.data.map(_.volume).sum}")
     println()
   })
 
