@@ -1,6 +1,5 @@
 package net.stoerr.stocklearning.genetic.cgp
 
-import net.stoerr.stocklearning.data.BuySimulator
 import org.scalatest.FunSuite
 
 import scala.util.Random
@@ -77,18 +76,6 @@ class TestCGPGene extends FunSuite {
       assert(func.dependsOn(2) == (0.to(20).map(a => depends(func(a1(a), _, a2(a)))).sum > 0), s"$func - 2")
       assert(func.dependsOn(3) == (0.to(20).map(a => depends(func(a1(a), a2(a), _))).sum > 0), s"$func - 3")
     }
-  }
-
-  test("buysimulator") {
-    var buy = BuySimulator()
-    assertResult((200, 0))(buy((100, 200), 2, 1000))
-    assertResult((100, 200))(buy((100, 200), 2, 0))
-    assertResult((0, 400))(buy((100, 200), 2, -1000))
-
-    buy = BuySimulator(0.01)
-    assertResult((199, 0))(buy((100, 200), 2, 1000))
-    assertResult((100, 200))(buy((100, 200), 2, 0))
-    assertResult((0, 398))(buy((100, 200), 2, -1000))
   }
 
 }
