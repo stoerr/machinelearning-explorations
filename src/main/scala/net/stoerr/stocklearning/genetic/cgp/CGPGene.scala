@@ -26,6 +26,9 @@ case class CGPGene(numin: Int, numcalc: Int, numout: Int, fieldParam: Array[Doub
   assert(fieldParam.length == numcalc * parametersPerField)
   assert(outParam.length == numout)
 
+  override def toString: String = s"new CGPGene($numin, $numcalc, $numout, Array(${fieldParam.mkString(",")}), " +
+    s"Array(${outParam.mkString(",")}))"
+
   def mutateRandom(): CGPGene = {
     val paramCopy = fieldParam.clone()
     val outCopy = outParam.clone()
