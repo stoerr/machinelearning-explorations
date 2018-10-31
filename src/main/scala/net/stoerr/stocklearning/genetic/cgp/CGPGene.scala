@@ -117,7 +117,12 @@ case class CGPGene(numin: Int, numcalc: Int, numout: Int, fieldParam: Array[Doub
         val function = CGPFunction(fieldParam(fieldIdx))
         val x = calculate(fieldParam(fieldIdx + 1), idx)
         val y = calculate(fieldParam(fieldIdx + 2), idx)
-        function(x, y, fieldParam(fieldIdx + 3))
+        val res = function(x, y, fieldParam(fieldIdx + 3))
+        if (res.isNaN || res.isInfinite) {
+          println((function, x, y, fieldParam(fieldIdx + 3)))
+          ???
+        }
+        res
       }
       )
     }
@@ -164,7 +169,7 @@ protected trait DependsExceptY extends CGPFunction {
 }
 
 object CGPFunction {
-  val values = List(Add, AMinus, Mult, Cmult, Inv, Abs, Sqrt, CPow, YPow, ExpX, Sin, SqrtXY, Max, Min)
+  val values = List(Add, AMinus, Mult, Cmult, Inv, Abs, Sqrt, CPow, /* YPow, ExpX,*/ Sin, SqrtXY, Max, Min)
 
   def apply(f: Double): CGPFunction = values(Math.floor(f * values.size).toInt)
 }
@@ -201,6 +206,7 @@ case object CPow extends CGPFunction with DependsExceptY {
   override def apply(x: => Double, y: => Double, p: Double): Double = pow(abs(x), p)
 }
 
+/* May easily be NaN
 case object YPow extends CGPFunction with DependsOnAll {
   override def apply(x: => Double, y: => Double, p: Double): Double = expandP(p) * pow(abs(x), abs(y))
 }
@@ -208,6 +214,7 @@ case object YPow extends CGPFunction with DependsOnAll {
 case object ExpX extends CGPFunction with DependsExceptY {
   override def apply(x: => Double, y: => Double, p: Double): Double = expandP(p) * (exp(x) - 1) / (E - 1)
 }
+*/
 
 case object Sin extends CGPFunction with DependsExceptY {
   override def apply(x: => Double, y: => Double, p: Double): Double = sin(2 * PI * p * x)

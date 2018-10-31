@@ -1,6 +1,8 @@
 package net.stoerr.stocklearning.genetic.cgp
 
-case class CGPEvolution(numcalc: Int, numin: Int, numout: Int, fitness: (Array[Double] => Array[Double]) => Double,
+import net.stoerr.stocklearning.common.DoubleArrayVector.Vec
+
+case class CGPEvolution(numcalc: Int, numin: Int, numout: Int, fitness: (Vec => Vec) => Double,
                         var init: CGPGene = null) {
 
   val keepBest = 1
@@ -29,7 +31,7 @@ case class CGPEvolution(numcalc: Int, numin: Int, numout: Int, fitness: (Array[D
 }
 
 object CGPEvolution {
-  def approximationFitness(examples: Seq[(Array[Double], Double)]): (Array[Double] => Array[Double]) => Double = { func =>
+  def approximationFitness(examples: Seq[(Array[Double], Double)]): (Vec => Vec) => Double = { func =>
     def sqr(x: Double) = x * x
 
     -Math.sqrt(examples.par.map(e => sqr(func(e._1)(0) - e._2)).sum / examples.size)
