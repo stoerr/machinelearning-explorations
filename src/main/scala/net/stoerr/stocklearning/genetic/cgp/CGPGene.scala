@@ -73,7 +73,7 @@ case class CGPGene(numin: Int, numcalc: Int, numout: Int, fieldParam: Array[Doub
   }
 
   def calculate(in: Array[Double]): Array[Double] = {
-    assert(in.length == numin)
+    assert(in.length == numin, s"${in.length} != $numin")
     val calc = new Calculator(in)
     0.until(numout).map(o => calc.calculate(outParam(o))).toArray
   }
