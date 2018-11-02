@@ -172,7 +172,7 @@ protected trait DependsExceptY extends CGPFunction {
 }
 
 object CGPFunction {
-  val values = List(Add, AMinus, Mult, Cmult, Inv, Abs, Sqrt, CPow, /* YPow, ExpX,*/ Sin, SqrtXY, Max, Min)
+  val values = List(Add, AMinus, Mult, Cmult, Inv, Abs, Sqrt, CPow, /* YPow, ExpX, Sin,*/ SqrtXY, Max, Min)
 
   def apply(f: Double): CGPFunction = values(Math.floor(f * values.size).toInt)
 }
@@ -217,11 +217,11 @@ case object YPow extends CGPFunction with DependsOnAll {
 case object ExpX extends CGPFunction with DependsExceptY {
   override def apply(x: => Double, y: => Double, p: Double): Double = expandP(p) * (exp(x) - 1) / (E - 1)
 }
-*/
 
 case object Sin extends CGPFunction with DependsExceptY {
   override def apply(x: => Double, y: => Double, p: Double): Double = sin(2 * PI * p * x)
 }
+*/
 
 case object SqrtXY extends CGPFunction with DependsOnAll {
   override def apply(x: => Double, y: => Double, p: Double): Double = expandP(p) * sqrt(x * x + y * y) / sqrt(2)
