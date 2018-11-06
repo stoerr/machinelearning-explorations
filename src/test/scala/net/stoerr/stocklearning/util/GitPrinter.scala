@@ -12,8 +12,13 @@ object GitPrinter {
   val commitDescription: String = gitprops.getProperty("git.commit.id.describe")
 
   def printGitinfo(): Unit = {
-    Source.fromFile(".git/logs/HEAD").getLines().toArray.takeRight(1).foreach(println)
     println("git: " + gitprops.getProperty("git.commit.id.describe") + " - " + gitprops.getProperty("git.commit.message.short"))
+    try {
+      val src = Source.fromFile(".git/logs/HEAD")
+      if (src.nonEmpty) src.getLines().toArray.takeRight(1).foreach(println)
+    } catch {
+      case e: Exception => println(e)
+    }
   }
 
 }
