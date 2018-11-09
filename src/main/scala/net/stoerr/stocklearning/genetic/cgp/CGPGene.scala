@@ -174,11 +174,11 @@ object CGPFunction {
 }
 
 case object Add extends CGPFunction with DependsOnAll {
-  override def apply(x: => Double, y: => Double, p: Double): Double = expandP(p) * (x + y) / 2
+  override def apply(x: => Double, y: => Double, p: Double): Double = (x + expandP(p) * y) / 2
 }
 
 case object AMinus extends CGPFunction with DependsOnAll {
-  override def apply(x: => Double, y: => Double, p: Double): Double = expandP(p) * abs(x - y) / 2
+  override def apply(x: => Double, y: => Double, p: Double): Double = abs(x - expandP(p) * y) / 2
 }
 
 case object Mult extends CGPFunction with DependsOnAll {
@@ -210,7 +210,7 @@ case object YPow extends CGPFunction with DependsOnAll {
 }
 
 case object ExpX extends CGPFunction with DependsExceptY {
-  override def apply(x: => Double, y: => Double, p: Double): Double = expandP(p) * (exp(x) - 1) / (E - 1)
+  override def apply(x: => Double, y: => Double, p: Double): Double = (exp(expandP(p) * x) - 1) / (E - 1)
 }
 
 case object Sin extends CGPFunction with DependsExceptY {
@@ -218,13 +218,13 @@ case object Sin extends CGPFunction with DependsExceptY {
 }
 
 case object SqrtXY extends CGPFunction with DependsOnAll {
-  override def apply(x: => Double, y: => Double, p: Double): Double = expandP(p) * sqrt(x * x + y * y) / sqrt(2)
+  override def apply(x: => Double, y: => Double, p: Double): Double = sqrt(x * x + expandP(p) * y * y) / sqrt(2)
 }
 
 case object Max extends CGPFunction with DependsOnAll {
-  override def apply(x: => Double, y: => Double, p: Double): Double = expandP(p) * max(x, y)
+  override def apply(x: => Double, y: => Double, p: Double): Double = max(x, expandP(p) * y)
 }
 
 case object Min extends CGPFunction with DependsOnAll {
-  override def apply(x: => Double, y: => Double, p: Double): Double = expandP(p) * min(x, y)
+  override def apply(x: => Double, y: => Double, p: Double): Double = min(x, expandP(p) * y)
 }
