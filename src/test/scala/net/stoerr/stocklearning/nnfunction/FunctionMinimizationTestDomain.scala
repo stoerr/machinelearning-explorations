@@ -1,4 +1,4 @@
-package net.stoerr.stocklearning.util
+package net.stoerr.stocklearning.nnfunction
 
 import java.lang.Math.cosh
 

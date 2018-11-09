@@ -2,7 +2,7 @@ package net.stoerr.stocklearning.common
 
 import net.stoerr.stocklearning.common.DoubleArrayVector._
 import net.stoerr.stocklearning.deepnn.{DeepNN, DeepNNLayers}
-import net.stoerr.stocklearning.util.FunctionMinimizationTestFunction
+import net.stoerr.stocklearning.nnfunction.FunctionMinimizationTestFunction
 import org.scalatest.FunSuite
 
 class TestRandomPseudoGradientDescent extends FunSuite {

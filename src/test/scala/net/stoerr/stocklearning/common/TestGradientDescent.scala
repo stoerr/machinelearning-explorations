@@ -1,7 +1,7 @@
 package net.stoerr.stocklearning.common
 
 import net.stoerr.stocklearning.common.DValue._
-import net.stoerr.stocklearning.util.{FunctionMinimizationTestDomain, FunctionMinimizationTestFunction}
+import net.stoerr.stocklearning.nnfunction.{FunctionMinimizationTestDomain, FunctionMinimizationTestFunction}
 import org.scalatest.FunSuite
 
 /**

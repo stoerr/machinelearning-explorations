@@ -127,8 +127,10 @@
                 </configuration>
             </plugin>
             <plugin>
+                <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-assembly-plugin -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.1.0</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -143,9 +145,12 @@
                                     </mainClass>
                                 </manifest>
                             </archive>
-                            <descriptors>
+                            <!-- <descriptors>
                                 <descriptor>src/assembly/all.xml</descriptor>
-                            </descriptors>
+                            </descriptors> -->
+                            <descriptorRefs>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                            </descriptorRefs>
                         </configuration>
                     </execution>
                 </executions>
