@@ -7,7 +7,11 @@ import scala.io.Source
 object GitPrinter {
 
   val gitprops = new Properties()
-  gitprops.load(getClass.getClassLoader.getResourceAsStream("git.properties"))
+  try {
+    gitprops.load(getClass.getClassLoader.getResourceAsStream("git.properties"))
+  } catch {
+    case e: Exception => println(e)
+  }
 
   val commitDescription: String = gitprops.getProperty("git.commit.id.describe")
 
