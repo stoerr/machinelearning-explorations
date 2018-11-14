@@ -59,14 +59,13 @@ case class CGPGene(numin: Int, numcalc: Int, numout: Int, fieldParam: Array[Doub
   }
 
   def mutateUntilVisible(): CGPGene = {
-    import net.stoerr.stocklearning.common.DoubleArrayVector._
-    val samples = 0.to(20).map(_ => Stream.continually(Random.nextGaussian()).take(numin).toArray).toArray
+    val samples = 0.to(20).map(_ => Stream.continually(Random.nextDouble() * 0.01).take(numin).toArray).toArray
       .map(in => (in, calculate(in)))
     while (true) {
       val mutation = this.mutateRandom()
       for (sample <- samples) {
         val out = mutation.calculate(sample._1)
-        if ((sample._2 - out).abs > 0) return mutation
+        if (sample._2.zip(out).exists(p => p._1 != p._2)) return mutation
       }
     }
     null // impossible

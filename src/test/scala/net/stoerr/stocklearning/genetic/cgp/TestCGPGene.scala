@@ -12,8 +12,8 @@ class TestCGPGene extends FunSuite {
     assert("CGPGene(2,1,1, Array(0.001,0.002,0.503,0.7), Array(0.8))" == gene.serializedFull)
     val res = gene.calculate(Array(0.1, 0.2))
     assert(res.length == 1)
-    assert(Math.abs(res(0) - 0.12) < 0.00001)
     println(gene.formula)
+    assert(Math.abs(res(0) - Add(0.1, 0.2, 0.7)) < 0.00001)
     assert("o0 = c0\nc0 = Add(in0, in1, 0.7)\n" == gene.formula)
   }
 
@@ -67,14 +67,14 @@ class TestCGPGene extends FunSuite {
   }
 
   test("dependsOn") {
-    def depends(f: Double => Double): Double = Math.abs(f(Random.nextGaussian()) - f(Random.nextGaussian()))
+    def depends(f: Double => Double): Boolean = f(Random.nextGaussian()) != f(Random.nextGaussian())
 
     val a1 = Stream.continually(Random.nextGaussian())
     val a2 = Stream.continually(Random.nextGaussian())
     for (func <- CGPFunction.values) {
-      assert(func.dependsOn(1) == (0.to(20).map(a => depends(func(_, a1(a), a2(a)))).sum > 0), s"$func - 1")
-      assert(func.dependsOn(2) == (0.to(20).map(a => depends(func(a1(a), _, a2(a)))).sum > 0), s"$func - 2")
-      assert(func.dependsOn(3) == (0.to(20).map(a => depends(func(a1(a), a2(a), _))).sum > 0), s"$func - 3")
+      assert(func.dependsOn(1) == (0.to(20).exists(a => depends(func(_, a1(a), a2(a))))), s"$func - 1")
+      assert(func.dependsOn(2) == (0.to(20).exists(a => depends(func(a1(a), _, a2(a))))), s"$func - 2")
+      assert(func.dependsOn(3) == (0.to(20).exists(a => depends(func(a1(a), a2(a), _)))), s"$func - 3")
     }
   }
 
