@@ -24,10 +24,13 @@ trait AbstractLearner[REP <: AnyRef] {
 
   def func(gene: REP): Vec => Vec
 
+  var printIntermediate: REP => Unit = { _ => }
+
   def stepUntil(gene: REP, fitness: FitnessFunction, roundmax: Int): REP = {
     var result = gene
     for (rnd <- 0.until(roundmax, 200)) {
       result = stepping(result, fitness, rnd.until(rnd + 200))
+      printIntermediate(result)
     }
     result
   }
