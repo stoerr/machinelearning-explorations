@@ -5,6 +5,7 @@ import net.stoerr.stocklearning.common.RandomPseudoGradientDescent
 import net.stoerr.stocklearning.deepnn.DeepNN
 import net.stoerr.stocklearning.genetic.cgp.{CGPEvolution, CGPGene}
 import net.stoerr.stocklearning.unified.FitnessFunctions.FitnessFunction
+import net.stoerr.stocklearning.util.GitPrinter
 
 object FitnessFunctions {
 
@@ -35,12 +36,14 @@ trait AbstractLearner[REP <: AnyRef] {
     result
   }
 
-  def competitiveStepping(gene: REP, fitness: FitnessFunction, roundmax: Int, numcomp: Int = 10, prerounds: Int = 20000): REP = {
+  def competitiveStepping(gene: REP, fitness: FitnessFunction, roundmax: Int, numcomp: Int = 10,
+                          prerounds: Int = 20000, competitionFitness: FitnessFunction = null): REP = {
+    val compareFitness = if (competitionFitness != null) competitionFitness else fitness
     var best: REP = stepUntil(gene, fitness, prerounds)
-    var bestFitness = fitness(func(best))
+    var bestFitness = compareFitness(func(best))
     for (pretry <- 1 until numcomp) {
       val trygene: REP = stepUntil(gene, fitness, prerounds)
-      val trygenefitness = fitness(func(trygene))
+      val trygenefitness = compareFitness(func(trygene))
       if (trygenefitness > bestFitness) {
         bestFitness = trygenefitness
         best = trygene
@@ -82,6 +85,7 @@ class DeepNNLearner(nn: DeepNN) extends AbstractLearner[Vec] {
       val stepresult = stepper.stepOrthogonalRandom()
       print(s"$rnd : $stepresult\t")
     }
+    GitPrinter.printGitinfo()
     println("\nlearned weights: Array(" + stepper.x.mkString(", ") + ")")
     stepper.x
   }
