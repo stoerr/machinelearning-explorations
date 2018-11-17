@@ -12,10 +12,13 @@ object FitnessFunctions {
   type FitnessFunction = Function[Vec => Vec, Double]
 
   def sumAvgFunction(fitnesses: Seq[FitnessFunction]): FitnessFunction =
-    func => fitnesses.map(_ (func)).sum / fitnesses.size
+    func => fitnesses.map(_ (func)).toList.sum / fitnesses.size
 
   def multAvgFunction(fitnesses: Seq[FitnessFunction]): FitnessFunction =
-    func => math.pow(fitnesses.map(_ (func)).product, 1.0 / fitnesses.size)
+    func => math.pow(fitnesses.map(_ (func)).toList.product, 1.0 / fitnesses.size)
+
+  def minFunction(fitnesses: Seq[FitnessFunction]): FitnessFunction =
+    func => fitnesses.map(fitness => fitness.apply(func)).toList.min
 
 }
 
