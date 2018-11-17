@@ -11,14 +11,25 @@ object FitnessFunctions {
 
   type FitnessFunction = Function[Vec => Vec, Double]
 
-  def sumAvgFunction(fitnesses: Seq[FitnessFunction]): FitnessFunction =
-    func => fitnesses.map(_ (func)).toList.sum / fitnesses.size
+  def sumAvgFunction(fitnesses: Array[FitnessFunction]): FitnessFunction =
+    func => fitnesses.map(_ (func)).toList.sum / fitnesses.length
 
-  def multAvgFunction(fitnesses: Seq[FitnessFunction]): FitnessFunction =
-    func => math.pow(fitnesses.map(_ (func)).toList.product, 1.0 / fitnesses.size)
+  def multAvgFunction(fitnesses: Array[FitnessFunction]): FitnessFunction =
+    func => math.pow(fitnesses.map(_ (func)).toList.product, 1.0 / fitnesses.length)
 
-  def minFunction(fitnesses: Seq[FitnessFunction]): FitnessFunction =
-    func => fitnesses.map(fitness => fitness.apply(func)).toList.min
+  def minFunction(fitnesses: Array[FitnessFunction]): FitnessFunction =
+    func => {
+      val calculated = fitnesses.map(fitness => fitness.apply(func))
+      if (calculated.exists(n => n.isInfinite || n.isNaN)) Double.NaN else calculated.min
+    }
+
+  def almostMinFunction(fitnesses: Array[FitnessFunction]): FitnessFunction =
+    func => {
+      def f(x: Double) = math.signum(x) * x * x / (x * x + 1)
+
+      val calculated = fitnesses.map(fitness => fitness.apply(func)).map(f)
+      calculated.sum / calculated.length
+    }
 
 }
 
@@ -29,6 +40,8 @@ trait AbstractLearner[REP <: AnyRef] {
   def func(gene: REP): Vec => Vec
 
   var printIntermediate: REP => Unit = { _ => }
+
+  var stepinfo = ""
 
   def stepUntil(gene: REP, fitness: FitnessFunction, roundmax: Int): REP = {
     var result = gene
@@ -42,9 +55,11 @@ trait AbstractLearner[REP <: AnyRef] {
   def competitiveStepping(gene: REP, fitness: FitnessFunction, roundmax: Int, numcomp: Int = 10,
                           prerounds: Int = 20000, competitionFitness: FitnessFunction = null): REP = {
     val compareFitness = if (competitionFitness != null) competitionFitness else fitness
+    stepinfo = s"(0 of $numcomp)"
     var best: REP = stepUntil(gene, fitness, prerounds)
     var bestFitness = compareFitness(func(best))
     for (pretry <- 1 until numcomp) {
+      stepinfo = s"($pretry of $numcomp)"
       val trygene: REP = stepUntil(gene, fitness, prerounds)
       val trygenefitness = compareFitness(func(trygene))
       if (trygenefitness > bestFitness) {
@@ -53,6 +68,7 @@ trait AbstractLearner[REP <: AnyRef] {
       }
     }
     println("=============== pretry finished ===============")
+    stepinfo = "final run"
     stepUntil(best, fitness, roundmax)
   }
 }
