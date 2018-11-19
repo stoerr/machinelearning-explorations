@@ -22,7 +22,7 @@ case class CGPEvolution(numcalc: Int, numin: Int, numout: Int, fitness: (Vec => 
     val fresh = bests.flatMap(gene =>
       0.until(createMutations).map(_ => gene._1.mutateUntilVisible()).par.map(addfitness)
     )
-    population = (fresh ++ bests).sortBy(-_._2)
+    population = (fresh ++ bests).filterNot(_._2.isNaN).filterNot(_._2.isInfinite).sortBy(-_._2)
     best._2
   }
 

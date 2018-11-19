@@ -14,17 +14,19 @@ object GitPrinter {
     case e: Exception =>
   }
 
+  val headinfo : String = try {
+    val src = Source.fromFile(".git/logs/HEAD")
+    if (src.nonEmpty) src.getLines().toArray.last else ""
+  } catch {
+    case e: Exception => ""
+  }
+
   val commitDescription: String = gitprops.getProperty("git.commit.id.describe")
 
   def printGitinfo(): Unit = {
     print("git " + LocalDateTime.now() + " : ")
     if (gitprops.size() > 0) println(gitprops.getProperty("git.commit.id.describe") + " - " + gitprops.getProperty("git.commit.message.short"))
-    try {
-      val src = Source.fromFile(".git/logs/HEAD")
-      if (src.nonEmpty) src.getLines().toArray.takeRight(1).foreach(println)
-    } catch {
-      case e: Exception =>
-    }
+    if (headinfo !=  null && headinfo.isEmpty) println(headinfo)
   }
 
 }
