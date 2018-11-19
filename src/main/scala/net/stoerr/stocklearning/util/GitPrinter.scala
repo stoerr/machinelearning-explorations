@@ -26,7 +26,7 @@ object GitPrinter {
   def printGitinfo(): Unit = {
     print("git " + LocalDateTime.now() + " : ")
     if (gitprops.size() > 0) println(gitprops.getProperty("git.commit.id.describe") + " - " + gitprops.getProperty("git.commit.message.short"))
-    if (headinfo !=  null && headinfo.isEmpty) println(headinfo)
+    if (headinfo !=  null && !headinfo.isEmpty) println(headinfo)
   }
 
 }
