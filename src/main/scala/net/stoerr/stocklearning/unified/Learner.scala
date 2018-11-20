@@ -13,19 +13,19 @@ object FitnessFunctions {
 
   def sumAvgFunction(fitnesses: Array[FitnessFunction]): FitnessFunction = {
     func =>
-      val results = fitnesses.map(_ (func))
+      val results = fitnesses.par.map(_ (func)).toArray
       results.sum / fitnesses.length
   }
 
   def multAvgFunction(fitnesses: Array[FitnessFunction]): FitnessFunction = {
     func =>
-      val results = fitnesses.map(_ (func))
+      val results = fitnesses.par.map(_ (func)).toArray
       math.pow(results.product, 1.0 / fitnesses.length)
   }
 
   def minFunction(fitnesses: Array[FitnessFunction]): FitnessFunction =
     func => {
-      val calculated = fitnesses.map(fitness => fitness.apply(func))
+      val calculated = fitnesses.par.map(fitness => fitness.apply(func)).toArray
       if (calculated.exists(n => n.isInfinite || n.isNaN)) Double.NaN else calculated.min
     }
 
@@ -33,7 +33,7 @@ object FitnessFunctions {
     func => {
       def f(x: Double) = math.signum(x) * x * x / (x * x + 1)
 
-      val calculated = fitnesses.map(fitness => fitness.apply(func)).map(f)
+      val calculated = fitnesses.par.map(fitness => fitness.apply(func)).map(f).toArray
       calculated.sum / calculated.length
     }
 
@@ -96,7 +96,7 @@ class CGPEvolutionLearner(insize: Int, outsize: Int, genecount: Int) extends Abs
 
 }
 
-class DeepNNLearner(nn: DeepNN) extends AbstractLearner[Vec] {
+class DeepNNLearner(val nn: DeepNN) extends AbstractLearner[Vec] {
 
   def stepping(weights: Vec, fitness: FitnessFunction, rounds: Range): Vec = {
     var result = weights
