@@ -40,6 +40,8 @@ trait DeepNN {
 
   def fCombined(examples: Seq[Example])(weights: Array[Double]): Double = fgradCombined(examples)(weights)._1
 
+  def layers: List[DeepNNLayer]
+
   override def toString: String = s"$sizeInputs($sizeWeights)$sizeOutputs"
 }
 
@@ -64,7 +66,9 @@ object DeepNN {
       })
     }
 
-    // override def toString() = m.toString + " | " + n.toString
+    override def layers: List[DeepNNLayer] = m.layers ++ n.layers
+
+    override def toString() = m.toString + "|" + n.toString
   }
 
 }

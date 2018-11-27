@@ -2,13 +2,20 @@ package net.stoerr.stocklearning.deepnn
 
 import net.stoerr.stocklearning.common.DoubleArrayVector._
 
+/** A single layer of a DeepNN as special case */
+abstract class DeepNNLayer extends DeepNN {
+
+  def layers: List[DeepNNLayer] = List(this)
+
+}
+
 /**
  * The usual neuron that sums its inputs times its weights, plus a special weight of constant input.
  * The activation function can be mixed in via ActivationFunction trait.
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
  * @since 25.12.2014
  */
-abstract class SummingLayer(override val sizeInputs: Int, override val sizeOutputs: Int) extends DeepNN with ActivationFunction {
+abstract class SummingLayer(override val sizeInputs: Int, override val sizeOutputs: Int) extends DeepNNLayer with ActivationFunction {
   override val sizeWeights: Int = (sizeInputs + 1) * sizeOutputs
 
   /** R**sizeInputs x R**sizeWeights -> R**sizeOutputs , R**sizeOutputs => GradInfo */
