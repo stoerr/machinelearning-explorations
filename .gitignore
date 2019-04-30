@@ -1,6 +1,6 @@
 /.idea
 /stocklearning.iml
 .idea
-/target
+target/
 /lib/examples
 /lib/samples
