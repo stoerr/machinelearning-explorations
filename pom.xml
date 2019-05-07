@@ -30,6 +30,10 @@
         </pluginRepository>
     </pluginRepositories>
 
+    <modules>
+        <module>tensorflowscalatest</module>
+    </modules>
+
     <dependencies>
         <dependency>
             <groupId>org.scala-lang</groupId>
