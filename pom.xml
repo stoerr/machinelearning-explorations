@@ -42,13 +42,6 @@
             <artifactId>scala-xml_2.12</artifactId>
             <version>1.1.1</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.scalatest/scalatest -->
-        <dependency>
-            <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_2.12</artifactId>
-            <version>3.0.5</version>
-            <scope>test</scope>
-        </dependency>
         <!-- https://mvnrepository.com/artifact/org.log4s/log4s -->
         <dependency>
             <groupId>org.log4s</groupId>
@@ -72,6 +65,16 @@
             <groupId>org.plotly-scala</groupId>
             <artifactId>plotly-render_2.12</artifactId>
             <version>0.4.2</version>
+        </dependency>
+
+
+        <!-- Testing dependencies -->
+        <!-- https://mvnrepository.com/artifact/org.scalatest/scalatest -->
+        <dependency>
+            <groupId>org.scalatest</groupId>
+            <artifactId>scalatest_2.12</artifactId>
+            <version>3.0.5</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -147,7 +150,7 @@
                             <archive>
                                 <manifest>
                                     <mainClass>
-                                        net.stoerr.stocklearning.data.RunPessimisticBuysimulator
+                                        XXX
                                     </mainClass>
                                 </manifest>
                             </archive>
@@ -197,7 +200,7 @@
                     <includeDependencyInjar>true</includeDependencyInjar>
                     <options>
                         <option>-allowaccessmodification</option>
-                        <option>-keep public class net.stoerr.stocklearning.data.RunPessimisticBuysimulator</option>
+                        <option>-keep public class XXX</option>
                         <option>-keepattributes *Annotation*</option>
                         <option>-keepattributes Signature</option>
                         <option>-keepattributes InnerClasses</option>
