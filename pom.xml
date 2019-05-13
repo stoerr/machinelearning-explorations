@@ -1,17 +1,17 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>net.stoerr</groupId>
-    <artifactId>stocklearning</artifactId>
+    <groupId>net.stoerr.learning</groupId>
+    <artifactId>learnalgorithmexplorations</artifactId>
     <version>1.0-SNAPSHOT</version>
     <inceptionYear>2008</inceptionYear>
     <properties>
         <scala.version>2.12.7</scala.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
-        <maven.compiler.testSource>8</maven.compiler.testSource>
-        <maven.compiler.testTarget>8</maven.compiler.testTarget>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.testSource>11</maven.compiler.testSource>
+        <maven.compiler.testTarget>11</maven.compiler.testTarget>
     </properties>
 
     <repositories>
@@ -30,10 +30,6 @@
         </pluginRepository>
     </pluginRepositories>
 
-    <modules>
-        <module>tensorflowscalatest</module>
-    </modules>
-
     <dependencies>
         <dependency>
             <groupId>org.scala-lang</groupId>
@@ -45,12 +41,6 @@
             <groupId>org.scala-lang.modules</groupId>
             <artifactId>scala-xml_2.12</artifactId>
             <version>1.1.1</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/net.ruippeixotog/scala-scraper -->
-        <dependency>
-            <groupId>net.ruippeixotog</groupId>
-            <artifactId>scala-scraper_2.12</artifactId>
-            <version>2.0.0</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.scalatest/scalatest -->
         <dependency>
@@ -90,13 +80,13 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>net.stoerr.stocklearning.data.RunPessimisticBuysimulator</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
+<!--                <configuration>-->
+<!--                    <archive>-->
+<!--                        <manifest>-->
+<!--                            <mainClass></mainClass>-->
+<!--                        </manifest>-->
+<!--                    </archive>-->
+<!--                </configuration>-->
             </plugin>
             <!-- https://mvnrepository.com/artifact/org.scala-tools/maven-scala-plugin -->
             <plugin>
