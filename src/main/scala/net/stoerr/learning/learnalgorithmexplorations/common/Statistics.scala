@@ -5,10 +5,11 @@ import scala.collection.mutable.ArrayBuffer
 import scala.collection.{GenTraversableOnce, immutable}
 
 /**
- * Collects statistics for a single parameter.
- * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
- * @since 02.11.2014
- */
+  * Collects statistics for a single parameter.
+  *
+  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
+  * @since 02.11.2014
+  */
 class Statistics(name: String) {
 
   var count: Int = 0
@@ -31,6 +32,15 @@ class Statistics(name: String) {
     this
   }
 
+  def ++=(other : Statistics): this.type = {
+    count += other.count
+    sum += other.sum
+    sumsquares += other.sumsquares
+    min = math.min(min, other.min)
+    max = math.max(max, other.max)
+    return this
+  }
+
   def *(fact: Double): Statistics = {
     val res = new Statistics(name)
     res.count = count
@@ -50,7 +60,7 @@ class Statistics(name: String) {
 }
 
 class StatisticsWithRanges(name: String) extends Statistics(name) {
-  private val maxbuckets = 100
+  private val maxbuckets = 200
   private var buckets: immutable.SortedMap[Double, Int] = TreeMap()
 
   override def +=(x: Double): this.type = {
@@ -60,12 +70,20 @@ class StatisticsWithRanges(name: String) extends Statistics(name) {
     this
   }
 
-  def ranges(bucketcount: Int): immutable.SortedMap[Double, Int] = {
+  override def ++=(other : Statistics): this.type = {
+    val o = other.asInstanceOf[StatisticsWithRanges]
+    super.++=(other)
+    o.buckets.foreach(b => buckets = buckets + (b._1 -> (buckets.getOrElse(b._1, 0) + b._2)))
+    if (buckets.size >= maxbuckets) buckets = ranges(maxbuckets / 2)
+    return this
+  }
+
+    def ranges(bucketcount: Int): immutable.SortedMap[Double, Int] = {
     def joinBuckets(bucket1: (Double, Int), bucket2: (Double, Int)) =
       if (0 == bucket1._2) bucket2
       else ((bucket1._1 * bucket1._2 + bucket2._1 * bucket2._2) / (bucket1._2 + bucket2._2), bucket1._2 + bucket2._2)
-    val elementcount = buckets.valuesIterator.reduce(_ + _)
-    val bucketstep: Double = elementcount / bucketcount
+
+    val bucketstep: Double = count / bucketcount
     val emptybucket = (Double.NegativeInfinity, 0)
     var currentelementcount = 0
     var nextbucketboundary = bucketstep
@@ -83,6 +101,17 @@ class StatisticsWithRanges(name: String) extends Statistics(name) {
       }
     }
     newbuckets + currentbucket
+  }
+
+  def quantile(q: Double): Double = {
+    if (q < 0) return buckets.head._1
+    val quantileCount = math.round(q * count)
+    var haveCount: Long = 0
+    for (entry <- buckets) {
+      haveCount += entry._2
+      if (haveCount > quantileCount) return entry._1
+    }
+    return buckets.last._1
   }
 
   override def toString = super.toString + "\n" + ranges(10)
@@ -125,7 +154,7 @@ class XYStatisticsWithRankCorrelation(name: String) extends XYStatistics(name) {
     this
   }
 
-  def rankCorrelationCoefficient : Double = {
+  def rankCorrelationCoefficient: Double = {
     val xvalueRanks = xvalues.zipWithIndex.sortBy(_._1).toIterator.map(_._2.asInstanceOf[Double])
     val yvalueRanks = yvalues.zipWithIndex.sortBy(_._1).toIterator.map(_._2.asInstanceOf[Double])
     val rankstats = new XYStatistics("")

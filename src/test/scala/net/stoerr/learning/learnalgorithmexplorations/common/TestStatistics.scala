@@ -3,6 +3,7 @@ package net.stoerr.learning.learnalgorithmexplorations.common
 import org.scalatest.FunSuite
 
 import scala.collection.immutable.SortedMap
+import scala.util.Random
 
 /**
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
@@ -16,7 +17,7 @@ class TestStatistics extends FunSuite {
     println(stats)
     val ranges: SortedMap[Double, Int] = stats.ranges(10)
     assert(ranges.size == 10)
-    assert(10000 == ranges.valuesIterator.reduce(_ + _))
+    assert(10000 == ranges.valuesIterator.sum)
   }
 
   test("xystats - no correlation") {
@@ -47,5 +48,21 @@ class TestStatistics extends FunSuite {
     println(xystats)
     assert (math.abs(xystats.rankCorrelationCoefficient) > 0.999999)
     assert (math.abs(xystats.rankCorrelationCoefficient) < 1.000001)
+  }
+
+  test("rank combine") {
+    val a = new StatisticsWithRanges("a")
+    val b = new StatisticsWithRanges("b")
+    for (i <- 0 until 10000) a += Random.nextInt(100)
+    for (i <- 0 until 10000) b += Random.nextInt(100)
+    assert(a.count == a.ranges(30).values.sum)
+    a ++= b
+    assert(a.count == a.ranges(30).values.sum)
+    assert(a.count == 20000)
+    println(a)
+    assert(a.quantile(0) < 5)
+    assert(a.quantile(0.9) < 92)
+    assert(a.quantile(0.9) > 88)
+    assert(a.quantile(1) > 95)
   }
 }
