@@ -39,6 +39,18 @@ class TestStatistics extends FunSuite {
     assert (math.abs(xystats.correlationcoefficient) < 1.000001)
   }
 
+  test("xystats - slope") {
+    val xystats = new XYStatistics("xystats")
+    for (i <- 0 until 10000) {
+      val x = math.random - 0.5
+      xystats += (x, 2 * x + 1)
+    }
+    println(xystats)
+    assert (math.abs(xystats.slope - 2) < 0.00001)
+    assert (math.abs(xystats.intercept - 1) < 0.00001)
+  }
+
+
   test("rankstats") {
     val xystats = new XYStatisticsWithRankCorrelation("xystats")
     for (i <- 0 until 10000) {

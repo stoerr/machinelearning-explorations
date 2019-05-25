@@ -135,9 +135,15 @@ class XYStatistics(name: String) {
     this
   }
 
-  def correlationcoefficient = (xstats.count * sumXY - xstats.sum * ystats.sum) /
+  def correlationcoefficient: Double = (xstats.count * sumXY - xstats.sum * ystats.sum) /
     math.sqrt(xstats.count * xstats.sumsquares - xstats.sum * xstats.sum) /
     math.sqrt(ystats.count * ystats.sumsquares - ystats.sum * ystats.sum)
+
+  /** Linear regression: slope * x + intercept = y. */
+  def slope: Double =
+    (xstats.count * sumXY - xstats.sum * ystats.sum) / (xstats.count * xstats.sumsquares - xstats.sum * xstats.sum)
+
+  def intercept: Double = ystats.mean - xstats.mean * slope
 
   override def toString = name + ": " + correlationcoefficient + "\n" + xstats + "\n" + ystats + "\n"
 }
