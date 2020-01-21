@@ -52,24 +52,28 @@ trait AbstractLearner[REP <: AnyRef] {
 
   var stepinfo = ""
 
-  def stepUntil(gene: REP, fitness: FitnessFunction, roundmax: Int): REP = {
+  def stepUntil(gene: REP, fitness: FitnessFunction, limit: Int => Boolean): REP = {
     var result = gene
-    for (rnd <- 0.until(roundmax, 200)) {
+    var rnd = 0
+    while(limit(rnd)) {
       result = stepping(result, fitness, rnd.until(rnd + 200))
       printIntermediate(result)
+      rnd = rnd + 200
     }
     result
   }
 
-  def competitiveStepping(gene: REP, fitness: FitnessFunction, roundmax: Int, numcomp: Int = 10,
+  def competitiveStepping(gene: REP, fitness: FitnessFunction, limit: Int => Boolean, numcomp: Int => Boolean = _ < 10,
                           prerounds: Int = 20000, competitionFitness: FitnessFunction = null): REP = {
     val compareFitness = if (competitionFitness != null) competitionFitness else fitness
     stepinfo = s"(0 of $numcomp)"
-    var best: REP = stepUntil(gene, fitness, prerounds)
+    var best: REP = stepUntil(gene, fitness, _ < prerounds)
     var bestFitness = compareFitness(func(best))
-    for (pretry <- 1 until numcomp) {
+    var pretry = 0
+    while(numcomp(pretry)) {
+      pretry = pretry + 1
       stepinfo = s"($pretry of $numcomp)"
-      val trygene: REP = stepUntil(gene, fitness, prerounds)
+      val trygene: REP = stepUntil(gene, fitness, limit)
       val trygenefitness = compareFitness(func(trygene))
       if (trygenefitness > bestFitness) {
         bestFitness = trygenefitness
@@ -78,7 +82,7 @@ trait AbstractLearner[REP <: AnyRef] {
     }
     println("=============== pretry finished ===============")
     stepinfo = "final run"
-    stepUntil(best, fitness, roundmax)
+    stepUntil(best, fitness, limit)
   }
 }
 
