@@ -1,90 +1,86 @@
 package net.stoerr.learning.learnalgorithmexplorations.annealing
 
-import java.util.concurrent.TimeUnit
-
 import net.stoerr.learning.learnalgorithmexplorations.common.DoubleArrayVector
 import net.stoerr.learning.learnalgorithmexplorations.common.DoubleArrayVector._
 
+import scala.reflect.ClassTag
 import scala.util.Random
 
-/** Takes an optimization problem with a set of parameters between 0 and 1 and tries to solve it using
-  * random steps which decrease in size over time.
-  *
-  * @param stepWidth a function that gives the step width depending on the round number. If <= 0 we stop.
+/** Takes an optimization problem with a set of parameters (a [[Vec]] ) between 0 and 1 and tries to solve it using
+  * random steps which decrease in size over time. The step size is adaptive: it adapts so that
+  * the number of steps taken in each mutation is roughly 1 on average, and should thus decrease over time.
+  * <p>
+  * Jobs of the classes:
+  * EvolutionWithFixedPopulation: keep a number of individuals, give them the chance to evolve and sometimes replace the worst with copies of the best.
+  * Individual: Basic mutation functionality.
+  * SimulatedAnnealing: Individual that works with simulated annealing as mutation.
   */
-class SimulatedAnnealing(dim: Int, fitness: Vec => Double, stepWidth: Int => Double, populationsize: Int = 10)
-  extends Evolution[Vec](populationsize, fitness) {
-  override protected def makeRandomItem(): Vec = 0.until(dim).map(_ => Random.nextDouble()).toArray
+case class AdaptiveSimulatedAnnealing(dim: Int, fitnessFunction: Vec => Double, stepReduction: Double = 1.2,
+                                      item: VecAndFitness = null,
+                                      steplen: Double = 0.5, keepEvenIfUpwardsProbability: Double = 0.0,
+                                      stepstaken: Int = 0, minsteplen: Double = 0.0001
+                                     ) extends Individual[AdaptiveSimulatedAnnealing] {
 
-  override protected def s(r: Vec): String = r.mkString("[", ",", "]")
+  protected def mutateFunc(x: Double, dif: Double): Double = if (dif >= 0) Math.min(1.0, x + (1 - x) * dif) else Math.max(0, x * (1 + dif))
 
-  override protected def mutate(original: ItemAndFitness): ItemAndFitness = {
-    val steplen = stepWidth(round)
-    val dif = DoubleArrayVector.randomVector(dim) * steplen
+  protected def mkFItem(item: Vec): VecAndFitness = VecAndFitness(item, fitnessFunction(item))
 
-    def dostep(x: ItemAndFitness) = new ItemAndFitness(x.item.zip(dif) map { case (x, d) => SimulatedAnnealing.mutateFunc(x, d) })
+  override def fitness: Double = if (item != null) item.fitness else Double.NegativeInfinity
 
-    var newitem = dostep(original)
-    if (newitem.fitness > original.fitness) {
-      var onestepmore = dostep(newitem)
-      while (onestepmore.fitness > newitem.fitness) {
-        newitem = onestepmore
-        onestepmore = dostep(newitem)
+  override def mutate(): AdaptiveSimulatedAnnealing = {
+    var dif = DoubleArrayVector.randomVector(dim).normalize * steplen
+    var round: Int = 0
+    val roundgoal = 1
+
+    def dostep(x: VecAndFitness) = mkFItem(x.item.zip(dif) map { case (x, d) => mutateFunc(x, d) })
+
+    var newitem: VecAndFitness = null
+    if (item == null) {
+      newitem = mkFItem(0.until(dim).map(_ => Random.nextDouble()).toArray)
+      round = 1
+    } else {
+      newitem = dostep(item)
+      if (newitem.fitness > item.fitness) {
+        round += 1
+        var onestepmore = dostep(newitem)
+        while (onestepmore.fitness > newitem.fitness) {
+          newitem = onestepmore
+          onestepmore = dostep(newitem)
+          round += 1
+        }
       }
     }
-    newitem
+    // println(s"=== ${steplen}, $round")
+    val outitem = if (item == null || newitem.fitness >= fitness) newitem
+    else if (keepEvenIfUpwardsProbability > Random.nextDouble()) newitem
+    else item
+    val newsteplen = if (round < roundgoal) steplen / stepReduction else if (round == roundgoal) steplen else steplen * stepReduction
+    this.copy(
+      item = outitem,
+      steplen = newsteplen,
+      stepstaken = stepstaken + round + 1
+    )
   }
 
-  def stepping(): ItemAndFitness = {
-    while (stepWidth(round) > 0) step()
-    best()
+  def findOptimum(maxsteps: Int = 1000): AdaptiveSimulatedAnnealing = {
+    var run = this
+    for (_ <- 0 until maxsteps if run.steplen > minsteplen) run = run.mutate()
+    run
   }
 }
 
-object SimulatedAnnealing {
-
-  def stepWidthTiming(timeMin: Double, startWidth: Double = 0.1, endWidth: Double = 0.001): Int => Double = {
-    val begin = System.currentTimeMillis()
-    _ => {
-      val ratio = (System.currentTimeMillis() - begin) / (TimeUnit.MINUTES.toMillis(1) * timeMin)
-      if (ratio < 1) startWidth * Math.pow(endWidth / startWidth, ratio) else -1
-    }
-  }
-
-  def stepWidthLog(numsteps: Int, startWidth: Double = 0.1, endWidth: Double = 0.001): Int => Double = stepNr => {
-    if (stepNr < numsteps) startWidth * Math.pow(endWidth / startWidth, stepNr * 1.0 / numsteps) else -1
-  }
-
-  // def invf(x: Double) = Math.atan(x) * 2 / Math.PI
-  // def f(x: Double) = Math.tan(x * Math.PI / 2)
-  protected def mutateFunc(x: Double, dif: Double): Double = if (dif >= 0) Math.min(1.0, x + (1 - x) * dif) else Math.max(0, x * (1 + dif))
+case class VecAndFitness(item: Vec, fitness: Double) {
+  override def toString: String = fitness + ":" + item.mkString("[", ",", "]")
 }
 
 /** Simulates an evolution of a fixed population. */
-abstract class Evolution[REP](populationsize: Int, fitnessFunction: REP => Double,
-                              reductionProbability: Double = 0.01, keepEvenIfUpwardsProbability: Double = 0.1) {
+abstract class EvolutionWithFixedPopulation[REP <: Individual[REP] : ClassTag]
+(populationsize: Int, reductionProbability: Double = 0.01) {
 
-  case class ItemAndFitness(item: REP, fitness: Double) {
-    def this(item: REP) = this(item, fitnessFunction(item))
-
-    override def toString: String = fitness + ":" + s(item)
-  }
-
-  var population: Array[ItemAndFitness] = 0.until(populationsize).map(_ => makeRandomItem()).map(new ItemAndFitness(_)).toArray
+  var population: Array[REP] = 0.until(populationsize).map(_ => makeRandomItem()).toArray
   var round: Int = 0
 
   protected def makeRandomItem(): REP
-
-  protected def mutate(original: ItemAndFitness): ItemAndFitness
-
-  protected def s(r: REP): String = r.toString
-
-  protected def mutateOrKeep(original: ItemAndFitness): ItemAndFitness = {
-    val newItem = mutate(original)
-    if (newItem.fitness >= original.fitness) newItem
-    else if (keepEvenIfUpwardsProbability > Random.nextDouble()) original
-    else original
-  }
 
   def step(): Unit = {
     round += 1
@@ -92,9 +88,32 @@ abstract class Evolution[REP](populationsize: Int, fitnessFunction: REP => Doubl
       population = population.sortBy(_.fitness)
       population = population.takeRight(populationsize / 2) ++ population.takeRight(populationsize - populationsize / 2)
     }
-    population = population.map(mutateOrKeep)
+    population = population.map(_.mutate())
   }
 
-  def best(): ItemAndFitness = population.maxBy(_.fitness)
+  def best(): REP = population.maxBy(_.fitness)
+
+}
+
+trait Individual[I <: Individual[I]] {
+  def mutate(): I
+
+  def fitness: Double
+}
+
+trait IndividualWithCrossover[I <: IndividualWithCrossover[I]] extends Individual[I] {
+  def crossover(other: this.type): this.type
+}
+
+case class SimulatedAnnealingEvolution(dim: Int, fitnessFunction: Vec => Double, populationsize: Int = 10, reductionProbability: Double = 0.01, minsteplen: Double = 0.0001)
+  extends EvolutionWithFixedPopulation[AdaptiveSimulatedAnnealing](populationsize, reductionProbability) {
+
+  override protected def makeRandomItem(): AdaptiveSimulatedAnnealing =
+    new AdaptiveSimulatedAnnealing(dim, fitnessFunction, minsteplen = minsteplen).mutate()
+
+  def findOptimum(maxsteps: Int = 1000): AdaptiveSimulatedAnnealing = {
+    for (_ <- 0 until maxsteps if best.steplen > minsteplen) step()
+    best()
+  }
 
 }
