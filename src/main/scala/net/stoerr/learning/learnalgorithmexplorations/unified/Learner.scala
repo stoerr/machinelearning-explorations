@@ -1,8 +1,5 @@
 package net.stoerr.learning.learnalgorithmexplorations.unified
 
-import net.stoerr.learning.learnalgorithmexplorations.common.RandomPseudoGradientDescent
-import net.stoerr.learning.learnalgorithmexplorations.genetic.cgp.{CGPEvolution, CGPGene}
-import net.stoerr.learning.learnalgorithmexplorations.util.GitPrinter
 import net.stoerr.learning.learnalgorithmexplorations.common.DoubleArrayVector._
 import net.stoerr.learning.learnalgorithmexplorations.common.RandomPseudoGradientDescent
 import net.stoerr.learning.learnalgorithmexplorations.deepnn.DeepNN
@@ -55,7 +52,7 @@ trait AbstractLearner[REP <: AnyRef] {
   def stepUntil(gene: REP, fitness: FitnessFunction, limit: Int => Boolean): REP = {
     var result = gene
     var rnd = 0
-    while(limit(rnd)) {
+    while (limit(rnd)) {
       result = stepping(result, fitness, rnd.until(rnd + 200))
       printIntermediate(result)
       rnd = rnd + 200
@@ -63,26 +60,31 @@ trait AbstractLearner[REP <: AnyRef] {
     result
   }
 
-  def competitiveStepping(gene: REP, fitness: FitnessFunction, limit: Int => Boolean, numcomp: Int => Boolean = _ < 10,
-                          prerounds: Int = 20000, competitionFitness: FitnessFunction = null): REP = {
+  /** Runs parallel numcomp steppings until prerounds is false, chooses the best individual according to
+    * competitionFitness and then steps that until limit is false. */
+  def competitiveStepping(gene: REP, fitness: FitnessFunction, prerounds: Int => Boolean, numcomp: Int, limit: Int => Boolean, competitionFitness: FitnessFunction = null): REP = {
     val compareFitness = if (competitionFitness != null) competitionFitness else fitness
-    stepinfo = s"(0 of $numcomp)"
-    var best: REP = stepUntil(gene, fitness, _ < prerounds)
-    var bestFitness = compareFitness(func(best))
+    var tries: List[REP] = 0.until(numcomp).map(_ => gene).toList
     var pretry = 0
-    while(numcomp(pretry)) {
-      pretry = pretry + 1
-      stepinfo = s"($pretry of $numcomp)"
-      val trygene: REP = stepUntil(gene, fitness, limit)
-      val trygenefitness = compareFitness(func(trygene))
-      if (trygenefitness > bestFitness) {
-        bestFitness = trygenefitness
-        best = trygene
+    while (prerounds(pretry)) {
+      tries = tries.zipWithIndex.map { case (t, i) =>
+        stepinfo = s"($i of $numcomp round $pretry)"
+        stepUntil(gene, fitness, _ < 200) // minimum number of steps
       }
+      pretry += 200
     }
+    var best: REP = tries.map(t => (t, compareFitness(func(t)))).maxBy(_._2)._1
+    val pretryFitness = tries.map(t => (t, compareFitness(func(t)))).maxBy(_._2)._2
     println("=============== pretry finished ===============")
     stepinfo = "final run"
-    stepUntil(best, fitness, limit)
+    var lastSteps = 0
+    best = stepUntil(best, fitness, r => {
+      lastSteps = r; limit(r)
+    })
+    val bestFitness = compareFitness(func(best))
+    GitPrinter.printGitinfo()
+    println(s"Final run finished. pretry rounds were ${pretry}, last run were ${lastSteps}, pretry fitness was ${pretryFitness}, best fitness is ${bestFitness}")
+    best
   }
 }
 
