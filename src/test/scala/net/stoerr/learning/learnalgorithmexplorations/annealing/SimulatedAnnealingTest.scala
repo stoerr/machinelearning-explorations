@@ -17,10 +17,10 @@ class SimulatedAnnealingTest extends FunSuite {
     println(anneal.stepstaken)
     val result = anneal.item
     // println(anneal.population.mkString("|"))
-    println(result.item.toList)
+    println(result.vec.toList)
     println(result.fitness)
     result.fitness should be > 0.99999
-    val v: Vec = result.item
+    val v: Vec = result.vec
     Math.abs(v(0) - 0.6) should be < 0.001
     Math.abs(v(1) - 0.7) should be < 0.001
   }
@@ -32,10 +32,10 @@ class SimulatedAnnealingTest extends FunSuite {
     var anneal = new SimulatedAnnealingEvolution(2, fitness, 5, 0.1)
     val result = anneal.findOptimum(100).item
     // println(anneal.population.mkString("|"))
-    println(result.item.toList)
+    println(result.vec.toList)
     println(result.fitness)
     result.fitness should be > 0.99999
-    val v: Vec = result.item
+    val v: Vec = result.vec
     Math.abs(v(0) - 0.6) should be < 0.001
     Math.abs(v(1) - 0.7) should be < 0.001
   }

@@ -32,7 +32,7 @@ case class AdaptiveSimulatedAnnealing(dim: Int, fitnessFunction: Vec => Double, 
     var round: Int = 0
     val roundgoal = 1
 
-    def dostep(x: VecAndFitness) = mkFItem(x.item.zip(dif) map { case (x, d) => mutateFunc(x, d) })
+    def dostep(x: VecAndFitness) = mkFItem(x.vec.zip(dif) map { case (x, d) => mutateFunc(x, d) })
 
     var newitem: VecAndFitness = null
     if (item == null) {
@@ -69,8 +69,8 @@ case class AdaptiveSimulatedAnnealing(dim: Int, fitnessFunction: Vec => Double, 
   }
 }
 
-case class VecAndFitness(item: Vec, fitness: Double) {
-  override def toString: String = fitness + ":" + item.mkString("[", ",", "]")
+case class VecAndFitness(vec: Vec, fitness: Double) {
+  override def toString: String = fitness + ":" + vec.mkString("[", ",", "]")
 }
 
 /** Simulates an evolution of a fixed population. */
