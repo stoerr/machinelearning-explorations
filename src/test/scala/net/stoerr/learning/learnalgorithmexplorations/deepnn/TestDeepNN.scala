@@ -4,13 +4,13 @@ import net.stoerr.learning.learnalgorithmexplorations.common.{DValue, RProp}
 import net.stoerr.learning.learnalgorithmexplorations.nnfunction.ExampleForStinoNN
 import net.stoerr.learning.learnalgorithmexplorations.common.DoubleArrayVector._
 import net.stoerr.learning.learnalgorithmexplorations.common._
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 /**
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
  * @since 25.12.2014
  */
-class TestDeepNN extends FunSuite {
+class TestDeepNN extends AnyFunSuite {
 
   val eps = 1e-5
 

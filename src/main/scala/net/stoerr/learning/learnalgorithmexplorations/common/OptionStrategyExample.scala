@@ -30,7 +30,7 @@ class OptionStrategyExample(length: Int, offset: Int) extends Example {
   // val inputs: Array[Double] = p.map(_.value) ++ pp.map(_.value)
 
   def theoreticalMaximumGain: Double = {
-    val res: Array[Double] = (pp, p).zipped map ((x: DValue, y: DValue) => (x / y).log.value)
+    val res = (pp, p).zipped map ((x: DValue, y: DValue) => (x / y).log.value)
     res.reduce((x, y) => math.max(x, y))
   }
 
@@ -43,7 +43,7 @@ class OptionStrategyExample(length: Int, offset: Int) extends Example {
 
   /** n'_i = (1+o_i)/(p_i sum( (1+o_i) )) , evaluation ln(sum(n'_i p'_i)) */
   private def dvalueGain(nnOutputs: Array[Double]): DValue = {
-    val o: Array[DValue] = (nnOutputs, StockQuoteRepository.onames).zipped.map(DValue(_, _))
+    val o: Array[DValue] = (nnOutputs, StockQuoteRepository.onames).zipped.map(DValue(_, _)).toArray
     // n'_i = (1+o_i)/(p_i sum( (1+o_i) ))
     val sum1poi = o.map(_ + ONE).reduce(_ + _)
     val np = (o, p).zipped map ((oi, pi) => (oi + ONE) / (pi * sum1poi))

@@ -1,13 +1,13 @@
 package net.stoerr.learning.gpunn.calculationcompiler
 
 import CalculationTerm._
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 /**
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
  * @since 14.01.2015
  */
-class TestCalculationTemplate extends FunSuite {
+class TestCalculationTemplate extends AnyFunSuite {
 
   test("build template") {
     implicit val tmpl = new CalculationStore

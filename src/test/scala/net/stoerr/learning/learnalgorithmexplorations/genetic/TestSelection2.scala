@@ -1,10 +1,10 @@
 package net.stoerr.learning.learnalgorithmexplorations.genetic
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 import scala.util.Random
 
-class TestSelection2 extends FunSuite {
+class TestSelection2 extends AnyFunSuite {
 
   val simpleDomain = new SelectionDomain[Double] {
 

@@ -1,6 +1,6 @@
 package net.stoerr.learning.learnalgorithmexplorations.genetic
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 import scala.collection.mutable
 import scala.util.Random
@@ -9,7 +9,7 @@ import scala.util.Random
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
  * @since 26.01.2015
  */
-class TestSelection extends FunSuite {
+class TestSelection extends AnyFunSuite {
 
   val testDomain = new SelectionDomain[mutable.WrappedArray[Double]] {
     override def make: mutable.WrappedArray[Double] = Array.fill(3)(Random.nextDouble() * 4)
@@ -26,7 +26,7 @@ class TestSelection extends FunSuite {
     }
 
     override def fitness(c: mutable.WrappedArray[Double]): Double = c.array match {
-      case Array(x, y, z) =>
+      case Array(x:Double, y:Double, z:Double) =>
         -((x - 1) * (x - 1) * (2 * x - y) * (2 * x - y) + (z - 3) * (z - 3))
     }
   }
@@ -56,7 +56,7 @@ class TestSelection extends FunSuite {
     }
 
     override def fitness(c: mutable.WrappedArray[Double]): Double = c.array match {
-      case Array(psize, freshratio, mutationratio, crossoverratio) =>
+      case Array(psize: Double, freshratio:Double, mutationratio:Double, crossoverratio:Double) =>
         val tries = (1 until 3).map { _ =>
           val selection = new Selection(testDomain, psize.toInt + 2, freshratio, mutationratio, crossoverratio)
           (0 until 50) foreach (_ => selection.step())

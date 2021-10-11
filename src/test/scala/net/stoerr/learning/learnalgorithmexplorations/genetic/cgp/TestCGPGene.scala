@@ -1,10 +1,10 @@
 package net.stoerr.learning.learnalgorithmexplorations.genetic.cgp
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 import scala.util.Random
 
-class TestCGPGene extends FunSuite {
+class TestCGPGene extends AnyFunSuite {
 
   test("Function calculation") {
     val gene = CGPGene(2, 1, 1,

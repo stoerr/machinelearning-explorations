@@ -1,6 +1,7 @@
 package net.stoerr.learning.learnalgorithmexplorations.genetic.cgp
 
 import net.stoerr.learning.learnalgorithmexplorations.common.DoubleArrayVector.Vec
+import scala.collection.parallel.CollectionConverters._
 
 case class CGPEvolution(numcalc: Int, numin: Int, numout: Int, fitness: (Vec => Vec) => Double,
                         var init: CGPGene = null) {

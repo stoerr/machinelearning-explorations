@@ -4,6 +4,7 @@ import net.stoerr.learning.learnalgorithmexplorations.java.DoubleArrayOps
 
 import scala.collection.immutable
 import scala.collection.immutable.TreeSet
+import scala.math.Ordering.Implicits.sortedSetOrdering
 
 /**
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
@@ -20,7 +21,7 @@ sealed trait CalculationItem extends Comparable[CalculationItem] {
 
 object CalculationItem {
   val calculationItemOrdering: Ordering[CalculationItem] =
-    Ordering.by(i => (i.getClass.toString, i.output, i.inputs.toIterable))
+    Ordering.by(i => (i.getClass.toString, i.output, i.inputs))
 }
 
 case class ConstantItem(output: CalculationVariable, value: Double) extends CalculationItem {

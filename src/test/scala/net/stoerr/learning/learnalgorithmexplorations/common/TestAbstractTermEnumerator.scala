@@ -1,12 +1,12 @@
 package net.stoerr.learning.learnalgorithmexplorations.common
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 /**
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
  * @since 18.11.2014
  */
-class TestAbstractTermEnumerator extends FunSuite {
+class TestAbstractTermEnumerator extends AnyFunSuite {
 
   object SimpleTermEnumerator extends TermEnumerator[(Double, Double)] {
 

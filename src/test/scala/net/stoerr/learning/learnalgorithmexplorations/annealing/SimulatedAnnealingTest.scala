@@ -1,10 +1,10 @@
 package net.stoerr.learning.learnalgorithmexplorations.annealing
 
 import net.stoerr.learning.learnalgorithmexplorations.common.DoubleArrayVector.Vec
-import org.scalatest.FunSuite
-import org.scalatest.Matchers._
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers._
 
-class SimulatedAnnealingTest extends FunSuite {
+class SimulatedAnnealingTest extends AnyFunSuite {
 
   // test("testMutate") {(-1.1).until(1.11,0.1).foreach(x => println(s"$x, ${mutateFunc(0.6, x)}"))}
 

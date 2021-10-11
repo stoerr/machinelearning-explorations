@@ -1,13 +1,13 @@
 package net.stoerr.learning.learnalgorithmexplorations.common
 
 import DValue._
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 /**
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
  * @since 21.12.2014
  */
-class TestRProp extends FunSuite {
+class TestRProp extends AnyFunSuite {
 
   val eps = 1e-7
 

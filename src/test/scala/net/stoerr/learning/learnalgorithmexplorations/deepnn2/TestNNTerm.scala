@@ -3,13 +3,13 @@ package net.stoerr.learning.learnalgorithmexplorations.deepnn2
 import NNTerm._
 import SNNTerm._
 import net.stoerr.learning.learnalgorithmexplorations.common.DoubleArrayVector.eps
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 /**
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
  * @since 29.08.2015
  */
-class TestNNTerm extends FunSuite {
+class TestNNTerm extends AnyFunSuite {
 
   def assertAlmostEqual(x: Double, y: Double): Unit = assert(math.abs(x - y) < eps)
 

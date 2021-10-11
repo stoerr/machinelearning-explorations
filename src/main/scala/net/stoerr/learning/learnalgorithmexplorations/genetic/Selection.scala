@@ -3,6 +3,7 @@ package net.stoerr.learning.learnalgorithmexplorations.genetic
 import net.stoerr.learning.learnalgorithmexplorations.common.ProbabilityDistributionGenerator
 
 import scala.collection.parallel.immutable.ParVector
+import scala.collection.parallel.CollectionConverters._
 
 /**
  * Genetic altgorithm: selection
@@ -47,5 +48,3 @@ trait SelectionDomain[COMPETITOR] {
 
   def crossover(c1: COMPETITOR, c2: COMPETITOR): COMPETITOR = sys.error("Unimplemented.")
 }
-
-

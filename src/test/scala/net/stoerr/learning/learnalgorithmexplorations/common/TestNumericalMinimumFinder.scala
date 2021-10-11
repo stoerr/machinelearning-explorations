@@ -2,9 +2,9 @@ package net.stoerr.learning.learnalgorithmexplorations.common
 
 import Math._
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-class TestNumericalMinimumFinder extends FunSuite {
+class TestNumericalMinimumFinder extends AnyFunSuite {
 
   test("secondordermin") {
     def f(x: Double) = cosh(x - PI)

@@ -1,6 +1,6 @@
 package net.stoerr.learning.learnalgorithmexplorations.common
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 import scala.math._
 
@@ -9,7 +9,7 @@ import scala.math._
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
  * @since 28.10.2014
  */
-class TestDValue extends FunSuite {
+class TestDValue extends AnyFunSuite {
 
   test("just print something") {
     println(DValue(1.5))

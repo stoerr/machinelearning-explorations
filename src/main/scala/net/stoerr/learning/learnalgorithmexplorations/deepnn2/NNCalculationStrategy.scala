@@ -2,6 +2,7 @@ package net.stoerr.learning.learnalgorithmexplorations.deepnn2
 
 import scala.collection.mutable
 import scala.collection.parallel.ParSeq
+import scala.collection.parallel.CollectionConverters._
 
 /**
  * Reference calculation strategy - not particularily efficient

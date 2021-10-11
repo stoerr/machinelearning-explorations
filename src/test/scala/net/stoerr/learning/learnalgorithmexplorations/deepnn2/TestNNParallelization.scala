@@ -1,7 +1,7 @@
 package net.stoerr.learning.learnalgorithmexplorations.deepnn2
 
 import net.stoerr.learning.learnalgorithmexplorations.common.RProp
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 import scala.util.Random
 
@@ -10,7 +10,7 @@ import scala.util.Random
   * Thinkpad GPU 50000 examples of 20 length 20 min,
   * CPU XOR Cached 1000 examples of 20 length 7 min
   */
-class TestNNParallelization extends FunSuite {
+class TestNNParallelization extends AnyFunSuite {
 
   import Math.{cos, sin}
 

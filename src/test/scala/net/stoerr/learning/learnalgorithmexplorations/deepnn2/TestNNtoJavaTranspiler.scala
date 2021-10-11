@@ -1,12 +1,12 @@
 package net.stoerr.learning.learnalgorithmexplorations.deepnn2
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 /**
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
  * @since 29.08.2015
  */
-class TestNNtoJavaTranspiler extends FunSuite {
+class TestNNtoJavaTranspiler extends AnyFunSuite {
   val I0 = I("0")
   val I1 = I("1")
   val O0 = O("0")

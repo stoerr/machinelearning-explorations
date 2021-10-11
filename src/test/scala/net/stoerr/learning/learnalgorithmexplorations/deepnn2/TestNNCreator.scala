@@ -3,7 +3,7 @@ package net.stoerr.learning.learnalgorithmexplorations.deepnn2
 import net.stoerr.learning.learnalgorithmexplorations.common.{DoubleArrayVector, RProp}
 import net.stoerr.learning.learnalgorithmexplorations.common.DoubleArrayVector._
 import net.stoerr.learning.learnalgorithmexplorations.common.RProp
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 import scala.collection.immutable.TreeSet
 import scala.util.Random
@@ -12,7 +12,7 @@ import scala.util.Random
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
  * @since 10.09.2015
  */
-class TestNNCreator extends FunSuite {
+class TestNNCreator extends AnyFunSuite {
 
   val xorExample: List[(List[Double], List[Double])] =
     Range(0, 2).toList.flatMap(i =>

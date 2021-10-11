@@ -1,6 +1,6 @@
 package net.stoerr.learning.learnalgorithmexplorations.common
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 import scala.collection.immutable.SortedMap
 import scala.util.Random
@@ -9,7 +9,7 @@ import scala.util.Random
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
  * @since 21.11.2014
  */
-class TestStatistics extends FunSuite {
+class TestStatistics extends AnyFunSuite {
 
   test("buckets") {
     val stats = new StatisticsWithRanges("random")

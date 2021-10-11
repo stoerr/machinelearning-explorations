@@ -1,9 +1,9 @@
 package net.stoerr.learning.gpunn.calculationcompiler
 
 import java.util
-
+import scala.collection.convert.ImplicitConversions.`map AsScala`
 import scala.collection.immutable.{IndexedSeq, TreeMap}
-import scala.collection.mutable
+import scala.collection.{MapView, mutable}
 import scala.language.implicitConversions
 
 /**
@@ -38,8 +38,8 @@ sealed trait Term {
 
   def variables: Set[Variable] = recursiveSubtermSet.filter(_.isInstanceOf[Variable]).map(_.asInstanceOf[Variable])
 
-  protected def sumDerivations(derivs: Traversable[Map[Variable, Term]]): Map[Variable, Term] = {
-    val mapped: Map[Variable, Traversable[Term]] = derivs.flatten.groupBy(_._1).mapValues(_.map(_._2))
+  protected def sumDerivations(derivs: Traversable[Map[Variable, Term]]): MapView[Variable, Term] = {
+    val mapped: MapView[Variable, Traversable[Term]] = derivs.flatten.groupBy(_._1).mapValues(_.map(_._2))
     mapped.mapValues(_.reduce(_ + _))
   }
 }
@@ -48,8 +48,7 @@ object Term {
   implicit def toTerm(value: Double): Term = Constant(value)
 
   def evalOptimized(term: Term, vars: Map[Variable, Double]) = {
-    import scala.collection.convert.WrapAsScala._
-    val value: mutable.Map[Term, Double] = new util.IdentityHashMap[Term, Double]()
+    val value = new util.IdentityHashMap[Term, Double]()
     def calculate(t: Term): Double = t match {
       case v: Variable => vars.get(v).get
       case Constant(v) => v
@@ -111,7 +110,7 @@ case class Sum(summands: Seq[Term]) extends Term {
   override def eval(vars: Map[Variable, Double]): Double = summands.map(_.eval(vars)).reduce(_ + _)
 
   override def totalDerivative: Map[Variable, Term] = {
-    sumDerivations(summands.map(_.totalDerivative))
+    sumDerivations(summands.map(_.totalDerivative)).toMap
 
   }
 
@@ -125,9 +124,9 @@ case class Product(factor1: Term, factor2: Term) extends Term {
   override def eval(vars: Map[Variable, Double]): Double = factor1.eval(vars) * factor2.eval(vars)
 
   override def totalDerivative: Map[Variable, Term] = {
-    val d1 = factor1.totalDerivative.mapValues(factor2 * _)
-    val d2 = factor2.totalDerivative.mapValues(factor1 * _)
-    sumDerivations(List(d1, d2))
+    val d1 = factor1.totalDerivative.mapValues(factor2 * _).toMap
+    val d2 = factor2.totalDerivative.mapValues(factor1 * _).toMap
+    sumDerivations(List(d1, d2)).toMap
   }
 
   override def subterms: Seq[Term] = Vector(factor1, factor2)
@@ -148,7 +147,7 @@ trait UnaryFunction extends Term {
 }
 
 case class Tanh(arg: Term) extends UnaryFunction {
-  override def totalDerivative: Map[Variable, Term] = arg.totalDerivative.mapValues(_ * (1 - this * this))
+  override def totalDerivative: Map[Variable, Term] = arg.totalDerivative.mapValues(_ * (1 - this * this)).toMap
 
   override val name: String = "tanh"
 
@@ -156,7 +155,7 @@ case class Tanh(arg: Term) extends UnaryFunction {
 }
 
 case class Exp(arg: Term) extends UnaryFunction {
-  override def totalDerivative: Map[Variable, Term] = arg.totalDerivative.mapValues(_ * this)
+  override def totalDerivative: Map[Variable, Term] = arg.totalDerivative.mapValues(_ * this).toMap
 
   override val name: String = "exp"
 

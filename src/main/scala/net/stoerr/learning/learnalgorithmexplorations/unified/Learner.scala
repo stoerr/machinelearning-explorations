@@ -6,6 +6,7 @@ import net.stoerr.learning.learnalgorithmexplorations.deepnn.DeepNN
 import net.stoerr.learning.learnalgorithmexplorations.genetic.cgp.{CGPEvolution, CGPGene}
 import net.stoerr.learning.learnalgorithmexplorations.unified.FitnessFunctions.FitnessFunction
 import net.stoerr.learning.learnalgorithmexplorations.util.GitPrinter
+import scala.collection.parallel.CollectionConverters._
 
 object FitnessFunctions {
 

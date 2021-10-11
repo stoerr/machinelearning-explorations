@@ -1,12 +1,12 @@
 package net.stoerr.learning.learnalgorithmexplorations.common
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 /**
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
  * @since 23.11.2014
  */
-class TestCompetition extends FunSuite {
+class TestCompetition extends AnyFunSuite {
 
   test("competition for smallest random") {
     val smlrandom = new Competition[Double] {

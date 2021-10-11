@@ -1,12 +1,12 @@
 package net.stoerr.learning.learnalgorithmexplorations.genetic
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 /**
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
  * @since 25.01.2015
  */
-class TestLightbotGame extends FunSuite {
+class TestLightbotGame extends AnyFunSuite {
 
   test("Run Lightbot") {
     val setup = "E e1l2"

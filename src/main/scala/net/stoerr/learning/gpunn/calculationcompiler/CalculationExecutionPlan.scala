@@ -1,5 +1,8 @@
 package net.stoerr.learning.gpunn.calculationcompiler
 
+import scala.collection.parallel.CollectionConverters._
+
+
 /**
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
  * @since 15.01.2015
@@ -55,4 +58,3 @@ case class CalculationGroup(inputs: Vector[CalculationVariable], output: Calcula
   def execute(values: Array[Double]): Unit = calculations.seq.foreach(_.execute(values))
 
 }
-

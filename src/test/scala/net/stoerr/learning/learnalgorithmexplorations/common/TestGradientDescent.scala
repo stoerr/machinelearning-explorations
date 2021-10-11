@@ -3,13 +3,13 @@ package net.stoerr.learning.learnalgorithmexplorations.common
 import DValue._
 import net.stoerr.learning.learnalgorithmexplorations.nnfunction.{FunctionMinimizationTestDomain, FunctionMinimizationTestFunction}
 import net.stoerr.learning.learnalgorithmexplorations.nnfunction.FunctionMinimizationTestDomain
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 /**
   * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
   * @since 14.11.2014
   */
-class TestGradientDescent extends FunSuite {
+class TestGradientDescent extends AnyFunSuite {
 
   val eps = 1e-7
 

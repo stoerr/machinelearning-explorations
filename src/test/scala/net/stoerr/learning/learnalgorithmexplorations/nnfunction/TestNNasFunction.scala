@@ -3,7 +3,7 @@ package net.stoerr.learning.learnalgorithmexplorations.nnfunction
 import net.stoerr.learning.learnalgorithmexplorations.common.{DValue, GradientDescentMinimizeGradient, GradientDescentPseudoLinearNewton, GradientDescentWithWithMinimumApproximation, RProp}
 import net.stoerr.learning.learnalgorithmexplorations.common.DoubleArrayVector._
 import net.stoerr.learning.learnalgorithmexplorations.common._
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 import scala.collection.immutable.IndexedSeq
 
@@ -11,7 +11,7 @@ import scala.collection.immutable.IndexedSeq
  * @author <a href="http://www.stoerr.net/">Hans-Peter Stoerr</a>
  * @since 13.11.2014
  */
-class TestNNasFunction extends FunSuite {
+class TestNNasFunction extends AnyFunSuite {
 
   val eps = 1e-7
 

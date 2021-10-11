@@ -2,6 +2,7 @@ package net.stoerr.learning.learnalgorithmexplorations.common
 
 import scala.collection.parallel.mutable.ParArray
 import scala.reflect.ClassTag
+import scala.collection.parallel.CollectionConverters._
 
 /**
  * Run a competitive training of many COMPETITORs , periodically removing the worst evaluated

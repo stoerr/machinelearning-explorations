@@ -2,6 +2,7 @@ package net.stoerr.learning.learnalgorithmexplorations.deepnn
 
 import net.stoerr.learning.learnalgorithmexplorations.nnfunction.Example
 import net.stoerr.learning.learnalgorithmexplorations.common.DoubleArrayVector._
+import scala.collection.parallel.CollectionConverters._
 
 case class GradInfo(inputGradient: Array[Double], weightGradient: Array[Double])
 

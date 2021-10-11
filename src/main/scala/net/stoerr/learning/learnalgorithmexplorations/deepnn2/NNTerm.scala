@@ -71,7 +71,7 @@ sealed trait NNTerm extends NNTermBase with Ordered[NNTerm] {
     else if (this > o) Prod(o, this) else Prod(this, o)
 
   protected def sumDerivatives(derivatives: Traversable[(W, NNTerm)]): Map[W, NNTerm] =
-    derivatives.groupBy(_._1).mapValues(_.map(_._2)).mapValues(_.reduce(_ + _))
+    derivatives.groupBy(_._1).mapValues(_.map(_._2)).mapValues(_.reduce(_ + _)).toMap
 
   def wDerivative: Map[W, NNTerm]
 
@@ -174,14 +174,14 @@ protected abstract class FunctionNNTerm(argument: NNTerm) extends NNTerm {
 case class Tanh(t: NNTerm) extends FunctionNNTerm(t) {
   override def subst(s: PartialFunction[NNTerm, NNTerm]): NNTerm = Tanh(t.subst(s))
 
-  override def wDerivative: Map[W, NNTerm] = t.wDerivative.mapValues(_ * (1 - this * this))
+  override def wDerivative: Map[W, NNTerm] = t.wDerivative.mapValues(_ * (1 - this * this)).toMap
 }
 
 /** Rectilinear */
 case class RLin(t: NNTerm) extends FunctionNNTerm(t) {
   override def subst(s: PartialFunction[NNTerm, NNTerm]): NNTerm = RLin(t.subst(s))
 
-  override def wDerivative: Map[W, NNTerm] = t.wDerivative.mapValues(_ * Step(t))
+  override def wDerivative: Map[W, NNTerm] = t.wDerivative.mapValues(_ * Step(t)).toMap
 }
 
 /** Derivation of rectilinear : 1 if > 0, 0 else */
@@ -194,13 +194,13 @@ case class Step(t: NNTerm) extends FunctionNNTerm(t) {
 case class Sqr(t: NNTerm) extends FunctionNNTerm(t) {
   override def subst(s: PartialFunction[NNTerm, NNTerm]): NNTerm = Sqr(t.subst(s))
 
-  override def wDerivative: Map[W, NNTerm] = t.wDerivative.mapValues(_ * t * 2)
+  override def wDerivative: Map[W, NNTerm] = t.wDerivative.mapValues(_ * t * 2).toMap
 }
 
 case class SoftSign(t: NNTerm) extends FunctionNNTerm(t) {
   override def subst(s: PartialFunction[NNTerm, NNTerm]): NNTerm = SoftSign(t.subst(s))
 
-  override def wDerivative: Map[W, NNTerm] = t.wDerivative.mapValues(_ * SoftSignD(t))
+  override def wDerivative: Map[W, NNTerm] = t.wDerivative.mapValues(_ * SoftSignD(t)).toMap
 }
 
 /** Derivation of SoftSign */
@@ -244,7 +244,7 @@ sealed trait SNNTerm extends NNTermBase with Ordered[SNNTerm] {
   }
 
   protected def sumDerivatives(derivatives: Traversable[(W, SNNTerm)]): Map[W, SNNTerm] =
-    derivatives.groupBy(_._1).mapValues(_.map(_._2)).mapValues(_.reduce(_ + _))
+    derivatives.groupBy(_._1).mapValues(_.map(_._2)).mapValues(_.reduce(_ + _)).toMap
 
   def wDerivative: Map[W, SNNTerm]
 
@@ -270,7 +270,7 @@ case class SUMMED(t: NNTerm) extends SNNTerm {
 
   override def subterms: Seq[TermComponent] = Seq(t)
 
-  override def wDerivative: Map[W, SNNTerm] = t.wDerivative.mapValues(SUMMED)
+  override def wDerivative: Map[W, SNNTerm] = t.wDerivative.mapValues(SUMMED).toMap
 
   override def subst(s: PartialFunction[NNTerm, NNTerm]): SNNTerm = SUMMED(t.subst(s))
 

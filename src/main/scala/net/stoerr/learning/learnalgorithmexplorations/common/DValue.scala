@@ -1,12 +1,16 @@
 package net.stoerr.learning.learnalgorithmexplorations.common
 
-import scala.collection.immutable.{SortedMap, TreeMap}
+import scala.collection.IterableOnce.iterableOnceExtensionMethods
+import scala.collection.MapView
+import scala.collection.immutable.{SortedMap, SortedSet, TreeMap}
 
 /** Constructors for DValue - see there. */
 object DValue {
   def apply(value: Double) = new DValue(value, SortedMap.empty)
 
   def apply(value: Double, name: String) = new DValue(value, TreeMap(name -> 1.0))
+
+  def apply(value: Double, derivations: MapView[String, Double]) = new DValue(value, SortedMap.from(derivations))
 
   val ONE = DValue(1)
 
@@ -16,7 +20,7 @@ object DValue {
   def asDoubleFunctionWithGradient(func: Array[DValue] => DValue)(args: Array[Double]): (Double, Array[Double]) = {
     val varnames = (0 until args.length).map("v" + _).toArray
     val dargs = (args, varnames).zipped.map(DValue(_, _))
-    val fval = func(dargs)
+    val fval = func(dargs.toArray)
     (fval.value, varnames.map(fval.deriv(_)))
   }
 
@@ -51,14 +55,14 @@ case class DValue(value: Double, derivations: SortedMap[String, Double]) {
 
   def abs: DValue = if (value < 0) this * DValue(-1) else this
 
-  def log: DValue = DValue(math.log(value), derivations.mapValues(_ * 1 / value))
+  def log: DValue = DValue(math.log(value),  derivations.view.mapValues(_ * 1 / value))
 
-  def cosh: DValue = DValue(math.cosh(value), derivations.mapValues(_ * math.sinh(value)))
+  def cosh: DValue = DValue(math.cosh(value), derivations.view.mapValues(_ * math.sinh(value)))
 
   def tanh: DValue = {
     val tanh = math.tanh(value)
     val derivation = 1 - tanh * tanh
-    DValue(tanh, derivations.mapValues(_ * derivation))
+    DValue(tanh, derivations.view.mapValues(_ * derivation))
   }
 
 }

@@ -4,9 +4,9 @@ import net.stoerr.learning.learnalgorithmexplorations.common
 import net.stoerr.learning.learnalgorithmexplorations.nnfunction.FunctionMinimizationTestFunction
 import net.stoerr.learning.learnalgorithmexplorations.common.DoubleArrayVector._
 import net.stoerr.learning.learnalgorithmexplorations.deepnn.{DeepNN, DeepNNLayers}
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-class TestRandomPseudoGradientDescent extends FunSuite {
+class TestRandomPseudoGradientDescent extends AnyFunSuite {
   val domain = FunctionMinimizationTestFunction(20)
 
   val nn: DeepNN = DeepNNLayers.basicNN(2, 7, 7, 1)

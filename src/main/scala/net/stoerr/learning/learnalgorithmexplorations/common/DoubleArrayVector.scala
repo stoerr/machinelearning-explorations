@@ -37,9 +37,9 @@ final class DoubleArrayVector(val self: DoubleArrayVector.Vec) {
 
   def elem_abs: Vec = self.map(math.abs)
 
-  def +(other: Vec): Vec = (self, other).zipped.map(_ + _)
+  def +(other: Vec): Vec = (self, other).zipped.map(_ + _).toArray
 
-  def -(other: Vec): Vec = (self, other).zipped.map(_ - _)
+  def -(other: Vec): Vec = (self, other).zipped.map(_ - _).toArray
 
   /** scalar product */
   def *(other: Vec): Double = (self, other).zipped.map(_ * _).sum
@@ -47,7 +47,7 @@ final class DoubleArrayVector(val self: DoubleArrayVector.Vec) {
   def *(other: Double): Vec = self.map(_ * other)
 
   /** elementwise product */
-  def elem_*(other: Vec): Vec = (self, other).zipped.map(_ * _)
+  def elem_*(other: Vec): Vec = (self, other).zipped.map(_ * _).toArray
 
   def /(other: Double): Vec = self.map(_ / other)
 

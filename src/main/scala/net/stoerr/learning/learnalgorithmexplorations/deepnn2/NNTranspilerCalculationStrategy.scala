@@ -2,7 +2,9 @@ package net.stoerr.learning.learnalgorithmexplorations.deepnn2
 
 import net.stoerr.learning.gpunn.java.AbstractNNJavaEvaluator
 
-import scala.collection.{JavaConversions, mutable}
+import scala.collection.convert.ImplicitConversions.`iterator asScala`
+import scala.collection.mutable
+import scala.concurrent.JavaConversions
 
 /**
  * Calculation strategy that works only for the given terms by compiling them to Java.
@@ -47,7 +49,7 @@ class NNTranspilerCalculationStrategy(terms: Traversable[NNTerm]) extends SNNDou
       printstats(evaluator)
       evaluator.dispose()
       val results = evaluator.res.grouped(transpiler.resultnumber.size).toArray.transpose.map(_.sum)
-      transpiler.resultnumber.mapValues(r => results(r).toDouble)
+      transpiler.resultnumber.mapValues(r => results(r).toDouble).toMap
     }
 
     val snnEvaluator = new SNNSimpleEvaluator(valuations, restValuation) {
@@ -71,7 +73,7 @@ class NNTranspilerCalculationStrategy(terms: Traversable[NNTerm]) extends SNNDou
 
   def printstats(evaluator: AbstractNNJavaEvaluator) = {
     val profileInfo = evaluator.getProfileInfo
-    if (null != profileInfo) JavaConversions.asScalaIterator(profileInfo.iterator()).toArray.foreach(println)
+    if (null != profileInfo) profileInfo.iterator().toArray.foreach(println)
   }
 
 }
