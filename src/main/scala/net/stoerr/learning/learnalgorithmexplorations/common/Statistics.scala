@@ -107,18 +107,18 @@ class StatisticsWithRanges(name: String, filterNan: Boolean = true) extends Stat
 
     val bucketstep: Double = count / bucketcount
     val emptybucket = (Double.NegativeInfinity, 0)
-    var currentelementcount = 0
     var nextbucketboundary = bucketstep
     var currentbucket = emptybucket
+    var currentelementcount = 0 // up to currentbucket
     val newbuckets = buckets.flatMap { bucket =>
-      currentelementcount += bucket._2
-      if (currentelementcount > nextbucketboundary) {
+      if (currentelementcount >= nextbucketboundary) {
         val b = currentbucket
         currentbucket = bucket
         nextbucketboundary += bucketstep
         Some(b)
       } else {
         currentbucket = joinBuckets(currentbucket, bucket)
+        currentelementcount += bucket._2
         None
       }
     }
