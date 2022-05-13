@@ -20,6 +20,27 @@ class TestStatistics extends AnyFunSuite {
     assert(10000 == ranges.valuesIterator.sum)
   }
 
+  test("nan etc") {
+    val stats = new StatisticsWithRanges("sum")
+    for (i <- 0 until 1001) stats += i
+    println(stats)
+    val origmean = stats.mean
+    stats += Double.NaN
+    stats += Double.NegativeInfinity
+    stats += Double.PositiveInfinity
+    println(stats)
+    assert(stats.nanCount == 3)
+    assert(stats.count == 1001)
+    assert(stats.mean == origmean)
+    val bucketmean = stats.ranges(10).toSeq.map(e => e._1 * e._2).sum / stats.count
+    assert(Math.abs(bucketmean - stats.mean) < 0.0001, bucketmean)
+    assert( Math.abs(stats.nanpart - 3.0/1001) < 0.00001, stats.nanpart)
+    assert(Math.abs(stats.quantile(0.0005) - 0.5) < 0.00001, stats.quantile(0.0005))
+    assert(Math.abs(stats.quantile(0.9995) - 999.5) < 0.00001, stats.quantile(0.9995))
+    assert(Math.abs(stats.quantile(0.1) - 100) < 1, stats.quantile(0.1))
+    assert(Math.abs(stats.quantile(0.9985) - 998.5) < 0.00001, stats.quantile(0.9985))
+  }
+
   test("xystats - no correlation") {
     val xystats = new XYStatisticsWithRankCorrelation("xystats")
     for (i <- 0 until 10000) xystats += (math.random, math.random)
