@@ -75,8 +75,7 @@ class Statistics(val name: String, val filterNan: Boolean = true) {
 
 }
 
-class StatisticsWithRanges(name: String, filterNan: Boolean = true) extends Statistics(name, filterNan) {
-  private val maxbuckets = 200
+class StatisticsWithRanges(name: String, filterNan: Boolean = true, maxbuckets:Int = 200) extends Statistics(name, filterNan) {
 
   /** Each bucket maps the center of the bucket (arithmetic mean of all entries that went into the bucket)
    * to the number of items in that bucket. That makes it harder to calculate quantiles than if we would store
@@ -150,6 +149,8 @@ class StatisticsWithRanges(name: String, filterNan: Boolean = true) extends Stat
 
   protected def interpolate(x1: Double, y1: Double, x2: Double, y2: Double, x: Double): Double =
     y1 + (y2 - y1) * (x - x1) / (x2 - x1)
+
+  def median = quantile(0.5)
 
   override def toString = super.toString + "\n" +
     "[" + ranges(10).map(e => e._2 + "*" + e._1.toFloat).mkString(", ") + "]"
